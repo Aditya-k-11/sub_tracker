@@ -1,0 +1,26 @@
+# Node
+node_modules/
+
+# Env
+.env
+.env.*
+
+# Build output
+dist/
+build/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+
+# IDEs
+.vscode/
+.idea/
+
+# K8s Secrets
+*.secret.yaml

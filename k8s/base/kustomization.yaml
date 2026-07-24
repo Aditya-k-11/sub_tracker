@@ -6,7 +6,7 @@ resources:
   - namespace.yaml
   - configmap.yaml
   - secret.yaml
-  - mongo/pvc.yaml
+  # - mongo/pvc.yaml
   - mongo/deployment.yaml
   - mongo/service.yaml
   - backend/logs-pvc.yaml

@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: subtrack
+  labels:
+    app: subtrack
+    component: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: subtrack
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: subtrack
+        component: backend
+    spec:
+      containers:
+        - name: backend
+          image: subtrack-backend:local
+          imagePullPolicy: Never
+          envFrom:
+            - configMapRef:
+                name: subtrack-config
+            - secretRef:
+                name: subtrack-secret
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: backend-logs
+              mountPath: /app/logs
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+      volumes:
+        - name: backend-logs
+          persistentVolumeClaim:
+            claimName: backend-logs-pvc

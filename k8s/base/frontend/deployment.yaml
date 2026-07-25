@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: subtrack-frontend:v2
+          image: subtrack-frontend:v3
           imagePullPolicy: Never
           ports:
             - containerPort: 80

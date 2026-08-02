@@ -8,6 +8,17 @@ metadata:
     component: frontend
 spec:
   replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      # maxUnavailable: 0 ensures Kubernetes NEVER takes down an existing pod until its replacement is up and ready.
+      # Combined with maxSurge: 1, a rollout briefly runs 3 pods (2 old + 1 new), waits for the new one to pass readiness, 
+      # removes 1 old pod, and repeats. Capacity never drops below 2.
+      maxUnavailable: 0
+  # minReadySeconds adds an extra 10s buffer AFTER a new pod passes readiness before considering it "available".
+  # This makes rollouts slightly slower but gives much higher confidence that each new pod is genuinely stable.
+  minReadySeconds: 10
   selector:
     matchLabels:
       app: subtrack

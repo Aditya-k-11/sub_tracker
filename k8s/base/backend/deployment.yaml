@@ -8,6 +8,17 @@ metadata:
     component: backend
 spec:
   replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      # maxUnavailable: 0 ensures Kubernetes NEVER takes down an existing pod until its replacement is up and ready.
+      # Combined with maxSurge: 1, a rollout briefly runs 3 pods (2 old + 1 new), waits for the new one to pass readiness, 
+      # removes 1 old pod, and repeats. Capacity never drops below 2.
+      maxUnavailable: 0
+  # minReadySeconds adds an extra 10s buffer AFTER a new pod passes readiness before considering it "available".
+  # This makes rollouts slightly slower but gives much higher confidence that each new pod is genuinely stable.
+  minReadySeconds: 10
   selector:
     matchLabels:
       app: subtrack
@@ -39,18 +50,25 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "300m"
-          readinessProbe:
-            httpGet:
-              path: /api/health
-              port: 5000
-            initialDelaySeconds: 15
-            periodSeconds: 10
+          # Liveness and Readiness are deliberately split to decouple "is the app stuck" from "is the DB temporarily down".
+          # Liveness failing restarts the pod (for deadlocks). Readiness failing stops traffic (for DB blips).
           livenessProbe:
             httpGet:
-              path: /api/health
+              path: /api/health/live
               port: 5000
-            initialDelaySeconds: 30
-            periodSeconds: 15
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health/ready
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
       volumes:
         - name: backend-logs
           persistentVolumeClaim:

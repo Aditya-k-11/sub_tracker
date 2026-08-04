@@ -7,3 +7,8 @@ resources:
   - prometheus-pvc.yaml
   - prometheus-deployment.yaml
   - prometheus-service.yaml
+  - grafana-pvc.yaml
+  - grafana-secret.yaml
+  - grafana-datasource-configmap.yaml
+  - grafana-deployment.yaml
+  - grafana-service.yaml

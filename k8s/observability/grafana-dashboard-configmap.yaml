@@ -21,12 +21,126 @@ data:
       "schemaVersion": 36,
       "panels": [
         {
+          "id": 200,
+          "title": "Error Budget",
+          "type": "row",
+          "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 24,
+            "h": 1
+          }
+        },
+        {
+          "id": 201,
+          "title": "Error Budget Targets & Logic",
+          "type": "text",
+          "gridPos": {
+            "x": 0,
+            "y": 1,
+            "w": 24,
+            "h": 4
+          },
+          "options": {
+            "content": "# Error Budget (1d rolling window)\nThis row shows the percentage of your allowed error budget consumed over the current period.\n- **Availability Target**: 99.9% (0.1% allowed failures)\n- **Latency Target**: 95% < 500ms (5% allowed slow requests)\n\nA value of **0%** means perfect compliance. A value of **100%** means you have entirely exhausted your budget for the period. Values **> 100%** mean you are violating your SLO.\n*(Note: Displaying a 1d window for current testing purposes. A true 30d tracking window will be used once sufficient metric history exists).*",
+            "mode": "markdown"
+          }
+        },
+        {
+          "id": 202,
+          "title": "Availability Budget Consumed (1d)",
+          "type": "gauge",
+          "gridPos": {
+            "x": 0,
+            "y": 5,
+            "w": 12,
+            "h": 8
+          },
+          "targets": [
+            {
+              "expr": "((1 - (sum(rate(subtrack_http_requests_total{status_code!~\"5..\"}[1d])) / sum(rate(subtrack_http_requests_total[1d])))) / 0.001) * 100",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 50
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "id": 203,
+          "title": "Latency Budget Consumed (1d)",
+          "type": "gauge",
+          "gridPos": {
+            "x": 12,
+            "y": 5,
+            "w": 12,
+            "h": 8
+          },
+          "targets": [
+            {
+              "expr": "((1 - (sum(rate(subtrack_http_request_duration_seconds_bucket{le=\"0.5\"}[1d])) / sum(rate(subtrack_http_request_duration_seconds_count[1d])))) / 0.05) * 100",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "color": {
+                "mode": "thresholds"
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 50
+                  },
+                  {
+                    "color": "red",
+                    "value": 90
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
           "id": 100,
           "title": "SLIs / Reliability Targets",
           "type": "row",
           "gridPos": {
             "x": 0,
-            "y": 0,
+            "y": 13,
             "w": 24,
             "h": 1
           }
@@ -37,7 +151,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 0,
-            "y": 1,
+            "y": 14,
             "w": 12,
             "h": 4
           },
@@ -75,7 +189,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 12,
-            "y": 1,
+            "y": 14,
             "w": 12,
             "h": 4
           },
@@ -113,7 +227,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 5,
+            "y": 18,
             "w": 12,
             "h": 8
           },
@@ -156,7 +270,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 12,
-            "y": 5,
+            "y": 18,
             "w": 12,
             "h": 8
           },
@@ -199,7 +313,7 @@ data:
           "type": "row",
           "gridPos": {
             "x": 0,
-            "y": 13,
+            "y": 26,
             "w": 24,
             "h": 1
           }
@@ -210,7 +324,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 14,
+            "y": 27,
             "w": 12,
             "h": 8
           },
@@ -233,7 +347,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 12,
-            "y": 14,
+            "y": 27,
             "w": 12,
             "h": 8
           },
@@ -269,7 +383,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 22,
+            "y": 35,
             "w": 24,
             "h": 8
           },
@@ -302,7 +416,7 @@ data:
           "type": "stat",
           "gridPos": {
             "x": 0,
-            "y": 30,
+            "y": 43,
             "w": 8,
             "h": 8
           },
@@ -320,7 +434,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 8,
-            "y": 30,
+            "y": 43,
             "w": 16,
             "h": 8
           },
@@ -338,7 +452,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 38,
+            "y": 51,
             "w": 24,
             "h": 8
           },
@@ -386,7 +500,7 @@ data:
           "type": "timeseries",
           "gridPos": {
             "x": 0,
-            "y": 46,
+            "y": 59,
             "w": 24,
             "h": 8
           },

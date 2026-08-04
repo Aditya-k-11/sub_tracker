@@ -46,6 +46,12 @@ spec:
               mountPath: /var/lib/grafana
             - name: datasource-config
               mountPath: /etc/grafana/provisioning/datasources
+            - name: dashboard-provider
+              mountPath: /etc/grafana/provisioning/dashboards/providers.yaml
+              subPath: providers.yaml
+            - name: dashboards
+              mountPath: /etc/grafana/provisioning/dashboards/red-method-dashboard.json
+              subPath: red-method-dashboard.json
       volumes:
         - name: data-volume
           persistentVolumeClaim:
@@ -53,3 +59,9 @@ spec:
         - name: datasource-config
           configMap:
             name: grafana-datasources
+        - name: dashboard-provider
+          configMap:
+            name: grafana-dashboard-providers
+        - name: dashboards
+          configMap:
+            name: grafana-dashboards

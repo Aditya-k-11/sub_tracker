@@ -10,5 +10,7 @@ resources:
   - grafana-pvc.yaml
   - grafana-secret.yaml
   - grafana-datasource-configmap.yaml
+  - grafana-dashboard-provider-configmap.yaml
+  - grafana-dashboard-configmap.yaml
   - grafana-deployment.yaml
   - grafana-service.yaml

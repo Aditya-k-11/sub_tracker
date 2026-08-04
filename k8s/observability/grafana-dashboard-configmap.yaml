@@ -195,6 +195,31 @@ data:
               }
             ]
           }
+        },
+        {
+          "id": 7,
+          "title": "Pod Container Restarts",
+          "type": "timeseries",
+          "gridPos": {
+            "x": 0,
+            "y": 32,
+            "w": 24,
+            "h": 8
+          },
+          "targets": [
+            {
+              "expr": "kube_pod_container_status_restarts_total{namespace=\"subtrack\"}",
+              "legendFormat": "{{pod}} - {{container}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "min": 0,
+              "decimals": 0
+            }
+          }
         }
       ]
     }

@@ -24,3 +24,10 @@ data:
       - job_name: 'prometheus'
         static_configs:
           - targets: ['localhost:9090']
+
+      - job_name: 'kube-state-metrics'
+        static_configs:
+          - targets: ['kube-state-metrics.observability.svc.cluster.local:8080']
+            labels:
+              app: 'subtrack'
+              component: 'kube-state-metrics'

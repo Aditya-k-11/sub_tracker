@@ -44,12 +44,17 @@ spec:
             - name: backend-logs
               mountPath: /app/logs
           resources:
+            # Tuned for HPA scaling (D.2):
+            # - Observed idle CPU: ~8m, memory: ~95Mi
+            # - Observed peak CPU under heavy k6 load: ~58m
+            # requests.cpu is set to 25m to give a solid baseline for percentage scaling (idle is ~30%).
+            # limits are set to 100m to allow enough headroom for fast Node.js startup without severe throttling.
             requests:
               memory: "128Mi"
-              cpu: "100m"
+              cpu: "25m"
             limits:
               memory: "256Mi"
-              cpu: "300m"
+              cpu: "100m"
           # Liveness and Readiness are deliberately split to decouple "is the app stuck" from "is the DB temporarily down".
           # Liveness failing restarts the pod (for deadlocks). Readiness failing stops traffic (for DB blips).
           livenessProbe:

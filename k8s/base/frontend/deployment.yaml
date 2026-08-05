@@ -36,6 +36,11 @@ spec:
           ports:
             - containerPort: 80
           resources:
+            # Frontend resources retained from 10.3.
+            # Frontend autoscaling is intentionally deprioritized in D.3 in favor of
+            # focusing the HPA demonstration on the backend. A static Nginx server 
+            # is extremely lightweight and rarely CPU-bound under demo-scale traffic.
+            # Observed idle CPU is ~1m, memory ~9Mi, so these values remain very safe.
             requests:
               memory: "64Mi"
               cpu: "50m"

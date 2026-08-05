@@ -1,0 +1,15 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backend-pdb
+  namespace: subtrack
+spec:
+  # minAvailable vs maxUnavailable:
+  # 'minAvailable: 1' guarantees at least 1 pod is always serving traffic during voluntary disruptions.
+  # For a small replica count (like 2), this reads more clearly. If replica counts increase significantly
+  # (e.g., via HPA), this might need to be revisited to ensure a higher floor of capacity remains available.
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: subtrack
+      component: backend

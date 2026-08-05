@@ -7,7 +7,9 @@ metadata:
     app: subtrack
     component: backend
 spec:
-  replicas: 2
+  # replicas intentionally omitted — managed by backend/hpa.yaml (D.3); 
+  # a fixed value here would conflict with HPA's live scaling and cause GitOps sync flapping against HPA's decisions
+
   strategy:
     type: RollingUpdate
     rollingUpdate:

@@ -13,6 +13,9 @@ resources:
   - backend/deployment.yaml
   - backend/service.yaml
   - backend/cronjob.yaml
+  - backend/pdb.yaml
+  - backend/hpa.yaml
   - frontend/deployment.yaml
   - frontend/service.yaml
+  - frontend/pdb.yaml
   - ingress/ingress.yaml

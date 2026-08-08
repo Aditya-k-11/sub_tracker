@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import PageTransition from '../components/common/PageTransition';
 import Button from '../components/common/Button';
-import { getSpendSummary, getCategoryBreakdown, getSpendTrend, getWastedSpend, getNotifications } from '../services/analyticsService';
+import { getSpendSummary, getCategoryBreakdown, getSpendTrend, getWastedSpend, getNotifications, getUpcomingTimeline, getSpendingVelocity } from '../services/analyticsService';
 import { logUsage } from '../services/subscriptionService';
 import SummaryCards from '../components/dashboard/SummaryCards';
 import CategoryChart from '../components/dashboard/CategoryChart';
 import TrendChart from '../components/dashboard/TrendChart';
 import WastedSpendPanel from '../components/dashboard/WastedSpendPanel';
-import RenewalCalendarPanel from '../components/dashboard/RenewalCalendarPanel';
+import PaymentsTimeline from '../components/dashboard/PaymentsTimeline';
+import SpendingVelocityCard from '../components/dashboard/SpendingVelocityCard';
 import Toast from '../components/common/Toast';
 
 const DashboardPage = () => {
@@ -20,7 +21,9 @@ const DashboardPage = () => {
     categories: [],
     trend: [],
     wasted: { flaggedSubscriptions: [], potentialMonthlySavings: 0 },
-    notifications: []
+    notifications: [],
+    upcomingTimeline: { days: [], totalUpcoming14Days: 0 },
+    velocity: null
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,12 +33,14 @@ const DashboardPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const [summaryData, categoriesData, trendData, wastedData, notificationsData] = await Promise.all([
+      const [summaryData, categoriesData, trendData, wastedData, notificationsData, timelineData, velocityData] = await Promise.all([
         getSpendSummary(),
         getCategoryBreakdown(),
         getSpendTrend(),
         getWastedSpend(),
-        getNotifications(false) 
+        getNotifications(false),
+        getUpcomingTimeline(),
+        getSpendingVelocity()
       ]);
       
       setData({
@@ -43,7 +48,9 @@ const DashboardPage = () => {
         categories: categoriesData.categories,
         trend: trendData.trend,
         wasted: wastedData,
-        notifications: notificationsData.notifications || notificationsData 
+        notifications: notificationsData.notifications || notificationsData,
+        upcomingTimeline: timelineData,
+        velocity: velocityData
       });
     } catch (err) {
       console.error(err);
@@ -142,6 +149,14 @@ const DashboardPage = () => {
         <SummaryCards summary={data.summary} />
       </div>
 
+      <div className="animate-fade-in-up" style={{ animationDelay: '75ms', animationFillMode: 'both' }}>
+        <SpendingVelocityCard velocity={data.velocity} />
+      </div>
+
+      <div className="animate-fade-in-up" style={{ animationDelay: '85ms', animationFillMode: 'both' }}>
+        <PaymentsTimeline days={data.upcomingTimeline?.days} />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
         <div className="h-[400px]">
           <CategoryChart categories={data.categories} />
@@ -151,7 +166,7 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in-up" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
+      <div className="grid grid-cols-1 gap-6 animate-fade-in-up" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
         <div>
           <WastedSpendPanel 
             flagged={data.wasted.flaggedSubscriptions} 
@@ -159,9 +174,6 @@ const DashboardPage = () => {
             onUsageLogged={handleUsageLogged}
             submittingUsage={submittingUsage}
           />
-        </div>
-        <div>
-          <RenewalCalendarPanel notifications={data.notifications} />
         </div>
       </div>
 

@@ -35,3 +35,12 @@ export const markAllNotificationsRead = async () => {
   return response.data;
 };
 
+export const getUpcomingTimeline = async () => {
+  const response = await apiClient.get('/analytics/upcoming-timeline');
+  return response.data;
+};
+
+export const getSpendingVelocity = async () => {
+  const response = await apiClient.get('/analytics/velocity');
+  return response.data;
+};

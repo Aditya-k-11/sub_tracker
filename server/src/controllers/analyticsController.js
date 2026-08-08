@@ -4,7 +4,7 @@ import { normalizeToMonthly } from '../utils/normalizeToMonthly.js';
 import { upsertCurrentMonthSnapshot } from '../services/snapshotService.js';
 import SpendSnapshot from '../models/SpendSnapshot.js';
 import UsageLog from '../models/UsageLog.js';
-import { daysSince } from '../utils/dateHelpers.js';
+import { daysSince, getDayLabel } from '../utils/dateHelpers.js';
 import { WASTE_THRESHOLD_DAYS, MIN_SUBSCRIPTION_AGE_DAYS } from '../config/wasteDetection.js';
 
 export const getSpendSummary = catchAsync(async (req, res, next) => {
@@ -176,7 +176,7 @@ export const getUpcomingPaymentsTimeline = catchAsync(async (req, res, next) => 
     const d = new Date(today);
     d.setDate(today.getDate() + i);
     const dateStr = d.toISOString().split('T')[0];
-    const { getDayLabel } = require('../utils/dateHelpers.js'); 
+    
     daysMap[dateStr] = {
       date: dateStr,
       dayLabel: getDayLabel(d, today),

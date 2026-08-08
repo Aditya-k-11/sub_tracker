@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: subtrack-backend:local
+          image: subtrack-backend:v4
           imagePullPolicy: Never
           envFrom:
             - configMapRef:

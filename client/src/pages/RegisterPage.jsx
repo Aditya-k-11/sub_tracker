@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { registerUser } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
+import AnimatedBackground from '../components/common/AnimatedBackground';
+import Button from '../components/common/Button';
+import PageTransition from '../components/common/PageTransition';
 
 const RegisterPage = () => {
   const [name, setName] = useState('');
@@ -41,8 +44,10 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+    <div className="min-h-screen bg-transparent relative flex items-center justify-center p-4">
+      <AnimatedBackground />
+      <PageTransition className="w-full max-w-md z-10">
+        <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-xl shadow-primary-900/5 p-8 rounded-2xl w-full">
         <h1 className="text-3xl font-bold text-center text-primary-600 mb-6">Create Account</h1>
         
         {error && (
@@ -95,19 +100,20 @@ const RegisterPage = () => {
               <option value="GBP">GBP (£)</option>
             </select>
           </div>
-          <button 
+          <Button 
             type="submit" 
-            disabled={loading}
-            className={`w-full bg-primary-600 text-white font-medium py-2 rounded transition ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-primary-700'}`}
+            className="w-full"
+            loading={loading}
           >
-            {loading ? 'Registering...' : 'Create Account'}
-          </button>
+            Create Account
+          </Button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
+        <p className="mt-4 text-center text-sm text-gray-600">
           Already have an account? <Link to="/login" className="text-primary-600 hover:underline">Log in</Link>
-        </div>
+        </p>
       </div>
+      </PageTransition>
     </div>
   );
 };

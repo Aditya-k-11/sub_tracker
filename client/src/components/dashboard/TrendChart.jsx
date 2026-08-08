@@ -1,21 +1,27 @@
 import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { motion } from 'framer-motion';
+import { useAuth } from '../../context/AuthContext';
 import { formatCurrency } from '../../utils/formatters';
 
-const formatShortCurrency = (value) => {
+const formatShortCurrency = (value, currencyCode = 'INR') => {
+  
+  const parts = new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).formatToParts(0);
+  const symbol = parts.find(p => p.type === 'currency')?.value || '$';
+  
   if (value >= 1000) {
-    return `₹${(value / 1000).toFixed(1)}k`;
+    return `${symbol}${(value / 1000).toFixed(1)}k`;
   }
-  return `₹${value}`;
+  return `${symbol}${value}`;
 };
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label, currencyCode }) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-3 rounded-xl shadow-lg border border-gray-100 min-w-[120px]">
         <p className="text-xs text-gray-500 mb-1 font-medium">{label}</p>
         <p className="text-lg font-bold text-gray-900 tabular-nums">
-          {formatCurrency(payload[0].value, 'INR')}
+          {formatCurrency(payload[0].value, currencyCode)}
         </p>
       </div>
     );
@@ -24,10 +30,11 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const TrendChart = ({ trend }) => {
+  const { user } = useAuth();
+  const currencyCode = user?.currency || 'INR';
+
   if (!trend || trend.length === 0) return null;
 
-  // If we only have 1 data point, Recharts just draws a single dot without the area gradient.
-  // To make it look like a proper dashboard chart, we'll inject a fake baseline point for the prior month.
   let displayTrend = [...trend];
   if (displayTrend.length === 1) {
     const currentMonth = displayTrend[0].month;
@@ -46,7 +53,7 @@ const TrendChart = ({ trend }) => {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 h-full flex flex-col">
+    <motion.div whileHover={{ y: -4 }} className="bg-white/90 rounded-2xl shadow-xl shadow-primary-900/5 p-6 border border-white/40 h-full flex flex-col">
       <h3 className="text-xs uppercase tracking-wide text-gray-500 mb-6 font-medium">Monthly Trend</h3>
       
       <div className="flex-grow min-h-[220px]">
@@ -70,9 +77,9 @@ const TrendChart = ({ trend }) => {
               axisLine={false} 
               tickLine={false} 
               tick={{ fontSize: 12, fill: '#6b7280' }}
-              tickFormatter={formatShortCurrency}
+              tickFormatter={(val) => formatShortCurrency(val, currencyCode)}
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip currencyCode={currencyCode} />} />
             <Area 
               type="monotone" 
               dataKey="totalSpend" 
@@ -91,8 +98,8 @@ const TrendChart = ({ trend }) => {
           Trend builds up as more months of data are collected
         </p>
       )}
-    </div>
+    </motion.div>
   );
 };
 
-export default TrendChart;
+export default React.memo(TrendChart);

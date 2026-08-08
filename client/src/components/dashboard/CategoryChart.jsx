@@ -1,21 +1,25 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { motion } from 'framer-motion';
+import { useAuth } from '../../context/AuthContext';
 import { formatCurrency } from '../../utils/formatters';
 import EmptyState from '../common/EmptyState';
 
 const CHART_COLORS = ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#eff6ff'];
 
 const CategoryChart = ({ categories }) => {
+  const { user } = useAuth();
+  
   if (!categories || categories.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 h-full flex flex-col items-center justify-center">
+      <motion.div whileHover={{ y: -4 }} className="bg-white/90 rounded-2xl shadow-xl shadow-primary-900/5 p-6 border border-white/40 h-full flex flex-col items-center justify-center">
         <EmptyState title="No categories yet" message="Add subscriptions to see a breakdown" />
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 h-full flex flex-col">
+    <motion.div whileHover={{ y: -4 }} className="bg-white/90 rounded-2xl shadow-xl shadow-primary-900/5 p-6 border border-white/40 h-full flex flex-col">
       <h3 className="text-xs uppercase tracking-wide text-gray-500 mb-6 font-medium">Spend by Category</h3>
       
       <div className="h-48 sm:h-56 mb-6">
@@ -37,7 +41,7 @@ const CategoryChart = ({ categories }) => {
               ))}
             </Pie>
             <Tooltip 
-              formatter={(value) => formatCurrency(value, 'INR')}
+              formatter={(value) => formatCurrency(value, user?.currency)}
               contentStyle={{ borderRadius: '12px', border: '1px solid #f3f4f6', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
             />
           </PieChart>
@@ -52,12 +56,12 @@ const CategoryChart = ({ categories }) => {
               <span className="text-gray-700 font-medium">{cat.category}</span>
               <span className="text-xs text-gray-400">({cat.subscriptionCount})</span>
             </div>
-            <span className="font-semibold text-gray-900">{formatCurrency(cat.monthlySpend, 'INR')}</span>
+            <span className="font-semibold text-gray-900">{formatCurrency(cat.monthlySpend, user?.currency)}</span>
           </div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-export default CategoryChart;
+export default React.memo(CategoryChart);

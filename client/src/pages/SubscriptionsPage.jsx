@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import PageTransition from '../components/common/PageTransition';
 import { getSubscriptions, createSubscription, updateSubscription, cancelSubscription, logUsage } from '../services/subscriptionService';
 import SubscriptionList from '../components/subscriptions/SubscriptionList';
 import SubscriptionForm from '../components/subscriptions/SubscriptionForm';
@@ -7,27 +8,24 @@ import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import LogUsageModal from '../components/subscriptions/LogUsageModal';
 import Toast from '../components/common/Toast';
+import Button from '../components/common/Button';
 
 const SubscriptionsPage = () => {
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Form state
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
 
-  // Cancel logic state
   const [cancelTarget, setCancelTarget] = useState(null);
   const [cancelling, setCancelling] = useState(false);
 
-  // Log usage state
   const [usageTarget, setUsageTarget] = useState(null);
   const [loggingUsage, setLoggingUsage] = useState(false);
 
-  // Toast state
   const [toast, setToast] = useState(null);
 
   const fetchSubscriptions = useCallback(async () => {
@@ -51,17 +49,17 @@ const SubscriptionsPage = () => {
   const showToast = (message, type = 'success') => setToast({ message, type });
   const dismissToast = () => setToast(null);
 
-  const handleAddClick = () => {
+  const handleAddClick = useCallback(() => {
     setEditingSubscription(null);
     setFormError(null);
     setIsFormOpen(true);
-  };
+  }, []);
 
-  const handleEditClick = (subscription) => {
+  const handleEditClick = useCallback((subscription) => {
     setEditingSubscription(subscription);
     setFormError(null);
     setIsFormOpen(true);
-  };
+  }, []);
 
   const handleFormClose = () => {
     setIsFormOpen(false);
@@ -100,11 +98,10 @@ const SubscriptionsPage = () => {
     }
   };
 
-  // Cancel Handlers
-  const handleCancelClick = (id) => {
+  const handleCancelClick = useCallback((id) => {
     const target = subscriptions.find(s => s._id === id);
     if (target) setCancelTarget(target);
-  };
+  }, [subscriptions]);
 
   const handleCancelConfirm = async () => {
     setCancelling(true);
@@ -124,11 +121,10 @@ const SubscriptionsPage = () => {
     setCancelTarget(null);
   };
 
-  // Log Usage Handlers
-  const handleLogUsageClick = (id) => {
+  const handleLogUsageClick = useCallback((id) => {
     const target = subscriptions.find(s => s._id === id);
     if (target) setUsageTarget(target);
-  };
+  }, [subscriptions]);
 
   const handleLogUsageSubmit = async (note) => {
     setLoggingUsage(true);
@@ -160,19 +156,19 @@ const SubscriptionsPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-lg text-center shadow-sm max-w-lg mx-auto">
           <p className="mb-4">{error}</p>
-          <button 
+          <Button 
+            variant="danger"
             onClick={fetchSubscriptions}
-            className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 transition"
           >
             Retry
-          </button>
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+    <PageTransition className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
       {toast && (
         <Toast 
           message={toast.message} 
@@ -183,12 +179,9 @@ const SubscriptionsPage = () => {
 
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Your Subscriptions</h1>
-        <button 
-          onClick={handleAddClick}
-          className="bg-primary-600 text-white px-4 py-2 rounded shadow-sm hover:bg-primary-700 transition font-medium"
-        >
+        <Button onClick={handleAddClick}>
           Add Subscription
-        </button>
+        </Button>
       </div>
       
       <SubscriptionList 
@@ -230,7 +223,7 @@ const SubscriptionsPage = () => {
         onSubmit={handleLogUsageSubmit}
         submitting={loggingUsage}
       />
-    </div>
+    </PageTransition>
   );
 };
 

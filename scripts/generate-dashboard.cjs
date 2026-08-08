@@ -1,0 +1,318 @@
+const fs = require('fs');
+
+const budgetPanels = [
+  {
+    "id": 200,
+    "title": "Error Budget",
+    "type": "row",
+    "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }
+  },
+  {
+    "id": 201,
+    "title": "Error Budget Targets & Logic",
+    "type": "text",
+    "gridPos": { "x": 0, "y": 1, "w": 24, "h": 4 },
+    "options": {
+      "content": "# Error Budget (1d rolling window)\nThis row shows the percentage of your allowed error budget consumed over the current period.\n- **Availability Target**: 99.9% (0.1% allowed failures)\n- **Latency Target**: 95% < 500ms (5% allowed slow requests)\n\nA value of **0%** means perfect compliance. A value of **100%** means you have entirely exhausted your budget for the period. Values **> 100%** mean you are violating your SLO.\n*(Note: Displaying a 1d window for current testing purposes. A true 30d tracking window will be used once sufficient metric history exists).*",
+      "mode": "markdown"
+    }
+  },
+  {
+    "id": 202,
+    "title": "Availability Budget Consumed (1d)",
+    "type": "gauge",
+    "gridPos": { "x": 0, "y": 5, "w": 12, "h": 8 },
+    "targets": [
+      { "expr": "((1 - (sum(rate(subtrack_http_requests_total{status_code!~\"5..\"}[1d])) / sum(rate(subtrack_http_requests_total[1d])))) / 0.001) * 100", "refId": "A" }
+    ],
+    "fieldConfig": {
+      "defaults": {
+        "unit": "percent",
+        "min": 0,
+        "max": 100,
+        "color": { "mode": "thresholds" },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 50 },
+            { "color": "red", "value": 90 }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": 203,
+    "title": "Latency Budget Consumed (1d)",
+    "type": "gauge",
+    "gridPos": { "x": 12, "y": 5, "w": 12, "h": 8 },
+    "targets": [
+      { "expr": "((1 - (sum(rate(subtrack_http_request_duration_seconds_bucket{le=\"0.5\"}[1d])) / sum(rate(subtrack_http_request_duration_seconds_count[1d])))) / 0.05) * 100", "refId": "A" }
+    ],
+    "fieldConfig": {
+      "defaults": {
+        "unit": "percent",
+        "min": 0,
+        "max": 100,
+        "color": { "mode": "thresholds" },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 50 },
+            { "color": "red", "value": 90 }
+          ]
+        }
+      }
+    }
+  }
+];
+
+const sliPanels = [
+  {
+    "id": 100,
+    "title": "SLIs / Reliability Targets",
+    "type": "row",
+    "gridPos": { "x": 0, "y": 13, "w": 24, "h": 1 }
+  },
+  {
+    "id": 101,
+    "title": "Availability SLI (Target: 99.9%)",
+    "type": "stat",
+    "gridPos": { "x": 0, "y": 14, "w": 12, "h": 4 },
+    "targets": [
+      { "expr": "sum(rate(subtrack_http_requests_total{status_code!~\"5..\"}[5m])) / sum(rate(subtrack_http_requests_total[5m]))", "refId": "A" }
+    ],
+    "fieldConfig": {
+      "defaults": {
+        "unit": "percentunit",
+        "color": { "mode": "thresholds" },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            { "color": "red", "value": null },
+            { "color": "green", "value": 0.999 }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": 102,
+    "title": "Latency SLI (Target: 95% < 500ms)",
+    "type": "stat",
+    "gridPos": { "x": 12, "y": 14, "w": 12, "h": 4 },
+    "targets": [
+      { "expr": "sum(rate(subtrack_http_request_duration_seconds_bucket{le=\"0.5\"}[5m])) / sum(rate(subtrack_http_request_duration_seconds_count[5m]))", "refId": "A" }
+    ],
+    "fieldConfig": {
+      "defaults": {
+        "unit": "percentunit",
+        "color": { "mode": "thresholds" },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            { "color": "red", "value": null },
+            { "color": "green", "value": 0.95 }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": 103,
+    "title": "Availability SLI (Trend)",
+    "type": "timeseries",
+    "gridPos": { "x": 0, "y": 18, "w": 12, "h": 8 },
+    "targets": [
+      { "expr": "sum(rate(subtrack_http_requests_total{status_code!~\"5..\"}[5m])) / sum(rate(subtrack_http_requests_total[5m]))", "legendFormat": "Availability", "refId": "A" }
+    ],
+    "fieldConfig": {
+      "defaults": {
+        "unit": "percentunit",
+        "min": 0,
+        "max": 1,
+        "custom": {
+          "thresholdsStyle": { "mode": "line" }
+        },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            { "color": "red", "value": null },
+            { "color": "green", "value": 0.999 }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": 104,
+    "title": "Latency SLI (Trend)",
+    "type": "timeseries",
+    "gridPos": { "x": 12, "y": 18, "w": 12, "h": 8 },
+    "targets": [
+      { "expr": "sum(rate(subtrack_http_request_duration_seconds_bucket{le=\"0.5\"}[5m])) / sum(rate(subtrack_http_request_duration_seconds_count[5m]))", "legendFormat": "Fast Enough Rate", "refId": "A" }
+    ],
+    "fieldConfig": {
+      "defaults": {
+        "unit": "percentunit",
+        "min": 0,
+        "max": 1,
+        "custom": {
+          "thresholdsStyle": { "mode": "line" }
+        },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            { "color": "red", "value": null },
+            { "color": "green", "value": 0.95 }
+          ]
+        }
+      }
+    }
+  }
+];
+
+const rawPanels = [
+  {
+    "id": 105,
+    "title": "Raw Metrics",
+    "type": "row",
+    "gridPos": { "x": 0, "y": 26, "w": 24, "h": 1 }
+  },
+  {
+    "id": 1,
+    "title": "Request Rate",
+    "type": "timeseries",
+    "gridPos": { "x": 0, "y": 27, "w": 12, "h": 8 },
+    "targets": [
+      { "expr": "sum(rate(subtrack_http_requests_total[1m])) by (route)", "legendFormat": "{{route}}", "refId": "A" }
+    ],
+    "fieldConfig": {
+      "defaults": { "unit": "reqps" }
+    }
+  },
+  {
+    "id": 2,
+    "title": "Error Rate (%)",
+    "type": "timeseries",
+    "gridPos": { "x": 12, "y": 27, "w": 12, "h": 8 },
+    "targets": [
+      { "expr": "sum(rate(subtrack_http_requests_total{status_code=~\"5..\"}[5m])) / sum(rate(subtrack_http_requests_total[5m])) * 100", "legendFormat": "Error Rate", "refId": "A" }
+    ],
+    "fieldConfig": {
+      "defaults": {
+        "unit": "percent",
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            { "color": "green", "value": null },
+            { "color": "red", "value": 1 }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": 3,
+    "title": "Latency Percentiles (p50/p95/p99)",
+    "type": "timeseries",
+    "gridPos": { "x": 0, "y": 35, "w": 24, "h": 8 },
+    "targets": [
+      { "expr": "histogram_quantile(0.99, sum(rate(subtrack_http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p99", "refId": "A" },
+      { "expr": "histogram_quantile(0.95, sum(rate(subtrack_http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95", "refId": "B" },
+      { "expr": "histogram_quantile(0.50, sum(rate(subtrack_http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p50", "refId": "C" }
+    ],
+    "fieldConfig": {
+      "defaults": { "unit": "s" }
+    }
+  },
+  {
+    "id": 4,
+    "title": "Active Connections",
+    "type": "stat",
+    "gridPos": { "x": 0, "y": 43, "w": 8, "h": 8 },
+    "targets": [
+      { "expr": "subtrack_active_connections", "legendFormat": "Connections", "refId": "A" }
+    ]
+  },
+  {
+    "id": 5,
+    "title": "Requests by Status Code",
+    "type": "timeseries",
+    "gridPos": { "x": 8, "y": 43, "w": 16, "h": 8 },
+    "targets": [
+      { "expr": "sum(rate(subtrack_http_requests_total[1m])) by (status_code)", "legendFormat": "{{status_code}}", "refId": "A" }
+    ]
+  },
+  {
+    "id": 6,
+    "title": "Node/Process Health",
+    "type": "timeseries",
+    "gridPos": { "x": 0, "y": 51, "w": 24, "h": 8 },
+    "targets": [
+      { "expr": "rate(subtrack_process_cpu_seconds_total[1m])", "legendFormat": "CPU Usage", "refId": "A" },
+      { "expr": "subtrack_process_resident_memory_bytes", "legendFormat": "Memory (RSS)", "refId": "B" }
+    ],
+    "fieldConfig": {
+      "defaults": {
+        "custom": {
+           "axisPlacement": "left"
+        }
+      },
+      "overrides": [
+        {
+          "matcher": { "id": "byName", "options": "Memory (RSS)" },
+          "properties": [
+            { "id": "unit", "value": "bytes" },
+            { "id": "custom.axisPlacement", "value": "right" }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": 7,
+    "title": "Pod Container Restarts",
+    "type": "timeseries",
+    "gridPos": { "x": 0, "y": 59, "w": 24, "h": 8 },
+    "targets": [
+      { "expr": "kube_pod_container_status_restarts_total{namespace=\"subtrack\"}", "legendFormat": "{{pod}} - {{container}}", "refId": "A" }
+    ],
+    "fieldConfig": {
+      "defaults": {
+        "unit": "short",
+        "min": 0,
+        "decimals": 0
+      }
+    }
+  }
+];
+
+const dashboard = {
+  "title": "SubTrack - System Health (RED)",
+  "uid": "subtrack-red",
+  "tags": ["subtrack", "red"],
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": { "from": "now-30m", "to": "now" },
+  "schemaVersion": 36,
+  "panels": [...budgetPanels, ...sliPanels, ...rawPanels]
+};
+
+const jsonStr = JSON.stringify(dashboard, null, 2);
+const indentedJsonStr = jsonStr.split('\n').map(line => '    ' + line).join('\n');
+
+const yaml = `apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: observability
+data:
+  red-method-dashboard.json: |
+${indentedJsonStr}
+`;
+
+fs.writeFileSync('k8s/observability/grafana-dashboard-configmap.yaml', yaml);
+console.log('Done');

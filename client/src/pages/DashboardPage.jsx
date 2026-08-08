@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import PageTransition from '../components/common/PageTransition';
+import Button from '../components/common/Button';
 import { getSpendSummary, getCategoryBreakdown, getSpendTrend, getWastedSpend, getNotifications } from '../services/analyticsService';
 import { logUsage } from '../services/subscriptionService';
 import SummaryCards from '../components/dashboard/SummaryCards';
@@ -33,7 +35,7 @@ const DashboardPage = () => {
         getCategoryBreakdown(),
         getSpendTrend(),
         getWastedSpend(),
-        getNotifications(false) // fetch all for the dashboard panel
+        getNotifications(false) 
       ]);
       
       setData({
@@ -41,7 +43,7 @@ const DashboardPage = () => {
         categories: categoriesData.categories,
         trend: trendData.trend,
         wasted: wastedData,
-        notifications: notificationsData.notifications || notificationsData // AppLayout expects an array directly from the updated getNotifications
+        notifications: notificationsData.notifications || notificationsData 
       });
     } catch (err) {
       console.error(err);
@@ -55,12 +57,11 @@ const DashboardPage = () => {
     fetchDashboardData();
   }, []);
 
-  const handleUsageLogged = async (subscriptionId, note) => {
+  const handleUsageLogged = useCallback(async (subscriptionId, note) => {
     setSubmittingUsage(true);
     try {
       await logUsage(subscriptionId, note);
-      
-      // Fetch fresh wasted spend and summary (in case usage affected costPerUse or triggered snapshots)
+
       const [wastedData, summaryData] = await Promise.all([
         getWastedSpend(),
         getSpendSummary()
@@ -78,7 +79,7 @@ const DashboardPage = () => {
     } finally {
       setSubmittingUsage(false);
     }
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -109,12 +110,12 @@ const DashboardPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-red-50 border border-red-200 text-red-700 p-8 rounded-2xl text-center shadow-sm max-w-lg mx-auto">
           <p className="mb-6 font-medium">{error}</p>
-          <button 
+          <Button 
+            variant="danger"
             onClick={fetchDashboardData}
-            className="bg-red-600 text-white px-6 py-2.5 rounded-lg hover:bg-red-700 transition font-medium shadow-sm"
           >
             Retry
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -123,7 +124,7 @@ const DashboardPage = () => {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-hidden space-y-8 relative">
+    <PageTransition className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-hidden space-y-8 relative">
       {toast && (
         <Toast 
           message={toast.message} 
@@ -164,7 +165,7 @@ const DashboardPage = () => {
         </div>
       </div>
 
-    </div>
+    </PageTransition>
   );
 };
 

@@ -1,29 +1,39 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { Suspense, lazy } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 
 import AppLayout from './components/layout/AppLayout';
-import DashboardPage from './pages/DashboardPage';
-import SubscriptionsPage from './pages/SubscriptionsPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import NotFoundPage from './pages/NotFoundPage';
+import Spinner from './components/common/Spinner';
+
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const SubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 function App() {
+  const location = useLocation();
   return (
-    <Routes>
-      {/* Standalone pages (No layout) */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+    <AnimatePresence mode="wait">
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Spinner size="lg" /></div>}>
+        <Routes key={location.pathname}>
+        {}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
-      {/* Pages wrapped in the AppLayout */}
-      <Route element={<AppLayout />}>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/subscriptions" element={<SubscriptionsPage />} />
-      </Route>
+        {}
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/subscriptions" element={<SubscriptionsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+        </Route>
 
-      {/* Catch-all */}
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+        {}
+        <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Suspense>
+    </AnimatePresence>
   );
 }
 

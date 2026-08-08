@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '../common/Modal';
+import Button from '../common/Button';
 
 const LogUsageModal = ({ isOpen, onClose, subscription, onSubmit, submitting }) => {
   const [note, setNote] = useState('');
@@ -31,22 +32,20 @@ const LogUsageModal = ({ isOpen, onClose, subscription, onSubmit, submitting }) 
             placeholder="e.g. Watched Stranger Things"
           />
         </div>
-        <div className="flex justify-end space-x-3 border-t border-gray-200 pt-4">
-          <button 
-            type="button"
+        <div className="flex justify-end space-x-3 border-t border-gray-200/50 pt-4">
+          <Button 
+            variant="secondary"
             onClick={onClose}
             disabled={submitting}
-            className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded font-medium transition"
           >
             Cancel
-          </button>
-          <button 
+          </Button>
+          <Button 
             type="submit"
-            disabled={submitting}
-            className={`px-4 py-2 text-white bg-primary-600 hover:bg-primary-700 rounded font-medium transition flex items-center ${submitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+            loading={submitting}
           >
-            {submitting ? 'Logging...' : 'Log Usage'}
-          </button>
+            Log Usage
+          </Button>
         </div>
       </form>
     </Modal>

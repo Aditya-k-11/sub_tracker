@@ -6,16 +6,21 @@ metadata:
 data:
   prometheus.yml: |
     global:
-      # Scrape targets every 15 seconds. This interval directly determines the time resolution of everything you'll graph in Grafana later.
-      # Shorter intervals give finer-grained graphs at the cost of more scrape load. 15s is a reasonable default for this scale.
       scrape_interval: 15s
       evaluation_interval: 15s
+
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets: ['alertmanager.observability.svc.cluster.local:9093']
+
+    rule_files:
+      - /etc/prometheus/rules/*.yml
 
     scrape_configs:
       - job_name: 'subtrack-backend'
         metrics_path: '/metrics'
         static_configs:
-          # Note: Prometheus lives in 'observability' namespace, so it must use the fully-qualified DNS name to reach the backend in 'subtrack' namespace
           - targets: ['backend.subtrack.svc.cluster.local:5000']
             labels:
               app: 'subtrack'

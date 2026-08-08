@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: observability
+data:
+  alertmanager.yml: |
+    route:
+      receiver: 'default-webhook'
+      group_by: ['alertname']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+
+    receivers:
+      - name: 'default-webhook'
+        webhook_configs:
+          - url: 'http://alertmanager-webhook-logger.observability.svc.cluster.local:8080/alert'
+            send_resolved: true

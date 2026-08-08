@@ -1,12 +1,9 @@
-# This Application resource connects the installed ArgoCD instance to the Git repository.
-# It turns a folder of YAML manifests in Git into a continuously reconciled live deployment.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: subtrack
   namespace: argocd
   annotations:
-    # -> REPLACE <DESTINATION_EMAIL> with the email you want to receive these notifications
     notifications.argoproj.io/subscribe.on-deployed.email: "adityakanojia.ad@gmail.com"
     notifications.argoproj.io/subscribe.on-crashed.email: "adityakanojia.ad@gmail.com"
 spec:

@@ -12,12 +12,7 @@ spec:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
-      # maxUnavailable: 0 ensures Kubernetes NEVER takes down an existing pod until its replacement is up and ready.
-      # Combined with maxSurge: 1, a rollout briefly runs 3 pods (2 old + 1 new), waits for the new one to pass readiness, 
-      # removes 1 old pod, and repeats. Capacity never drops below 2.
       maxUnavailable: 0
-  # minReadySeconds adds an extra 10s buffer AFTER a new pod passes readiness before considering it "available".
-  # This makes rollouts slightly slower but gives much higher confidence that each new pod is genuinely stable.
   minReadySeconds: 10
   selector:
     matchLabels:
@@ -36,11 +31,6 @@ spec:
           ports:
             - containerPort: 80
           resources:
-            # Frontend resources retained from 10.3.
-            # Frontend autoscaling is intentionally deprioritized in D.3 in favor of
-            # focusing the HPA demonstration on the backend. A static Nginx server 
-            # is extremely lightweight and rarely CPU-bound under demo-scale traffic.
-            # Observed idle CPU is ~1m, memory ~9Mi, so these values remain very safe.
             requests:
               memory: "64Mi"
               cpu: "50m"

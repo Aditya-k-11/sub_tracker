@@ -1,0 +1,22 @@
+export const KNOWN_SERVICES = [
+  { name: 'Netflix', senderDomains: ['netflix.com', 'mailer.netflix.com'], defaultCategory: 'Entertainment' },
+  { name: 'Spotify', senderDomains: ['spotify.com'], defaultCategory: 'Entertainment' },
+  { name: 'Amazon Prime', senderDomains: ['amazon.com', 'amazon.in', 'amazon.co.uk'], defaultCategory: 'Entertainment' },
+  { name: 'Disney+ Hotstar', senderDomains: ['hotstar.com', 'disneyplus.com'], defaultCategory: 'Entertainment' },
+  { name: 'YouTube Premium', senderDomains: ['youtube.com', 'google.com'], defaultCategory: 'Entertainment' },
+  { name: 'Apple Music', senderDomains: ['apple.com', 'itunes.com'], defaultCategory: 'Entertainment' },
+  { name: 'Notion', senderDomains: ['notion.so', 'mail.notion.so'], defaultCategory: 'Productivity' },
+  { name: 'Adobe Creative Cloud', senderDomains: ['adobe.com', 'mail.adobe.com'], defaultCategory: 'Productivity' },
+  { name: 'Google One', senderDomains: ['google.com'], defaultCategory: 'Utilities' },
+  { name: 'iCloud+', senderDomains: ['apple.com', 'icloud.com'], defaultCategory: 'Utilities' },
+  { name: 'ChatGPT Plus', senderDomains: ['openai.com'], defaultCategory: 'Productivity' },
+  { name: 'Claude Pro', senderDomains: ['anthropic.com'], defaultCategory: 'Productivity' },
+  { name: 'GitHub Copilot', senderDomains: ['github.com'], defaultCategory: 'Productivity' },
+  { name: 'Audible', senderDomains: ['audible.com', 'audible.in'], defaultCategory: 'Entertainment' },
+  { name: "Gold's Gym", senderDomains: ['goldsgym.com'], defaultCategory: 'Fitness' },
+  { name: 'Cult.fit', senderDomains: ['cult.fit', 'curefit.com'], defaultCategory: 'Fitness' },
+  { name: 'Strava', senderDomains: ['strava.com'], defaultCategory: 'Fitness' },
+  { name: 'MyFitnessPal', senderDomains: ['myfitnesspal.com'], defaultCategory: 'Fitness' },
+  { name: 'AWS', senderDomains: ['aws.amazon.com', 'amazon.com'], defaultCategory: 'Utilities' },
+  { name: 'DigitalOcean', senderDomains: ['digitalocean.com'], defaultCategory: 'Utilities' }
+];

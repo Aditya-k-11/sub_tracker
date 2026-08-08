@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager-webhook-logger
+  namespace: observability
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alertmanager-webhook-logger
+  template:
+    metadata:
+      labels:
+        app: alertmanager-webhook-logger
+    spec:
+      containers:
+        - name: logger
+          image: alertmanager-webhook-logger:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080

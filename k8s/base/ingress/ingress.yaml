@@ -11,10 +11,6 @@ spec:
   rules:
     - http:
         paths:
-          # IMPORTANT: Order matters! 
-          # /api must come before / to ensure it doesn't get swallowed by the catch-all.
-          # Note: This Ingress routes /api traffic directly to the backend Service,
-          # completely bypassing the frontend's own Nginx proxy_pass rules.
           - path: /api
             pathType: Prefix
             backend:

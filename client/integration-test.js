@@ -13,8 +13,7 @@ async function runTest() {
 
   const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
   const page = await browser.newPage();
-  
-  // Set viewport to desktop size
+
   await page.setViewport({ width: 1280, height: 800 });
 
   try {
@@ -32,12 +31,12 @@ async function runTest() {
     await page.waitForSelector('input[name="password"]');
     await page.type('input[name="name"]', 'Test User');
     await page.type('input[name="email"]', 'test@test.com');
-    await page.type('input[name="password"]', '123'); // too short
+    await page.type('input[name="password"]', '123'); 
     await page.click('button[type="submit"]');
     await page.waitForSelector('.text-red-600, .bg-red-50', { timeout: 3000 });
     pass('Register with short password — confirm validation error shows clearly');
 
-    await page.type('input[name="password"]', '456789'); // Make it valid (123456789)
+    await page.type('input[name="password"]', '456789'); 
     await page.click('button[type="submit"]');
     await page.waitForFunction('window.location.pathname === "/"', { timeout: 5000 });
     const navText = await page.evaluate(() => document.body.innerText);
@@ -81,7 +80,6 @@ async function runTest() {
       fail('Wrong backend error: ' + errorText);
     }
 
-    // Log in properly again
     await page.type('input[name="email"]', '', { clickCount: 3 }); await page.keyboard.press('Backspace');
     await page.type('input[name="password"]', '', { clickCount: 3 }); await page.keyboard.press('Backspace');
     await page.type('input[name="email"]', 'test@test.com');
@@ -91,7 +89,7 @@ async function runTest() {
 
     console.log('--- Subscription List & Empty State ---');
     await page.goto(`${BASE_URL}/subscriptions`);
-    await page.waitForSelector('h3'); // Empty state title
+    await page.waitForSelector('h3'); 
     const emptyStateText = await page.evaluate(() => document.body.innerText);
     if (emptyStateText.includes('No subscriptions yet')) {
       pass('Go to /subscriptions with zero subscriptions — EmptyState shows correctly');
@@ -116,17 +114,16 @@ async function runTest() {
     await page.waitForSelector('.text-red-500', { timeout: 2000 });
     pass('Submit empty name — inline validation blocks, no network request');
 
-    // Fill valid subscription
     await page.type('input[name="name"]', 'Netflix');
     await page.type('input[name="cost"]', '499');
-    await page.type('input[name="nextRenewalDate"]', '12122026'); // Valid future date (depending on locale formatting, usually MMDDYYYY or DDMMYYYY in chromium)
+    await page.type('input[name="nextRenewalDate"]', '12122026'); 
     await page.evaluate(() => { document.querySelector('input[name="nextRenewalDate"]').value = '2026-12-12'; });
     await page.click('button[type="submit"]');
-    await page.waitForSelector('.bg-green-600', { timeout: 3000 }); // Toast
+    await page.waitForSelector('.bg-green-600', { timeout: 3000 }); 
     pass('Fill valid monthly subscription — modal closes, toast appears, card appears');
 
     await page.waitForTimeout(1000);
-    // Add Trial Subscription
+    
     const [addBtn2] = await page.$x("//button[contains(., 'Add Subscription')]");
     await addBtn2.click();
     await page.waitForSelector('form');
@@ -136,7 +133,7 @@ async function runTest() {
     await page.click('input[name="isTrial"]');
     await page.evaluate(() => { document.querySelector('input[name="trialEndDate"]').value = '2026-12-15'; });
     await page.click('button[type="submit"]');
-    await page.waitForSelector('.bg-purple-100', { timeout: 3000 }); // Trial badge
+    await page.waitForSelector('.bg-purple-100', { timeout: 3000 }); 
     const subText = await page.evaluate(() => document.body.innerText);
     if (subText.includes('TRIAL') && subText.includes('Trial ends in')) {
       pass('Add trial subscription — displays purple trial badge and Trial ends in text');
@@ -145,13 +142,13 @@ async function runTest() {
     }
 
     await page.waitForTimeout(1000);
-    // Add Past Renewal Subscription
+    
     const [addBtn3] = await page.$x("//button[contains(., 'Add Subscription')]");
     await addBtn3.click();
     await page.waitForSelector('form');
     await page.type('input[name="name"]', 'Gym');
     await page.type('input[name="cost"]', '1000');
-    await page.evaluate(() => { document.querySelector('input[name="nextRenewalDate"]').value = '2020-01-01'; }); // Past date
+    await page.evaluate(() => { document.querySelector('input[name="nextRenewalDate"]').value = '2020-01-01'; }); 
     await page.click('button[type="submit"]');
     await page.waitForSelector('.text-red-600', { timeout: 3000 }); 
     const subText2 = await page.evaluate(() => document.body.innerText);
@@ -162,7 +159,7 @@ async function runTest() {
     }
 
     await page.waitForTimeout(1000);
-    // Add 2 more
+    
     for(let i=0; i<2; i++) {
       const [ab] = await page.$x("//button[contains(., 'Add Subscription')]");
       await ab.click();
@@ -175,7 +172,6 @@ async function runTest() {
     }
     pass('Add 2 more subscriptions for a total of 5');
 
-
     console.log('--- Edit Flow ---');
     const [editBtn] = await page.$x("//button[contains(., 'Edit')]");
     await editBtn.click();
@@ -187,20 +183,20 @@ async function runTest() {
       fail('Modal did not pre-fill');
     }
 
-    await page.type('input[name="cost"]', '0'); // change cost
+    await page.type('input[name="cost"]', '0'); 
     await page.click('button[type="submit"]');
     await page.waitForSelector('.bg-green-600', { timeout: 3000 });
     pass('Change cost and save — card updates correctly');
 
     await page.waitForTimeout(1000);
     const [editTrialBtn] = await page.$x(`//div[contains(., "Spotify")]/following-sibling::div//button[contains(., "Edit")]`);
-    // Wait, Spotify has a trial badge. Let's just find the card with TRIAL badge and click Edit.
+    
     await page.evaluate(() => {
       const trialBadge = Array.from(document.querySelectorAll('span')).find(s => s.innerText === 'TRIAL');
       trialBadge.closest('div.bg-white').querySelector('button:nth-child(2)').click();
     });
     await page.waitForSelector('form');
-    await page.click('input[name="isTrial"]'); // uncheck
+    await page.click('input[name="isTrial"]'); 
     await page.click('button[type="submit"]');
     await page.waitForTimeout(1000);
     const finalPageText = await page.evaluate(() => document.body.innerText);
@@ -209,7 +205,6 @@ async function runTest() {
     } else {
       fail('Failed to revert trial badge');
     }
-
 
     console.log('--- Usage Logging Flow ---');
     await page.evaluate(() => {
@@ -235,7 +230,6 @@ async function runTest() {
     await page.click('button[type="submit"]');
     pass('Log usage 2 more times (1 with note, 1 without)');
 
-    // Verify via Axios
     const token = await page.evaluate(() => localStorage.getItem('subtrack_token'));
     const subRes = await axios.get(`${API_URL}/subscriptions`, { headers: { Authorization: `Bearer ${token}` } });
     const firstSubId = subRes.data.subscriptions[0]._id;
@@ -246,12 +240,11 @@ async function runTest() {
       fail('Axios verified logs count is ' + usageRes.data.count);
     }
 
-
     console.log('--- Cancel Flow ---');
     await page.evaluate(() => {
       Array.from(document.querySelectorAll('button')).find(b => b.innerText === 'Cancel').click();
     });
-    await page.waitForSelector('div.fixed'); // Modal
+    await page.waitForSelector('div.fixed'); 
     const modalText = await page.evaluate(() => document.body.innerText);
     if (modalText.includes('Are you sure you want to cancel')) {
       pass('Click Cancel on active subscription — ConfirmDialog opens');
@@ -286,7 +279,6 @@ async function runTest() {
       fail('Soft delete verification failed');
     }
 
-
     console.log('--- Error Resilience ---');
     await page.setRequestInterception(true);
     page.on('request', request => {
@@ -307,7 +299,7 @@ async function runTest() {
     }
 
     await page.setRequestInterception(false);
-    // Remove interceptor
+    
     page.removeAllListeners('request');
 
     await page.click('button:contains("Retry"), button.bg-red-600');
@@ -343,7 +335,6 @@ async function runTest() {
     await page.click('button[type="submit"]');
     await page.waitForSelector('.bg-green-600', { timeout: 3000 });
     pass('Retry form submission — now succeeds');
-
 
     console.log('--- Session Edge Case ---');
     await page.evaluate(() => localStorage.removeItem('subtrack_token'));

@@ -19,8 +19,7 @@ export const daysUntil = (dateString) => {
   if (!dateString) return 0;
   const target = new Date(dateString);
   const now = new Date();
-  
-  // Set both times to midnight to get whole days
+
   target.setHours(0, 0, 0, 0);
   now.setHours(0, 0, 0, 0);
   

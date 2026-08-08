@@ -47,12 +47,17 @@ spec:
             - name: config-volume
               mountPath: /etc/prometheus/prometheus.yml
               subPath: prometheus.yml
+            - name: rules-volume
+              mountPath: /etc/prometheus/rules
             - name: data-volume
               mountPath: /prometheus
       volumes:
         - name: config-volume
           configMap:
             name: prometheus-config
+        - name: rules-volume
+          configMap:
+            name: prometheus-rules
         - name: data-volume
           persistentVolumeClaim:
             claimName: prometheus-data-pvc

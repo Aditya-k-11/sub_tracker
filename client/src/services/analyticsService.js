@@ -1,7 +1,5 @@
 import apiClient from './apiClient';
 
-
-
 export const getSpendSummary = async () => {
   const response = await apiClient.get('/analytics/summary');
   return response.data;
@@ -36,5 +34,4 @@ export const markAllNotificationsRead = async () => {
   const response = await apiClient.patch('/notifications/read-all');
   return response.data;
 };
-
 

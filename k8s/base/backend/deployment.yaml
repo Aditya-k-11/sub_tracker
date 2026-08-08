@@ -7,19 +7,12 @@ metadata:
     app: subtrack
     component: backend
 spec:
-  # replicas intentionally omitted — managed by backend/hpa.yaml (D.3); 
-  # a fixed value here would conflict with HPA's live scaling and cause GitOps sync flapping against HPA's decisions
 
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
-      # maxUnavailable: 0 ensures Kubernetes NEVER takes down an existing pod until its replacement is up and ready.
-      # Combined with maxSurge: 1, a rollout briefly runs 3 pods (2 old + 1 new), waits for the new one to pass readiness, 
-      # removes 1 old pod, and repeats. Capacity never drops below 2.
       maxUnavailable: 0
-  # minReadySeconds adds an extra 10s buffer AFTER a new pod passes readiness before considering it "available".
-  # This makes rollouts slightly slower but gives much higher confidence that each new pod is genuinely stable.
   minReadySeconds: 10
   selector:
     matchLabels:
@@ -46,19 +39,12 @@ spec:
             - name: backend-logs
               mountPath: /app/logs
           resources:
-            # Tuned for HPA scaling (D.2):
-            # - Observed idle CPU: ~8m, memory: ~95Mi
-            # - Observed peak CPU under heavy k6 load: ~58m
-            # requests.cpu is set to 25m to give a solid baseline for percentage scaling (idle is ~30%).
-            # limits are set to 100m to allow enough headroom for fast Node.js startup without severe throttling.
             requests:
               memory: "128Mi"
               cpu: "25m"
             limits:
               memory: "256Mi"
               cpu: "100m"
-          # Liveness and Readiness are deliberately split to decouple "is the app stuck" from "is the DB temporarily down".
-          # Liveness failing restarts the pod (for deadlocks). Readiness failing stops traffic (for DB blips).
           livenessProbe:
             httpGet:
               path: /api/health/live

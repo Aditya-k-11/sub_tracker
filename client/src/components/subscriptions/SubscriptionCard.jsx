@@ -1,6 +1,8 @@
 import React from 'react';
 import Badge from '../common/Badge';
 import { formatCurrency, daysUntil, billingCycleLabel } from '../../utils/formatters';
+import { motion } from 'framer-motion';
+import Button from '../common/Button';
 
 const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage }) => {
   const { 
@@ -18,8 +20,7 @@ const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage }) => {
   } = subscription;
 
   const displayStatus = isTrial ? 'trial' : status;
-  
-  // Logic for renewal/trial days
+
   let renewalText = '';
   let isOverdue = false;
 
@@ -46,7 +47,10 @@ const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage }) => {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition flex flex-col h-full">
+    <motion.div 
+      whileHover={{ y: -4 }}
+      className="bg-white/90 border border-white/40 shadow-xl shadow-primary-900/5 rounded-2xl p-5 flex flex-col h-full"
+    >
       <div className="flex justify-between items-start mb-2">
         <h3 className="text-lg font-bold text-gray-900 truncate pr-2">{name}</h3>
         <Badge text={displayStatus.toUpperCase()} variant={displayStatus} />
@@ -63,30 +67,33 @@ const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage }) => {
         </span>
       </div>
 
-      <div className="mt-auto pt-4 border-t border-gray-100 flex justify-end space-x-2">
-        <button 
+      <div className="mt-auto pt-4 border-t border-gray-100/50 flex justify-end space-x-2">
+        <Button 
+          variant="secondary"
+          size="sm"
           onClick={() => onLogUsage(_id)}
-          className="text-xs font-medium text-primary-600 bg-primary-50 px-3 py-1.5 rounded hover:bg-primary-100 transition"
         >
           Log Usage
-        </button>
-        <button 
+        </Button>
+        <Button 
+          variant="secondary"
+          size="sm"
           onClick={() => onEdit(subscription)}
-          className="text-xs font-medium text-gray-600 bg-gray-100 px-3 py-1.5 rounded hover:bg-gray-200 transition"
         >
           Edit
-        </button>
+        </Button>
         {status !== 'cancelled' && (
-          <button 
+          <Button 
+            variant="danger"
+            size="sm"
             onClick={() => onCancel(_id)}
-            className="text-xs font-medium text-red-600 bg-red-50 px-3 py-1.5 rounded hover:bg-red-100 transition"
           >
             Cancel
-          </button>
+          </Button>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-export default SubscriptionCard;
+export default React.memo(SubscriptionCard);

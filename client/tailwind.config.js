@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
@@ -60,14 +59,28 @@ export default {
           950: '#450a0a',
         }
       },
+      boxShadow: {
+        'glow-primary': '0 0 15px -3px rgba(59, 130, 246, 0.4), 0 4px 6px -4px rgba(59, 130, 246, 0.4)',
+        'glow-danger': '0 0 15px -3px rgba(239, 68, 68, 0.4), 0 4px 6px -4px rgba(239, 68, 68, 0.4)',
+      },
       keyframes: {
         'fade-in-up': {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'gradient-shift': {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
+        'float': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
         }
       },
       animation: {
         'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
+        'gradient-shift': 'gradient-shift 15s ease infinite',
+        'float': 'float 10s ease-in-out infinite',
       }
     },
   },

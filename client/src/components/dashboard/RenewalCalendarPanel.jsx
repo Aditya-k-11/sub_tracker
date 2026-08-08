@@ -2,24 +2,23 @@ import React from 'react';
 import NotificationPanel from './NotificationPanel';
 import EmptyState from '../common/EmptyState';
 import { CalendarClock } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const RenewalCalendarPanel = ({ notifications }) => {
-  // Focus on upcoming and unread entries, filtering out very old ones if needed
-  // For now, we'll display what the backend provided, maybe prioritizing unread
-  
+
   if (!notifications || notifications.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 h-full flex flex-col items-center justify-center text-center">
+      <motion.div whileHover={{ y: -4 }} className="bg-white/90 rounded-2xl shadow-xl shadow-primary-900/5 border border-white/40 p-8 h-full flex flex-col items-center justify-center text-center">
         <CalendarClock size={32} className="text-gray-300 mb-3" />
         <h3 className="text-lg font-medium text-gray-900 mb-1">Nothing renewing soon</h3>
         <p className="text-sm text-gray-500">You're all caught up on your subscriptions.</p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full overflow-hidden">
-      <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/30">
+    <motion.div whileHover={{ y: -4 }} className="bg-white/90 rounded-2xl shadow-xl shadow-primary-900/5 border border-white/40 flex flex-col h-full overflow-hidden">
+      <div className="px-6 py-5 border-b border-gray-100/50 bg-gray-50/30">
         <h3 className="text-xs uppercase tracking-wide text-gray-500 font-semibold flex items-center">
           <CalendarClock size={16} className="mr-2" />
           Upcoming Renewals & Trials
@@ -61,8 +60,8 @@ const RenewalCalendarPanel = ({ notifications }) => {
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-export default RenewalCalendarPanel;
+export default React.memo(RenewalCalendarPanel);

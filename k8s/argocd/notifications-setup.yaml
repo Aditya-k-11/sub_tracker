@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argocd-notifications-secret
+  namespace: argocd
+type: Opaque
+stringData:
+  email-username: "adityakanojia.ad@gmail.com"
+  email-password: "qxdwmknqjivwpygk"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+data:
+  service.email: |
+    username: $email-username
+    password: $email-password
+    host: smtp.gmail.com
+    port: 465
+    from: $email-username
+
+  template.app-deployed: |
+    email:
+      subject: "✅ SubTrack Deployed: {{.app.metadata.name}}"
+    message: |
+      The application {{.app.metadata.name}} has been successfully deployed and synced.
+      State: {{.app.status.sync.status}}
+      Health: {{.app.status.health.status}}
+
+  template.app-crashed: |
+    email:
+      subject: "🚨 SubTrack Alert: {{.app.metadata.name}} is Degraded!"
+    message: |
+      The application {{.app.metadata.name}} has experienced an issue.
+      State: {{.app.status.sync.status}}
+      Health: {{.app.status.health.status}}
+      
+      Please check the ArgoCD dashboard for more details.
+
+  trigger.on-deployed: |
+    - description: Application is synced and healthy
+      send:
+      - app-deployed
+      when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy'
+  
+  trigger.on-crashed: |
+    - description: Application health is degraded
+      send:
+      - app-crashed
+      when: app.status.health.status == 'Degraded'

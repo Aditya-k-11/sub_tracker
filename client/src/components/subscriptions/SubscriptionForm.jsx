@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Button from '../common/Button';
 
 const CATEGORIES = ['Entertainment', 'Fitness', 'Productivity', 'Utilities', 'Other'];
 
@@ -203,22 +204,20 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
         </div>
       )}
 
-      <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
-        <button 
-          type="button" 
+      <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200/50">
+        <Button 
+          variant="secondary"
           onClick={onCancel}
           disabled={submitting}
-          className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded font-medium transition"
         >
           Cancel
-        </button>
-        <button 
+        </Button>
+        <Button 
           type="submit"
-          disabled={submitting}
-          className={`px-4 py-2 text-white bg-primary-600 hover:bg-primary-700 rounded font-medium transition flex items-center ${submitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+          loading={submitting}
         >
-          {submitting ? 'Saving...' : (isEdit ? 'Save Changes' : 'Create Subscription')}
-        </button>
+          {isEdit ? 'Save Changes' : 'Create Subscription'}
+        </Button>
       </div>
     </form>
   );

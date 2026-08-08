@@ -4,8 +4,6 @@ metadata:
   name: kube-state-metrics
   namespace: observability
 ---
-# A ClusterRole is necessary here because node-level data is not namespace-scoped.
-# However, the resources are deliberately kept minimal to just what we need for this dashboard.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:

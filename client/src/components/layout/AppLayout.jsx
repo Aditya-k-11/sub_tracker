@@ -1,17 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import AnimatedBackground from '../common/AnimatedBackground';
 import { useAuth } from '../../context/AuthContext';
 import { getNotifications, markNotificationRead, markAllNotificationsRead } from '../../services/analyticsService';
 import NotificationBell from '../dashboard/NotificationBell';
 import NotificationPanel from '../dashboard/NotificationPanel';
+import Button from '../common/Button';
 
 const AppLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [notifLoading, setNotifLoading] = useState(false);
+
+  const navLinks = [
+    { path: '/', label: 'Dashboard' },
+    { path: '/subscriptions', label: 'Subscriptions' },
+    { path: '/settings', label: 'Settings' }
+  ];
 
   const fetchNotifications = async () => {
     if (!user) return;
@@ -58,8 +68,9 @@ const AppLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-transparent relative">
+      <AnimatedBackground />
+      <header className="bg-white/95 border-b border-gray-200/50 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex-shrink-0 flex items-center space-x-2">
@@ -67,9 +78,24 @@ const AppLayout = () => {
               <span className="bg-primary-100 text-primary-700 text-xs font-semibold px-2 py-0.5 rounded">v1.0.1</span>
             </div>
             
-            <nav className="flex items-center space-x-6">
-              <Link to="/" className="text-gray-600 hover:text-primary-600 font-medium">Dashboard</Link>
-              <Link to="/subscriptions" className="text-gray-600 hover:text-primary-600 font-medium">Subscriptions</Link>
+            <nav className="flex items-center space-x-6 relative">
+              {navLinks.map((link) => (
+                <Link 
+                  key={link.path}
+                  to={link.path} 
+                  className={`relative px-3 py-2 text-sm font-medium transition-colors ${location.pathname === link.path ? 'text-primary-600' : 'text-gray-600 hover:text-primary-600'}`}
+                >
+                  {link.label}
+                  {location.pathname === link.path && (
+                    <motion.div
+                      layoutId="navbar-indicator"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-600 rounded-t-full"
+                      initial={false}
+                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              ))}
               
               <div className="flex items-center space-x-4 border-l border-gray-200 pl-6 ml-2">
                 {user ? (
@@ -98,12 +124,13 @@ const AppLayout = () => {
                       )}
                     </div>
                     <span className="text-sm text-gray-700">Hi, {user.name}</span>
-                    <button 
+                    <Button 
+                      variant="ghost"
+                      size="sm"
                       onClick={handleLogout}
-                      className="text-sm text-gray-500 hover:text-primary-600 transition"
                     >
                       Log out
-                    </button>
+                    </Button>
                   </>
                 ) : (
                   <>

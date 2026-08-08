@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Spinner = ({ size = 'md' }) => {
+const Spinner = ({ size = 'md', colorClass = 'border-t-primary-600' }) => {
   const sizeClasses = {
     sm: 'w-4 h-4 border-2',
     md: 'w-8 h-8 border-3',
@@ -10,7 +10,7 @@ const Spinner = ({ size = 'md' }) => {
   return (
     <div className="flex justify-center items-center">
       <div 
-        className={`${sizeClasses[size]} rounded-full border-gray-200 border-t-primary-600 animate-spin`}
+        className={`${sizeClasses[size]} rounded-full border-gray-200 ${colorClass} animate-spin`}
       />
     </div>
   );

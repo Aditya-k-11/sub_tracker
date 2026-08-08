@@ -1,0 +1,111 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-rules
+  namespace: observability
+data:
+  subtrack-slo-alerts.yml: |
+    groups:
+      - name: subtrack-availability-burn-rate
+        rules:
+          - alert: SubTrackAvailabilityFastBurn
+            expr: |
+              (
+                (1 - (
+                  sum(rate(subtrack_http_requests_total{status_code!~"5.."}[5m]))
+                  /
+                  sum(rate(subtrack_http_requests_total[5m]))
+                )) / 0.001
+              ) > 14.4
+              and
+              (
+                (1 - (
+                  sum(rate(subtrack_http_requests_total{status_code!~"5.."}[1h]))
+                  /
+                  sum(rate(subtrack_http_requests_total[1h]))
+                )) / 0.001
+              ) > 14.4
+            for: 2m
+            labels:
+              severity: critical
+              slo: availability
+            annotations:
+              summary: "SubTrack availability burning fast — budget will exhaust in ~2 days at this rate"
+              description: "Both 5m and 1h burn rates exceed 14.4x sustainable rate. These numbers (14.4) are standard SRE multipliers that map directly to exhaustion time."
+
+          - alert: SubTrackAvailabilitySlowBurn
+            expr: |
+              (
+                (1 - (
+                  sum(rate(subtrack_http_requests_total{status_code!~"5.."}[30m]))
+                  /
+                  sum(rate(subtrack_http_requests_total[30m]))
+                )) / 0.001
+              ) > 3
+              and
+              (
+                (1 - (
+                  sum(rate(subtrack_http_requests_total{status_code!~"5.."}[6h]))
+                  /
+                  sum(rate(subtrack_http_requests_total[6h]))
+                )) / 0.001
+              ) > 3
+            for: 15m
+            labels:
+              severity: warning
+              slo: availability
+            annotations:
+              summary: "SubTrack availability burning steadily — budget will exhaust in ~10 days at this rate"
+              description: "Both 30m and 6h burn rates exceed 3x sustainable rate."
+
+      - name: subtrack-latency-burn-rate
+        rules:
+          - alert: SubTrackLatencyFastBurn
+            expr: |
+              (
+                (1 - (
+                  sum(rate(subtrack_http_request_duration_seconds_bucket{le="0.5"}[5m]))
+                  /
+                  sum(rate(subtrack_http_request_duration_seconds_count[5m]))
+                )) / 0.05
+              ) > 14.4
+              and
+              (
+                (1 - (
+                  sum(rate(subtrack_http_request_duration_seconds_bucket{le="0.5"}[1h]))
+                  /
+                  sum(rate(subtrack_http_request_duration_seconds_count[1h]))
+                )) / 0.05
+              ) > 14.4
+            for: 2m
+            labels:
+              severity: critical
+              slo: latency
+            annotations:
+              summary: "SubTrack latency burning fast — budget will exhaust in ~2 days at this rate"
+              description: "Both 5m and 1h burn rates exceed 14.4x sustainable rate."
+
+          - alert: SubTrackLatencySlowBurn
+            expr: |
+              (
+                (1 - (
+                  sum(rate(subtrack_http_request_duration_seconds_bucket{le="0.5"}[30m]))
+                  /
+                  sum(rate(subtrack_http_request_duration_seconds_count[30m]))
+                )) / 0.05
+              ) > 3
+              and
+              (
+                (1 - (
+                  sum(rate(subtrack_http_request_duration_seconds_bucket{le="0.5"}[6h]))
+                  /
+                  sum(rate(subtrack_http_request_duration_seconds_count[6h]))
+                )) / 0.05
+              ) > 3
+            for: 15m
+            labels:
+              severity: warning
+              slo: latency
+            annotations:
+              summary: "SubTrack latency burning steadily — budget will exhaust in ~10 days at this rate"
+              description: "Both 30m and 6h burn rates exceed 3x sustainable rate."

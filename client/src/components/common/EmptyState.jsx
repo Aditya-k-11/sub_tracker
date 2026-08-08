@@ -1,4 +1,5 @@
 import React from 'react';
+import Button from './Button';
 
 const EmptyState = ({ title, message, actionLabel, onAction }) => {
   return (
@@ -6,12 +7,9 @@ const EmptyState = ({ title, message, actionLabel, onAction }) => {
       <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
       <p className="text-gray-500 mb-6 max-w-md">{message}</p>
       {actionLabel && onAction && (
-        <button
-          onClick={onAction}
-          className="bg-primary-600 text-white px-4 py-2 rounded shadow-sm hover:bg-primary-700 transition"
-        >
+        <Button onClick={onAction}>
           {actionLabel}
-        </button>
+        </Button>
       )}
     </div>
   );

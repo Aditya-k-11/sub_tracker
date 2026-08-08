@@ -1,6 +1,3 @@
-# Local development cluster configuration
-# This file is used ONLY for local testing with kind and has no bearing on a real cloud cluster.
-# It configures the cluster nodes to map ports 80 and 443 so the Ingress controller can be reached from localhost.
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:

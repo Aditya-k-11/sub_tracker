@@ -1,5 +1,3 @@
-# This ConfigMap is for non-sensitive configuration only.
-# Credentials and sensitive values go in the Secret.
 apiVersion: v1
 kind: ConfigMap
 metadata:

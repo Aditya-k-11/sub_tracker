@@ -9,7 +9,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: git://host.docker.internal/subtrack
+    repoURL: https://github.com/Aditya-k-11/sub_tracker.git
     targetRevision: main
     path: k8s/base
   destination:

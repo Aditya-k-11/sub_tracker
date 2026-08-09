@@ -7,7 +7,7 @@ export default {
     extend: {
       colors: {
         brand: {
-          text: '#f76c2e', // Orange text
+          text: '#fed8fb', // Soft pink text (best contrast for deep purple background)
           bg: '#1c011a',
         },
         primary: {

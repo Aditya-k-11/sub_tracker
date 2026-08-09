@@ -17,15 +17,15 @@ const SpendingVelocityCard = ({ velocity }) => {
   const totalDays = daysElapsed + daysRemaining;
   const progressPercent = (daysElapsed / totalDays) * 100;
 
-  let trendColorClass = 'text-gray-500';
-  let gradientClass = 'from-white/80 to-white/60';
+  let trendColorClass = 'text-brand-text/70';
+  let gradientClass = 'from-white/10 to-white/5';
 
   if (trend === 'up') {
-    trendColorClass = 'text-amber-600';
-    gradientClass = 'from-amber-50/80 to-white/60';
+    trendColorClass = 'text-accent';
+    gradientClass = 'from-accent/20 to-white/5';
   } else if (trend === 'down') {
-    trendColorClass = 'text-green-600';
-    gradientClass = 'from-green-50/80 to-white/60';
+    trendColorClass = 'text-green-400';
+    gradientClass = 'from-green-500/20 to-white/5';
   }
 
   return (
@@ -33,12 +33,12 @@ const SpendingVelocityCard = ({ velocity }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className={`w-full rounded-2xl shadow-sm border border-white/50 backdrop-blur-xl p-6 mb-8 bg-gradient-to-br ${gradientClass}`}
+      className={`w-full rounded-2xl shadow-sm border border-white/10 backdrop-blur-xl p-6 mb-8 bg-gradient-to-br ${gradientClass}`}
     >
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="flex-1">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight mb-2">
-            You're on track to spend <span className="text-indigo-600">{formatCurrency(projectedMonthEnd)}</span> this month
+          <h2 className="text-3xl md:text-4xl font-bold text-brand-text tracking-tight mb-2">
+            You're on track to spend <span className="text-primary">{formatCurrency(projectedMonthEnd)}</span> this month
           </h2>
           
           <div className={`text-sm font-medium ${trendColorClass}`}>
@@ -47,19 +47,19 @@ const SpendingVelocityCard = ({ velocity }) => {
                 {Math.abs(percentChangeVsLastMonth)}% {trend === 'up' ? 'more' : trend === 'down' ? 'less' : 'about the same as'} than last month ({formatCurrency(lastMonthActual)})
               </span>
             ) : (
-              <span className="text-gray-500">Not enough history yet to compare to last month</span>
+              <span className="text-brand-text/70">Not enough history yet to compare to last month</span>
             )}
           </div>
         </div>
 
         <div className="w-full md:w-48 shrink-0">
-          <div className="flex justify-between text-xs text-gray-500 mb-1.5 font-medium">
+          <div className="flex justify-between text-xs text-brand-text/70 mb-1.5 font-medium">
             <span>{daysElapsed} days elapsed</span>
             <span>{totalDays} days total</span>
           </div>
-          <div className="w-full bg-gray-200/50 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
             <div 
-              className="bg-indigo-500 h-2 rounded-full transition-all duration-1000 ease-out" 
+              className="bg-primary h-2 rounded-full transition-all duration-1000 ease-out" 
               style={{ width: `${progressPercent}%` }}
             ></div>
           </div>

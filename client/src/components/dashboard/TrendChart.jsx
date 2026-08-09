@@ -18,9 +18,9 @@ const formatShortCurrency = (value, currencyCode = 'INR') => {
 const CustomTooltip = ({ active, payload, label, currencyCode }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-3 rounded-xl shadow-lg border border-gray-100 min-w-[120px]">
-        <p className="text-xs text-gray-500 mb-1 font-medium">{label}</p>
-        <p className="text-lg font-bold text-gray-900 tabular-nums">
+      <div className="bg-brand-bg p-3 rounded-xl shadow-lg border border-white/10 min-w-[120px]">
+        <p className="text-xs text-brand-text/70 mb-1 font-medium">{label}</p>
+        <p className="text-lg font-bold text-brand-text tabular-nums">
           {formatCurrency(payload[0].value, currencyCode)}
         </p>
       </div>
@@ -53,48 +53,48 @@ const TrendChart = ({ trend }) => {
   }
 
   return (
-    <motion.div whileHover={{ y: -4 }} className="bg-white/90 rounded-2xl shadow-xl shadow-primary-900/5 p-6 border border-white/40 h-full flex flex-col">
-      <h3 className="text-xs uppercase tracking-wide text-gray-500 mb-6 font-medium">Monthly Trend</h3>
+    <motion.div whileHover={{ y: -4 }} className="bg-white/5 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10 h-full flex flex-col">
+      <h3 className="text-xs uppercase tracking-wide text-brand-text/70 mb-6 font-medium">Monthly Trend</h3>
       
       <div className="flex-grow min-h-[220px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={displayTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorSpend" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#fa82fa" stopOpacity={0.25}/>
+                <stop offset="95%" stopColor="#fa82fa" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
             <XAxis 
               dataKey="month" 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fontSize: 12, fill: '#6b7280' }} 
+              tick={{ fontSize: 12, fill: 'rgba(254, 216, 251, 0.7)' }} 
               dy={10}
             />
             <YAxis 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fontSize: 12, fill: '#6b7280' }}
+              tick={{ fontSize: 12, fill: 'rgba(254, 216, 251, 0.7)' }}
               tickFormatter={(val) => formatShortCurrency(val, currencyCode)}
             />
             <Tooltip content={<CustomTooltip currencyCode={currencyCode} />} />
             <Area 
               type="monotone" 
               dataKey="totalSpend" 
-              stroke="#2563eb" 
+              stroke="#fa82fa" 
               strokeWidth={3}
               fillOpacity={1} 
               fill="url(#colorSpend)" 
-              activeDot={{ r: 6, strokeWidth: 0, fill: '#1d4ed8' }}
+              activeDot={{ r: 6, strokeWidth: 0, fill: '#f76c2e' }}
             />
           </AreaChart>
         </ResponsiveContainer>
       </div>
       
       {trend.length === 1 && (
-        <p className="text-xs text-gray-400 text-center mt-6">
+        <p className="text-xs text-brand-text/50 text-center mt-6">
           Trend builds up as more months of data are collected
         </p>
       )}

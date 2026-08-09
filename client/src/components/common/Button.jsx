@@ -22,17 +22,17 @@ const Button = ({
   };
 
   const variantClasses = {
-    primary: 'text-white bg-gradient-to-r from-primary-600 to-primary-500 hover:shadow-glow-primary border border-transparent',
-    secondary: 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50',
-    danger: 'text-white bg-gradient-to-r from-danger-600 to-danger-500 hover:shadow-glow-danger border border-transparent',
-    ghost: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 border border-transparent'
+    primary: 'text-brand-bg bg-gradient-to-r from-primary-600 to-primary hover:shadow-glow-primary border border-transparent',
+    secondary: 'text-brand-text bg-white/10 border border-white/20 hover:bg-white/20',
+    danger: 'text-brand-text bg-gradient-to-r from-secondary-600 to-secondary hover:shadow-glow-danger border border-transparent',
+    ghost: 'text-brand-text/70 hover:text-brand-text hover:bg-white/10 border border-transparent'
   };
 
   const spinnerColorClass = {
-    primary: 'border-t-white',
-    secondary: 'border-t-primary-600',
-    danger: 'border-t-white',
-    ghost: 'border-t-gray-600'
+    primary: 'border-t-brand-bg',
+    secondary: 'border-t-brand-text',
+    danger: 'border-t-brand-text',
+    ghost: 'border-t-brand-text/70'
   };
 
   const disabledClasses = disabled || loading ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer';

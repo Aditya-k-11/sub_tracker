@@ -17,13 +17,13 @@ const SummaryCards = ({ summary }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
         whileHover={{ y: -4 }}
-        className="bg-white/90 rounded-2xl shadow-xl shadow-primary-900/5 p-6 border border-white/40 flex flex-col justify-center"
+        className="bg-white/5 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10 flex flex-col justify-center"
       >
-        <h3 className="text-xs uppercase tracking-wide text-gray-500 mb-2 font-medium">Monthly Spend</h3>
-        <div className="text-4xl lg:text-5xl font-bold tabular-nums text-gray-900 mb-1">
+        <h3 className="text-xs uppercase tracking-wide text-brand-text/70 mb-2 font-medium">Monthly Spend</h3>
+        <div className="text-4xl lg:text-5xl font-bold tabular-nums text-brand-text mb-1">
           {formatCurrency(summary.totalMonthlySpend, user?.currency)}
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-brand-text/70">
           Yearly: {formatCurrency(summary.totalYearlySpend, user?.currency)}
         </p>
       </motion.div>
@@ -34,13 +34,13 @@ const SummaryCards = ({ summary }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         whileHover={{ y: -4 }}
-        className="bg-white/90 rounded-2xl shadow-xl shadow-primary-900/5 p-6 border border-white/40 relative overflow-hidden flex flex-col justify-center"
+        className="bg-white/5 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10 relative overflow-hidden flex flex-col justify-center"
       >
-        <div className="absolute top-6 right-6 bg-primary-50 p-3 rounded-full text-primary-600">
+        <div className="absolute top-6 right-6 bg-primary/20 p-3 rounded-full text-primary">
           <Layers size={24} />
         </div>
-        <h3 className="text-xs uppercase tracking-wide text-gray-500 mb-2 font-medium">Active Subscriptions</h3>
-        <div className="text-4xl font-bold tabular-nums text-gray-900">
+        <h3 className="text-xs uppercase tracking-wide text-brand-text/70 mb-2 font-medium">Active Subscriptions</h3>
+        <div className="text-4xl font-bold tabular-nums text-brand-text">
           {summary.activeSubscriptionCount}
         </div>
       </motion.div>
@@ -51,18 +51,18 @@ const SummaryCards = ({ summary }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
         whileHover={{ y: -4 }}
-        className="bg-white/90 rounded-2xl shadow-xl shadow-primary-900/5 p-6 border border-white/40 relative overflow-hidden flex flex-col justify-center"
+        className="bg-white/5 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10 relative overflow-hidden flex flex-col justify-center"
       >
-        <div className="absolute top-6 right-6 bg-purple-50 p-3 rounded-full text-purple-600">
+        <div className="absolute top-6 right-6 bg-accent/20 p-3 rounded-full text-accent">
           <Sparkles size={24} />
         </div>
-        <h3 className="text-xs uppercase tracking-wide text-gray-500 mb-2 font-medium">Active Trials</h3>
+        <h3 className="text-xs uppercase tracking-wide text-brand-text/70 mb-2 font-medium">Active Trials</h3>
         {summary.trialCount > 0 ? (
-          <div className="text-4xl font-bold tabular-nums text-gray-900">
+          <div className="text-4xl font-bold tabular-nums text-brand-text">
             {summary.trialCount}
           </div>
         ) : (
-          <div className="text-sm text-gray-500 mt-2">No active trials</div>
+          <div className="text-sm text-brand-text/70 mt-2">No active trials</div>
         )}
       </motion.div>
     </div>

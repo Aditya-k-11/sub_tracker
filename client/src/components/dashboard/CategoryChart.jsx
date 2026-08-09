@@ -5,22 +5,22 @@ import { useAuth } from '../../context/AuthContext';
 import { formatCurrency } from '../../utils/formatters';
 import EmptyState from '../common/EmptyState';
 
-const CHART_COLORS = ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#eff6ff'];
+const CHART_COLORS = ['#fa82fa', '#f76c2e', '#d750d7', '#e64f0b', '#fbc5fb', '#f9d2be'];
 
 const CategoryChart = ({ categories }) => {
   const { user } = useAuth();
   
   if (!categories || categories.length === 0) {
     return (
-      <motion.div whileHover={{ y: -4 }} className="bg-white/90 rounded-2xl shadow-xl shadow-primary-900/5 p-6 border border-white/40 h-full flex flex-col items-center justify-center">
+      <motion.div whileHover={{ y: -4 }} className="bg-white/5 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10 h-full flex flex-col items-center justify-center">
         <EmptyState title="No categories yet" message="Add subscriptions to see a breakdown" />
       </motion.div>
     );
   }
 
   return (
-    <motion.div whileHover={{ y: -4 }} className="bg-white/90 rounded-2xl shadow-xl shadow-primary-900/5 p-6 border border-white/40 h-full flex flex-col">
-      <h3 className="text-xs uppercase tracking-wide text-gray-500 mb-6 font-medium">Spend by Category</h3>
+    <motion.div whileHover={{ y: -4 }} className="bg-white/5 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10 h-full flex flex-col">
+      <h3 className="text-xs uppercase tracking-wide text-brand-text/70 mb-6 font-medium">Spend by Category</h3>
       
       <div className="h-48 sm:h-56 mb-6">
         <ResponsiveContainer width="100%" height="100%">
@@ -42,7 +42,7 @@ const CategoryChart = ({ categories }) => {
             </Pie>
             <Tooltip 
               formatter={(value) => formatCurrency(value, user?.currency)}
-              contentStyle={{ borderRadius: '12px', border: '1px solid #f3f4f6', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+              contentStyle={{ backgroundColor: '#1c011a', color: '#fed8fb', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.5)' }}
             />
           </PieChart>
         </ResponsiveContainer>
@@ -53,10 +53,10 @@ const CategoryChart = ({ categories }) => {
           <div key={cat.category} className="flex justify-between items-center text-sm">
             <div className="flex items-center space-x-3">
               <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: CHART_COLORS[idx % CHART_COLORS.length] }}></span>
-              <span className="text-gray-700 font-medium">{cat.category}</span>
-              <span className="text-xs text-gray-400">({cat.subscriptionCount})</span>
+              <span className="text-brand-text/90 font-medium">{cat.category}</span>
+              <span className="text-xs text-brand-text/50">({cat.subscriptionCount})</span>
             </div>
-            <span className="font-semibold text-gray-900">{formatCurrency(cat.monthlySpend, user?.currency)}</span>
+            <span className="font-semibold text-brand-text">{formatCurrency(cat.monthlySpend, user?.currency)}</span>
           </div>
         ))}
       </div>

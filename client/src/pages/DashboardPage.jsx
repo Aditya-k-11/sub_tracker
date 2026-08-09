@@ -92,22 +92,22 @@ const DashboardPage = () => {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         <div className="animate-pulse">
-          <div className="h-8 w-48 bg-gray-200 rounded mb-2"></div>
-          <div className="h-4 w-32 bg-gray-200 rounded"></div>
+          <div className="h-8 w-48 bg-white/10 rounded mb-2"></div>
+          <div className="h-4 w-32 bg-white/10 rounded"></div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[1, 2, 3].map(i => (
-            <div key={i} className="bg-white rounded-2xl h-[140px] border border-gray-100 shadow-sm animate-pulse"></div>
+            <div key={i} className="bg-white/5 rounded-2xl h-[140px] border border-white/10 shadow-sm animate-pulse"></div>
           ))}
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl h-[400px] border border-gray-100 shadow-sm animate-pulse"></div>
-          <div className="bg-white rounded-2xl h-[400px] border border-gray-100 shadow-sm animate-pulse"></div>
+          <div className="bg-white/5 rounded-2xl h-[400px] border border-white/10 shadow-sm animate-pulse"></div>
+          <div className="bg-white/5 rounded-2xl h-[400px] border border-white/10 shadow-sm animate-pulse"></div>
         </div>
         
-        <div className="bg-white rounded-2xl h-[200px] border border-gray-100 shadow-sm animate-pulse"></div>
+        <div className="bg-white/5 rounded-2xl h-[200px] border border-white/10 shadow-sm animate-pulse"></div>
       </div>
     );
   }
@@ -115,7 +115,7 @@ const DashboardPage = () => {
   if (error) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-red-50 border border-red-200 text-red-700 p-8 rounded-2xl text-center shadow-sm max-w-lg mx-auto">
+        <div className="bg-secondary/20 border border-secondary/30 text-secondary p-8 rounded-2xl text-center shadow-sm max-w-lg mx-auto">
           <p className="mb-6 font-medium">{error}</p>
           <Button 
             variant="danger"
@@ -141,8 +141,8 @@ const DashboardPage = () => {
       )}
       
       <div className="animate-fade-in-up" style={{ animationDelay: '0ms', animationFillMode: 'both' }}>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-1">Dashboard</h1>
-        <p className="text-sm text-gray-500">{today}</p>
+        <h1 className="text-3xl font-bold text-brand-text tracking-tight mb-1">Dashboard</h1>
+        <p className="text-sm text-brand-text/70">{today}</p>
       </div>
 
       <div className="animate-fade-in-up" style={{ animationDelay: '50ms', animationFillMode: 'both' }}>

@@ -16,12 +16,12 @@ const AnimatedBackground = React.memo(() => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden bg-gray-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden bg-brand-bg flex items-center justify-center">
       
       {}
       <div className="absolute inset-0 opacity-60">
         <motion.div
-          className="absolute top-[10%] left-[20%] w-[600px] h-[600px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary-300/40 via-primary-300/10 to-transparent"
+          className="absolute top-[10%] left-[20%] w-[600px] h-[600px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/30 via-primary/10 to-transparent"
           style={{ x: "-50%", y: "-50%" }}
           animate={{
             x: ["-50%", "-30%", "-60%", "-50%"],
@@ -31,7 +31,7 @@ const AnimatedBackground = React.memo(() => {
         />
         
         <motion.div
-          className="absolute top-[60%] left-[70%] w-[700px] h-[700px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-accent-300/30 via-accent-300/10 to-transparent"
+          className="absolute top-[60%] left-[70%] w-[700px] h-[700px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-accent/30 via-accent/10 to-transparent"
           style={{ x: "-50%", y: "-50%" }}
           animate={{
             x: ["-50%", "-70%", "-30%", "-50%"],
@@ -41,7 +41,7 @@ const AnimatedBackground = React.memo(() => {
         />
         
         <motion.div
-          className="absolute top-[80%] left-[20%] w-[500px] h-[500px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-warning-300/20 via-warning-300/5 to-transparent"
+          className="absolute top-[80%] left-[20%] w-[500px] h-[500px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-secondary/30 via-secondary/10 to-transparent"
           style={{ x: "-50%", y: "-50%" }}
           animate={{
             x: ["-50%", "-30%", "-60%", "-50%"],
@@ -51,7 +51,7 @@ const AnimatedBackground = React.memo(() => {
         />
         
         <motion.div
-          className="absolute top-[20%] left-[80%] w-[500px] h-[500px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-danger-300/20 via-danger-300/5 to-transparent"
+          className="absolute top-[20%] left-[80%] w-[500px] h-[500px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/30 via-primary/10 to-transparent"
           style={{ x: "-50%", y: "-50%" }}
           animate={{
             x: ["-50%", "-60%", "-40%", "-50%"],
@@ -61,7 +61,7 @@ const AnimatedBackground = React.memo(() => {
         />
         
         <motion.div
-          className="absolute top-[40%] left-[40%] w-[800px] h-[800px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary-200/30 via-primary-200/5 to-transparent"
+          className="absolute top-[40%] left-[40%] w-[800px] h-[800px] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-accent/20 via-accent/5 to-transparent"
           style={{ x: "-50%", y: "-50%" }}
           animate={{
             x: ["-50%", "-40%", "-60%", "-50%"],
@@ -76,7 +76,7 @@ const AnimatedBackground = React.memo(() => {
         {particles.map((p) => (
           <motion.div
             key={p.id}
-            className="absolute rounded-full bg-primary-500" 
+            className="absolute rounded-full bg-primary" 
             style={{
               width: p.size,
               height: p.size,

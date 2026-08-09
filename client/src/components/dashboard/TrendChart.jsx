@@ -79,7 +79,10 @@ const TrendChart = ({ trend }) => {
               tick={{ fontSize: 12, fill: 'rgba(254, 216, 251, 0.7)' }}
               tickFormatter={(val) => formatShortCurrency(val, currencyCode)}
             />
-            <Tooltip content={<CustomTooltip currencyCode={currencyCode} />} />
+            <Tooltip 
+              content={<CustomTooltip currencyCode={currencyCode} />} 
+              isAnimationActive={false}
+            />
             <Area 
               type="monotone" 
               dataKey="totalSpend" 
@@ -88,6 +91,9 @@ const TrendChart = ({ trend }) => {
               fillOpacity={1} 
               fill="url(#colorSpend)" 
               activeDot={{ r: 6, strokeWidth: 0, fill: '#f76c2e' }}
+              isAnimationActive={true}
+              animationDuration={1500}
+              animationEasing="ease-in-out"
             />
           </AreaChart>
         </ResponsiveContainer>

@@ -42,7 +42,7 @@ const CategoryChart = ({ categories }) => {
             </Pie>
             <Tooltip 
               formatter={(value) => formatCurrency(value, user?.currency)}
-              contentStyle={{ backgroundColor: '#1c011a', color: '#fed8fb', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.5)' }}
+              contentStyle={{ backgroundColor: '#1c011a', color: '#f76c2e', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.5)' }}
             />
           </PieChart>
         </ResponsiveContainer>

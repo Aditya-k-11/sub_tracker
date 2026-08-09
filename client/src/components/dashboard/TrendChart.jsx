@@ -70,13 +70,13 @@ const TrendChart = ({ trend }) => {
               dataKey="month" 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fontSize: 12, fill: 'rgba(254, 216, 251, 0.7)' }} 
+              tick={{ fontSize: 12, fill: 'rgba(247, 108, 46, 0.7)' }} 
               dy={10}
             />
             <YAxis 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fontSize: 12, fill: 'rgba(254, 216, 251, 0.7)' }}
+              tick={{ fontSize: 12, fill: 'rgba(247, 108, 46, 0.7)' }}
               tickFormatter={(val) => formatShortCurrency(val, currencyCode)}
             />
             <Tooltip content={<CustomTooltip currencyCode={currencyCode} />} />

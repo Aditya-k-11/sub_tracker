@@ -7,7 +7,7 @@ export default {
     extend: {
       colors: {
         brand: {
-          text: '#fed8fb',
+          text: '#f76c2e', // Orange text
           bg: '#1c011a',
         },
         primary: {

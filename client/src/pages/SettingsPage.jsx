@@ -128,15 +128,15 @@ const SettingsPage = () => {
       {toast && <Toast type={toast.type} message={toast.message} onClose={() => setToast(null)} />}
       
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+        <h1 className="text-2xl font-bold text-brand-text">Settings</h1>
       </div>
 
       <section>
-        <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Email Subscription Detection</h2>
-        <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+        <h2 className="text-xs font-bold text-brand-text/70 uppercase tracking-wider mb-4">Email Subscription Detection</h2>
+        <div className="bg-gradient-to-br from-brand-bg/90 via-primary/20 to-brand-bg/90 bg-[length:200%_200%] animate-gradient-shift backdrop-blur-md border border-white/10 shadow-xl shadow-primary/5 rounded-2xl p-6">
           {!gmailStatus?.connected ? (
             <div className="space-y-4">
-              <p className="text-gray-600">
+              <p className="text-brand-text/80">
                 Connect Gmail to automatically find subscriptions from your inbox — SubTrack only requests read-only access and never sends or modifies anything.
               </p>
               <Button
@@ -150,9 +150,9 @@ const SettingsPage = () => {
               <div>
                 <div className="flex items-center space-x-3 mb-1">
                   <Badge text="Connected" variant="connected" />
-                  <span className="text-sm font-medium text-gray-900">{gmailStatus.email}</span>
+                  <span className="text-sm font-medium text-brand-text">{gmailStatus.email}</span>
                 </div>
-                <p className="text-sm text-gray-500">Connected on {formatDate(gmailStatus.connectedAt)}</p>
+                <p className="text-sm text-brand-text/70">Connected on {formatDate(gmailStatus.connectedAt)}</p>
               </div>
               <div className="flex items-center space-x-3">
                 <Button
@@ -179,7 +179,7 @@ const SettingsPage = () => {
             <ScanningState />
           ) : suggestions.length > 0 ? (
             <div className="space-y-4">
-              <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Suggested Subscriptions</h2>
+              <h2 className="text-xs font-bold text-brand-text/70 uppercase tracking-wider mb-4">Suggested Subscriptions</h2>
               <AnimatePresence>
               {suggestions.map((suggestion, index) => (
                 <motion.div

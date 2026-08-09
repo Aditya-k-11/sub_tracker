@@ -46,7 +46,9 @@ const CategoryChart = ({ categories }) => {
             <Tooltip 
               formatter={(value) => formatCurrency(value, user?.currency)}
               contentStyle={{ backgroundColor: '#1c011a', color: '#fed8fb', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.5)' }}
-              isAnimationActive={false}
+              isAnimationActive={true}
+              animationDuration={300}
+              animationEasing="ease-out"
             />
           </PieChart>
         </ResponsiveContainer>

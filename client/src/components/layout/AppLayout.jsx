@@ -74,7 +74,7 @@ const AppLayout = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex-shrink-0 flex items-center space-x-2">
-              <Link to="/" className="text-xl font-bold text-primary">SubTrack</Link>
+              <Link to="/" className="text-xl font-bold text-accent">SubTrack</Link>
               <span className="bg-primary/20 text-primary text-xs font-semibold px-2 py-0.5 rounded">v1.0.1</span>
             </div>
             

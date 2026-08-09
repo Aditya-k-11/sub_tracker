@@ -49,25 +49,25 @@ const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage }) => {
   return (
     <motion.div 
       whileHover={{ y: -4 }}
-      className="bg-white/90 border border-white/40 shadow-xl shadow-primary-900/5 rounded-2xl p-5 flex flex-col h-full"
+      className="bg-gradient-to-br from-brand-bg/90 via-primary/20 to-brand-bg/90 bg-[length:200%_200%] animate-gradient-shift backdrop-blur-md border border-white/10 shadow-xl shadow-primary/5 rounded-2xl p-5 flex flex-col h-full"
     >
       <div className="flex justify-between items-start mb-2">
-        <h3 className="text-lg font-bold text-gray-900 truncate pr-2">{name}</h3>
+        <h3 className="text-lg font-bold text-brand-text truncate pr-2">{name}</h3>
         <Badge text={displayStatus.toUpperCase()} variant={displayStatus} />
       </div>
       
-      <div className="text-gray-500 text-sm mb-4">
-        <span className="font-medium text-gray-700">{formatCurrency(cost, currency)}</span> / {billingCycleLabel(billingCycle, billingCycleInterval)}
+      <div className="text-brand-text/70 text-sm mb-4">
+        <span className="font-medium text-brand-text">{formatCurrency(cost, currency)}</span> / {billingCycleLabel(billingCycle, billingCycleInterval)}
       </div>
       
-      <div className="mb-4 text-sm text-gray-500 flex items-center justify-between">
-        <span className="bg-gray-100 px-2 py-1 rounded text-xs">{category}</span>
-        <span className={`font-medium text-xs ${isOverdue ? 'text-red-600' : 'text-gray-600'}`}>
+      <div className="mb-4 text-sm text-brand-text/70 flex items-center justify-between">
+        <span className="bg-white/10 text-brand-text px-2 py-1 rounded text-xs">{category}</span>
+        <span className={`font-medium text-xs ${isOverdue ? 'text-secondary' : 'text-brand-text/70'}`}>
           {renewalText}
         </span>
       </div>
 
-      <div className="mt-auto pt-4 border-t border-gray-100/50 flex justify-end space-x-2">
+      <div className="mt-auto pt-4 border-t border-white/10 flex justify-end space-x-2">
         <Button 
           variant="secondary"
           size="sm"

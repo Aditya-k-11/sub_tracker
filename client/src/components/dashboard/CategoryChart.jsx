@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { formatCurrency } from '../../utils/formatters';
 import EmptyState from '../common/EmptyState';
 
-const CHART_COLORS = ['#fa82fa', '#f76c2e', '#d750d7', '#e64f0b', '#fbc5fb', '#f9d2be'];
+const CHART_COLORS = ['#e64f0b', '#f76c2e', '#f9d2be', '#fa82fa', '#d750d7', '#fbc5fb'];
 
 const CategoryChart = ({ categories }) => {
   const { user } = useAuth();

@@ -61,8 +61,8 @@ const TrendChart = ({ trend }) => {
           <AreaChart data={displayTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorSpend" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#fa82fa" stopOpacity={0.25}/>
-                <stop offset="95%" stopColor="#fa82fa" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#e64f0b" stopOpacity={0.25}/>
+                <stop offset="95%" stopColor="#e64f0b" stopOpacity={0}/>
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
@@ -83,7 +83,7 @@ const TrendChart = ({ trend }) => {
             <Area 
               type="monotone" 
               dataKey="totalSpend" 
-              stroke="#fa82fa" 
+              stroke="#e64f0b" 
               strokeWidth={3}
               fillOpacity={1} 
               fill="url(#colorSpend)" 

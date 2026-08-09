@@ -178,7 +178,7 @@ const SubscriptionsPage = () => {
       )}
 
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Your Subscriptions</h1>
+        <h1 className="text-3xl font-bold text-brand-text">Your Subscriptions</h1>
         <Button onClick={handleAddClick}>
           Add Subscription
         </Button>

@@ -7,7 +7,7 @@ const NotificationBell = ({ unreadCount, onClick }) => {
   return (
     <button 
       onClick={onClick}
-      className="relative p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-full transition focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+      className="relative p-2 text-accent hover:text-accent/80 hover:bg-white/10 rounded-full transition focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
       aria-label="View notifications"
     >
       <Bell size={20} />

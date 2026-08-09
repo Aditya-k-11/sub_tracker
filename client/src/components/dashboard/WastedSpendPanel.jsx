@@ -29,7 +29,7 @@ const WastedSpendPanel = ({ flagged, potentialSavings, onUsageLogged, submitting
         <div>
           <h3 className="text-xs uppercase tracking-wide text-secondary font-bold mb-1">Potential Wasted Spend</h3>
           <div className="text-2xl sm:text-3xl font-bold text-brand-text flex items-center tracking-tight">
-            <AlertCircle className="mr-3 text-secondary" size={28} />
+            <AlertCircle className="mr-3 text-accent" size={28} />
             {formatCurrency(potentialSavings, user?.currency)} <span className="text-sm font-normal text-secondary ml-2 mt-1">/ month</span>
           </div>
         </div>

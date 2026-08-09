@@ -36,7 +36,7 @@ const SummaryCards = ({ summary }) => {
         whileHover={{ y: -4 }}
         className="bg-white/5 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10 relative overflow-hidden flex flex-col justify-center"
       >
-        <div className="absolute top-6 right-6 bg-primary/20 p-3 rounded-full text-primary">
+        <div className="absolute top-6 right-6 bg-accent/20 p-3 rounded-full text-accent">
           <Layers size={24} />
         </div>
         <h3 className="text-xs uppercase tracking-wide text-brand-text/70 mb-2 font-medium">Active Subscriptions</h3>

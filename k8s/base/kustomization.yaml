@@ -5,7 +5,7 @@ namespace: subtrack
 resources:
   - namespace.yaml
   - configmap.yaml
-  - secret.yaml
+  - sealed-secret.yaml
   - mongo/pvc.yaml
   - mongo/deployment.yaml
   - mongo/service.yaml

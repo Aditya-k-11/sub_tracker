@@ -81,9 +81,8 @@ const TrendChart = ({ trend }) => {
             />
             <Tooltip 
               content={<CustomTooltip currencyCode={currencyCode} />} 
-              isAnimationActive={true}
-              animationDuration={300}
-              animationEasing="ease-out"
+              isAnimationActive={false}
+              cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }}
             />
             <Area 
               type="monotone" 

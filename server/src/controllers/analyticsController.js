@@ -261,17 +261,14 @@ export const getCategoryDetail = catchAsync(async (req, res, next) => {
     totalMonthlySpend += normalizeToMonthly(sub.cost, sub.billingCycle, sub.billingCycleInterval);
   });
   
-  const snapshots = await SpendSnapshot.find({ userId: req.user.id }).sort({ 'month.year': 1, 'month.month': 1 }).lean();
+  const snapshots = await SpendSnapshot.find({ userId: req.user.id }).sort({ month: 1 }).lean();
   
   const categoryTrend = snapshots.map(snapshot => {
-    const monthLabel = `${snapshot.month.year}-${String(snapshot.month.month).padStart(2, '0')}`;
+    const monthLabel = snapshot.month;
     let categorySpend = 0;
     
-    if (snapshot.totalByCategory) {
-      const catObj = snapshot.totalByCategory.find(c => c.category === category);
-      if (catObj) {
-        categorySpend = catObj.amount;
-      }
+    if (snapshot.totalByCategory && snapshot.totalByCategory[category]) {
+      categorySpend = snapshot.totalByCategory[category];
     }
     
     return {

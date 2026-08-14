@@ -249,7 +249,7 @@ const SubscriptionsPage = () => {
   if (error && subscriptions.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-lg text-center shadow-sm max-w-lg mx-auto">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-6 rounded-2xl text-center shadow-xl backdrop-blur-md max-w-lg mx-auto">
           <p className="mb-4">{error}</p>
           <Button 
             variant="danger"

@@ -1,5 +1,5 @@
 import ActivityLog from '../models/ActivityLog.js';
-import logger from '../config/logger.js';
+import { logger } from '../config/logger.js';
 
 /**
  * Logs an activity entry asynchronously.

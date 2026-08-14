@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Button from '../common/Button';
 
-const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage }) => {
+const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage, selectable = false, isSelected = false, onToggleSelect }) => {
   const { 
     _id, 
     name, 
@@ -52,11 +52,33 @@ const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage }) => {
   return (
     <motion.div 
       whileHover={{ y: -4 }}
-      className="bg-gradient-to-br from-brand-bg/90 via-primary/20 to-brand-bg/90 bg-[length:200%_200%] animate-gradient-shift backdrop-blur-md border border-white/10 shadow-xl shadow-primary/5 rounded-2xl p-5 flex flex-col h-full cursor-pointer"
-      onClick={() => navigate(`/subscriptions/${_id}`)}
+      className={`bg-gradient-to-br from-brand-bg/90 via-primary/20 to-brand-bg/90 bg-[length:200%_200%] animate-gradient-shift backdrop-blur-md border ${isSelected ? 'border-primary-500 shadow-primary-500/30' : 'border-white/10 shadow-primary/5'} shadow-xl rounded-2xl p-5 flex flex-col h-full ${selectable ? 'cursor-default' : 'cursor-pointer'} transition-all`}
+      onClick={() => {
+        if (!selectable) {
+          navigate(`/subscriptions/${_id}`);
+        }
+      }}
     >
       <div className="flex justify-between items-start mb-2">
-        <h3 className="text-lg font-bold text-brand-text truncate pr-2">{name}</h3>
+        <div className="flex items-center gap-3 min-w-0 pr-2">
+          {selectable && (
+            <div 
+              className="flex-shrink-0 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onToggleSelect) onToggleSelect(_id);
+              }}
+            >
+              <input 
+                type="checkbox" 
+                checked={isSelected}
+                readOnly
+                className="w-5 h-5 rounded border-white/20 bg-black/40 text-primary-500 focus:ring-primary-500 focus:ring-offset-gray-900 cursor-pointer"
+              />
+            </div>
+          )}
+          <h3 className="text-lg font-bold text-brand-text truncate">{name}</h3>
+        </div>
         <Badge text={displayStatus.toUpperCase()} variant={displayStatus} />
       </div>
       

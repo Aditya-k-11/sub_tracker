@@ -3,7 +3,7 @@ import SubscriptionCard from './SubscriptionCard';
 import EmptyState from '../common/EmptyState';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const SubscriptionList = ({ subscriptions, onEdit, onCancel, onLogUsage }) => {
+const SubscriptionList = ({ subscriptions, onEdit, onCancel, onLogUsage, selectionMode = false, selectedIds = [], onToggleSelect }) => {
   if (!subscriptions || subscriptions.length === 0) {
     return (
       <EmptyState 
@@ -31,6 +31,9 @@ const SubscriptionList = ({ subscriptions, onEdit, onCancel, onLogUsage }) => {
             onEdit={onEdit}
             onCancel={onCancel}
             onLogUsage={onLogUsage}
+            selectable={selectionMode}
+            isSelected={selectedIds.includes(sub._id)}
+            onToggleSelect={onToggleSelect}
           />
         </motion.div>
       ))}

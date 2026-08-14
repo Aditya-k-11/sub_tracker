@@ -54,3 +54,8 @@ export const deleteUsageLog = async (id, usageId) => {
   const response = await apiClient.delete(`/subscriptions/${id}/usage/${usageId}`);
   return response.data;
 };
+
+export const bulkUpdateSubscriptions = async (subscriptionIds, action) => {
+  const response = await apiClient.patch('/subscriptions/bulk', { subscriptionIds, action });
+  return response.data;
+};

@@ -1,15 +1,29 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import PageTransition from '../components/common/PageTransition';
-import { getSubscriptions, createSubscription, updateSubscription, cancelSubscription, logUsage } from '../services/subscriptionService';
+import { getSubscriptions, createSubscription, updateSubscription, cancelSubscription, logUsage, bulkUpdateSubscriptions } from '../services/subscriptionService';
 import SubscriptionList from '../components/subscriptions/SubscriptionList';
 import SubscriptionForm from '../components/subscriptions/SubscriptionForm';
+import SubscriptionFilters from '../components/subscriptions/SubscriptionFilters';
+import BulkActionsBar from '../components/subscriptions/BulkActionsBar';
 import Spinner from '../components/common/Spinner';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import LogUsageModal from '../components/subscriptions/LogUsageModal';
 import Toast from '../components/common/Toast';
 import Button from '../components/common/Button';
+
+const getInitialFilters = () => {
+  const saved = localStorage.getItem('subtrack_subscription_filters');
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      // ignore
+    }
+  }
+  return { category: "", status: "", sortBy: "nextRenewalDate", sortOrder: "asc" };
+};
 
 const SubscriptionsPage = () => {
   const [subscriptions, setSubscriptions] = useState([]);
@@ -29,11 +43,26 @@ const SubscriptionsPage = () => {
 
   const [toast, setToast] = useState(null);
 
+  const [filters, setFilters] = useState(getInitialFilters);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('subtrack_subscription_filters', JSON.stringify(filters));
+  }, [filters]);
+
   const fetchSubscriptions = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await getSubscriptions();
+      const activeFilters = {};
+      if (filters.category) activeFilters.category = filters.category;
+      if (filters.status) activeFilters.status = filters.status;
+      if (filters.sortBy) activeFilters.sortBy = filters.sortBy;
+      if (filters.sortOrder) activeFilters.sortOrder = filters.sortOrder;
+
+      const response = await getSubscriptions(activeFilters);
       setSubscriptions(response.subscriptions || []); 
     } catch (err) {
       setError('Failed to load subscriptions. Please try again later.');
@@ -41,7 +70,7 @@ const SubscriptionsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filters]);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -150,6 +179,61 @@ const SubscriptionsPage = () => {
     }
   };
 
+  const handleToggleSelectionMode = () => {
+    if (selectionMode) {
+      setSelectionMode(false);
+      setSelectedIds([]);
+    } else {
+      setSelectionMode(true);
+    }
+  };
+
+  const handleToggleSelect = (id) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds([]);
+  };
+
+  const handleBulkCancel = async () => {
+    setBulkProcessing(true);
+    try {
+      const result = await bulkUpdateSubscriptions(selectedIds, { type: 'cancel' });
+      showToast(`${result.modifiedCount} subscriptions cancelled`);
+      if (result.matchedCount < result.requestedCount) {
+        setTimeout(() => showToast(`Note: ${result.requestedCount - result.matchedCount} subscriptions were skipped.`, 'info'), 3500);
+      }
+      setSelectionMode(false);
+      setSelectedIds([]);
+      fetchSubscriptions();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to bulk cancel', 'danger');
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
+  const handleBulkRecategorize = async (category) => {
+    setBulkProcessing(true);
+    try {
+      const result = await bulkUpdateSubscriptions(selectedIds, { type: 'recategorize', category });
+      showToast(`${result.modifiedCount} subscriptions recategorized`);
+      if (result.matchedCount < result.requestedCount) {
+        setTimeout(() => showToast(`Note: ${result.requestedCount - result.matchedCount} subscriptions were skipped.`, 'info'), 3500);
+      }
+      setSelectionMode(false);
+      setSelectedIds([]);
+      fetchSubscriptions();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Failed to bulk recategorize', 'danger');
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
   const handleLogUsageClose = () => {
     setUsageTarget(null);
   };
@@ -188,18 +272,39 @@ const SubscriptionsPage = () => {
         />
       )}
 
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-brand-text">Your Subscriptions</h1>
-        <Button onClick={handleAddClick}>
-          Add Subscription
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button 
+            variant={selectionMode ? 'secondary' : 'outline'} 
+            onClick={handleToggleSelectionMode}
+          >
+            {selectionMode ? 'Cancel Selection' : 'Select'}
+          </Button>
+          <Button onClick={handleAddClick}>
+            Add Subscription
+          </Button>
+        </div>
       </div>
       
+      <SubscriptionFilters currentFilters={filters} onChange={setFilters} />
+
       <SubscriptionList 
         subscriptions={subscriptions}
         onEdit={handleEditClick}
         onCancel={handleCancelClick}
         onLogUsage={handleLogUsageClick}
+        selectionMode={selectionMode}
+        selectedIds={selectedIds}
+        onToggleSelect={handleToggleSelect}
+      />
+
+      <BulkActionsBar 
+        selectedCount={selectedIds.length}
+        onBulkCancel={handleBulkCancel}
+        onBulkRecategorize={handleBulkRecategorize}
+        onClearSelection={handleClearSelection}
+        processing={bulkProcessing}
       />
 
       <Modal 

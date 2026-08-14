@@ -29,7 +29,7 @@ const BulkActionsBar = ({ selectedCount, onBulkCancel, onBulkRecategorize, onCle
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[90%] max-w-2xl bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl flex items-center justify-between gap-4"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[90%] max-w-2xl bg-gray-900/95 backdrop-blur-xl bg-black/20 text-white border border-white/20 rounded-lg-2xl p-4 shadow-2xl flex items-center justify-between gap-4"
           >
             <div className="flex items-center gap-3">
               <span className="bg-primary-500/20 text-primary-400 px-3 py-1 rounded-full text-sm font-semibold">
@@ -44,14 +44,14 @@ const BulkActionsBar = ({ selectedCount, onBulkCancel, onBulkRecategorize, onCle
                     <select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="bg-black/40 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-primary-500"
+                      className="bg-gradient-to-br from-brand-bg/90 via-primary/20 to-brand-bg/90 bg-[length:200%_200%] bg-black/20 text-white border border-white/20 rounded-lg-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-primary-500"
                     >
-                      <option value="" disabled>Select Category...</option>
-                      <option value="Entertainment">Entertainment</option>
-                      <option value="Fitness">Fitness</option>
-                      <option value="Productivity">Productivity</option>
-                      <option value="Utilities">Utilities</option>
-                      <option value="Other">Other</option>
+                      <option className="bg-brand-bg" value="" disabled>Select Category...</option>
+                      <option className="bg-brand-bg" value="Entertainment">Entertainment</option>
+                      <option className="bg-brand-bg" value="Fitness">Fitness</option>
+                      <option className="bg-brand-bg" value="Productivity">Productivity</option>
+                      <option className="bg-brand-bg" value="Utilities">Utilities</option>
+                      <option className="bg-brand-bg" value="Other">Other</option>
                     </select>
                     <button
                       onClick={handleRecategorizeSubmit}

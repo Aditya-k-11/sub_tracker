@@ -23,14 +23,14 @@ const SubscriptionFilters = ({ currentFilters, onChange }) => {
         <select
           value={currentFilters.category}
           onChange={(e) => handleChange('category', e.target.value)}
-          className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full bg-gradient-to-br from-brand-bg/90 via-primary/20 to-brand-bg/90 bg-[length:200%_200%] border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
-          <option value="">All Categories</option>
-          <option value="Entertainment">Entertainment</option>
-          <option value="Fitness">Fitness</option>
-          <option value="Productivity">Productivity</option>
-          <option value="Utilities">Utilities</option>
-          <option value="Other">Other</option>
+          <option className="bg-brand-bg" value="">All Categories</option>
+          <option className="bg-brand-bg" value="Entertainment">Entertainment</option>
+          <option className="bg-brand-bg" value="Fitness">Fitness</option>
+          <option className="bg-brand-bg" value="Productivity">Productivity</option>
+          <option className="bg-brand-bg" value="Utilities">Utilities</option>
+          <option className="bg-brand-bg" value="Other">Other</option>
         </select>
       </div>
 
@@ -39,12 +39,12 @@ const SubscriptionFilters = ({ currentFilters, onChange }) => {
         <select
           value={currentFilters.status}
           onChange={(e) => handleChange('status', e.target.value)}
-          className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full bg-gradient-to-br from-brand-bg/90 via-primary/20 to-brand-bg/90 bg-[length:200%_200%] border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
-          <option value="">All</option>
-          <option value="active">Active</option>
-          <option value="paused">Paused</option>
-          <option value="cancelled">Cancelled</option>
+          <option className="bg-brand-bg" value="">All</option>
+          <option className="bg-brand-bg" value="active">Active</option>
+          <option className="bg-brand-bg" value="paused">Paused</option>
+          <option className="bg-brand-bg" value="cancelled">Cancelled</option>
         </select>
       </div>
 
@@ -54,12 +54,12 @@ const SubscriptionFilters = ({ currentFilters, onChange }) => {
           <select
             value={currentFilters.sortBy}
             onChange={(e) => handleChange('sortBy', e.target.value)}
-            className="w-full bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full bg-gradient-to-br from-brand-bg/90 via-primary/20 to-brand-bg/90 bg-[length:200%_200%] border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
-            <option value="nextRenewalDate">Renewal Date</option>
-            <option value="cost">Cost</option>
-            <option value="name">Name</option>
-            <option value="createdAt">Date Added</option>
+            <option className="bg-brand-bg" value="nextRenewalDate">Renewal Date</option>
+            <option className="bg-brand-bg" value="cost">Cost</option>
+            <option className="bg-brand-bg" value="name">Name</option>
+            <option className="bg-brand-bg" value="createdAt">Date Added</option>
           </select>
         </div>
         <div className="flex items-end">

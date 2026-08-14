@@ -150,7 +150,7 @@ const CommandBar = () => {
                   </button>
                 ))
               ) : (
-                <div className="p-8 text-center text-gray-500">
+                <div className="p-8 text-center text-white/50">
                   No results found for "{query}"
                 </div>
               )}

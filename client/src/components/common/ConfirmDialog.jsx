@@ -14,8 +14,8 @@ const ConfirmDialog = ({
 }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
-      <p className="text-gray-700 mb-6">{message}</p>
-      <div className="flex justify-end space-x-3 border-t border-gray-200/50 pt-4">
+      <p className="text-white/80 mb-6">{message}</p>
+      <div className="flex justify-end space-x-3 border-t border-white/10 pt-4">
         <Button 
           variant="secondary"
           onClick={onClose}

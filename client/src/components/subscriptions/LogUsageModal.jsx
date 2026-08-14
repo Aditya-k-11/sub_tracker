@@ -22,17 +22,17 @@ const LogUsageModal = ({ isOpen, onClose, subscription, onSubmit, submitting }) 
     <Modal isOpen={isOpen} onClose={onClose} title={`Log Usage — ${subscription.name}`}>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label className="block text-gray-700 font-medium mb-2">
+          <label className="block text-white/80 font-medium mb-2">
             What did you use it for? (optional)
           </label>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 min-h-[100px]"
+            className="w-full bg-black/20 text-white border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 min-h-[100px]"
             placeholder="e.g. Watched Stranger Things"
           />
         </div>
-        <div className="flex justify-end space-x-3 border-t border-gray-200/50 pt-4">
+        <div className="flex justify-end space-x-3 border-t border-white/10 pt-4">
           <Button 
             variant="secondary"
             onClick={onClose}

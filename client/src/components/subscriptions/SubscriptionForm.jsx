@@ -79,26 +79,26 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {formError && (
-        <div className="bg-red-50 text-red-600 p-3 rounded text-sm mb-4">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded text-sm mb-4">
           {formError}
         </div>
       )}
 
       <div>
-        <label className="block text-gray-700 font-medium mb-1">Subscription Name *</label>
+        <label className="block text-white/80 font-medium mb-1">Subscription Name *</label>
         <input 
           type="text" 
           name="name"
           value={formData.name}
           onChange={handleChange}
-          className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+          className="w-full bg-black/20 text-white border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
         />
         {validationErrors.name && <p className="text-red-500 text-xs mt-1">{validationErrors.name}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-gray-700 font-medium mb-1">Cost *</label>
+          <label className="block text-white/80 font-medium mb-1">Cost *</label>
           <input 
             type="number" 
             name="cost"
@@ -106,12 +106,12 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
             step="0.01"
             value={formData.cost}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            className="w-full bg-black/20 text-white border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
           />
           {validationErrors.cost && <p className="text-red-500 text-xs mt-1">{validationErrors.cost}</p>}
         </div>
         <div>
-          <label className="block text-gray-700 font-medium mb-1">Billing Cycle *</label>
+          <label className="block text-white/80 font-medium mb-1">Billing Cycle *</label>
           <div className="flex space-x-2">
             <div className="w-1/3">
               <input 
@@ -121,7 +121,7 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
                 step="1"
                 value={formData.billingCycleInterval}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-black/20 text-white border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               />
             </div>
             <div className="w-2/3">
@@ -129,11 +129,11 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
                 name="billingCycle"
                 value={formData.billingCycle}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                className="w-full bg-black/20 text-white border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               >
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
+                <option className="bg-brand-bg" value="weekly">Weekly</option>
+                <option className="bg-brand-bg" value="monthly">Monthly</option>
+                <option className="bg-brand-bg" value="yearly">Yearly</option>
               </select>
             </div>
           </div>
@@ -143,37 +143,37 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-gray-700 font-medium mb-1">Category</label>
+          <label className="block text-white/80 font-medium mb-1">Category</label>
           <select 
             name="category"
             value={formData.category}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            className="w-full bg-black/20 text-white border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
           >
-            {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+            {CATEGORIES.map(cat => <option className="bg-brand-bg" key={cat} value={cat}>{cat}</option>)}
           </select>
         </div>
         <div>
-          <label className="block text-gray-700 font-medium mb-1">Payment Method</label>
+          <label className="block text-white/80 font-medium mb-1">Payment Method</label>
           <input 
             type="text" 
             name="paymentMethod"
             value={formData.paymentMethod}
             onChange={handleChange}
             placeholder="e.g. Credit Card"
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            className="w-full bg-black/20 text-white border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-gray-700 font-medium mb-1">Next Renewal Date *</label>
+        <label className="block text-white/80 font-medium mb-1">Next Renewal Date *</label>
         <input 
           type="date" 
           name="nextRenewalDate"
           value={formData.nextRenewalDate}
           onChange={handleChange}
-          className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+          className="w-full bg-black/20 text-white border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
         />
         {validationErrors.nextRenewalDate && <p className="text-red-500 text-xs mt-1">{validationErrors.nextRenewalDate}</p>}
       </div>
@@ -185,26 +185,26 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
           name="isTrial"
           checked={formData.isTrial}
           onChange={handleChange}
-          className="h-4 w-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+          className="h-4 w-4 text-primary-600 rounded border-white/20 focus:ring-primary-500"
         />
-        <label htmlFor="isTrial" className="text-gray-700 font-medium cursor-pointer">This is a trial subscription</label>
+        <label htmlFor="isTrial" className="text-white/80 font-medium cursor-pointer">This is a trial subscription</label>
       </div>
 
       {formData.isTrial && (
         <div>
-          <label className="block text-gray-700 font-medium mb-1">Trial End Date *</label>
+          <label className="block text-white/80 font-medium mb-1">Trial End Date *</label>
           <input 
             type="date" 
             name="trialEndDate"
             value={formData.trialEndDate}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            className="w-full bg-black/20 text-white border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
           />
           {validationErrors.trialEndDate && <p className="text-red-500 text-xs mt-1">{validationErrors.trialEndDate}</p>}
         </div>
       )}
 
-      <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200/50">
+      <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-white/10">
         <Button 
           variant="secondary"
           onClick={onCancel}

@@ -3,6 +3,8 @@ import PageTransition from '../components/common/PageTransition';
 import Button from '../components/common/Button';
 import { getSpendSummary, getCategoryBreakdown, getSpendTrend, getWastedSpend, getNotifications, getUpcomingTimeline, getSpendingVelocity, getInsights } from '../services/analyticsService';
 import { logUsage } from '../services/subscriptionService';
+import { getCurrentUser } from '../services/userService';
+import OnboardingModal from '../components/onboarding/OnboardingModal';
 import SummaryCards from '../components/dashboard/SummaryCards';
 import CategoryChart from '../components/dashboard/CategoryChart';
 import TrendChart from '../components/dashboard/TrendChart';
@@ -28,7 +30,8 @@ const DashboardPage = () => {
     upcomingTimeline: { days: [], totalUpcoming14Days: 0 },
     velocity: null,
     insights: [],
-    recentActivity: []
+    recentActivity: [],
+    hasCompletedOnboarding: true
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -38,7 +41,7 @@ const DashboardPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const [summaryData, categoriesData, trendData, wastedData, notificationsData, timelineData, velocityData, insightsData, recentActivityData] = await Promise.all([
+      const [summaryData, categoriesData, trendData, wastedData, notificationsData, timelineData, velocityData, insightsData, recentActivityData, currentUserData] = await Promise.all([
         getSpendSummary(),
         getCategoryBreakdown(),
         getSpendTrend(),
@@ -47,7 +50,8 @@ const DashboardPage = () => {
         getUpcomingTimeline(),
         getSpendingVelocity(),
         getInsights(),
-        getRecentActivity()
+        getRecentActivity(),
+        getCurrentUser()
       ]);
       
       setData({
@@ -59,7 +63,8 @@ const DashboardPage = () => {
         upcomingTimeline: timelineData,
         velocity: velocityData,
         insights: insightsData.insights || [],
-        recentActivity: recentActivityData.activities || []
+        recentActivity: recentActivityData.activities || [],
+        hasCompletedOnboarding: currentUserData.user.hasCompletedOnboarding
       });
     } catch (err) {
       console.error(err);
@@ -141,6 +146,12 @@ const DashboardPage = () => {
 
   return (
     <PageTransition className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-hidden space-y-8 relative">
+      {!data.hasCompletedOnboarding && (
+        <OnboardingModal 
+          onComplete={() => setData(prev => ({ ...prev, hasCompletedOnboarding: true }))} 
+        />
+      )}
+
       {toast && (
         <Toast 
           message={toast.message} 

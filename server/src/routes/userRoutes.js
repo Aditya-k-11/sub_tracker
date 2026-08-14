@@ -4,7 +4,8 @@ import {
   updateProfile, 
   changePassword, 
   updateNotificationPreferences, 
-  deleteAccount 
+  deleteAccount,
+  completeOnboarding
 } from '../controllers/userController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -16,6 +17,7 @@ router.get('/me', getCurrentUser);
 router.patch('/me', updateProfile);
 router.post('/me/change-password', changePassword);
 router.patch('/me/notification-preferences', updateNotificationPreferences);
+router.patch('/me/complete-onboarding', completeOnboarding);
 router.delete('/me', deleteAccount);
 
 export default router;

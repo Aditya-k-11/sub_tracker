@@ -22,7 +22,8 @@ export const getCurrentUser = catchAsync(async (req, res, next) => {
       email: user.email,
       currency: user.currency,
       createdAt: user.createdAt,
-      notificationPreferences: user.notificationPreferences
+      notificationPreferences: user.notificationPreferences,
+      hasCompletedOnboarding: user.hasCompletedOnboarding
     }
   });
 });
@@ -61,7 +62,8 @@ export const updateProfile = catchAsync(async (req, res, next) => {
       email: user.email,
       currency: user.currency,
       createdAt: user.createdAt,
-      notificationPreferences: user.notificationPreferences
+      notificationPreferences: user.notificationPreferences,
+      hasCompletedOnboarding: user.hasCompletedOnboarding
     }
   });
 });
@@ -110,6 +112,19 @@ export const updateNotificationPreferences = catchAsync(async (req, res, next) =
   }
 
   res.status(200).json({ notificationPreferences: user.notificationPreferences });
+});
+
+export const completeOnboarding = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    throw new AppError('User not found', 404);
+  }
+
+  user.hasCompletedOnboarding = true;
+  await user.save();
+
+  res.status(200).json({ message: 'Onboarding completed' });
 });
 
 export const deleteAccount = catchAsync(async (req, res, next) => {

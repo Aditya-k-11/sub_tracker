@@ -12,6 +12,8 @@ const userSchema = new mongoose.Schema({
   
   createdAt: { type: Date, default: Date.now },
 
+  hasCompletedOnboarding: { type: Boolean, default: false },
+
   googleRefreshToken: { type: String, default: null },
   gmailConnected: { type: Boolean, default: false },
   gmailConnectedAt: { type: Date, default: null },

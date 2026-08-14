@@ -24,8 +24,7 @@ const AppLayout = () => {
   const navLinks = [
     { path: '/', label: 'Dashboard' },
     { path: '/subscriptions', label: 'Subscriptions' },
-    { path: '/activity', label: 'Activity' },
-    { path: '/settings', label: 'Settings' }
+    { path: '/activity', label: 'Activity' }
   ];
 
   const fetchNotifications = async () => {
@@ -138,14 +137,29 @@ const AppLayout = () => {
                         </>
                       )}
                     </div>
-                    <span className="text-sm text-brand-text">Hi, {user.name}</span>
-                    <Button 
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleLogout}
-                    >
-                      Log out
-                    </Button>
+                    <div className="relative group">
+                      <button className="flex items-center gap-2 text-sm text-brand-text hover:text-white transition-colors py-2">
+                        <span>Hi, {user.name}</span>
+                        <svg className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      <div className="absolute right-0 mt-1 w-48 bg-brand-surface/95 backdrop-blur-md border border-white/10 rounded-xl shadow-xl py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <Link to="/profile" className="block px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors">
+                          Profile
+                        </Link>
+                        <Link to="/settings" className="block px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors">
+                          Integrations
+                        </Link>
+                        <div className="h-px bg-white/10 my-1"></div>
+                        <button 
+                          onClick={handleLogout}
+                          className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                        >
+                          Log out
+                        </button>
+                      </div>
+                    </div>
                   </>
                 ) : (
                   <>

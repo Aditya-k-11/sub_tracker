@@ -1,5 +1,6 @@
 import Subscription from '../models/Subscription.js';
 import Notification from '../models/Notification.js';
+import User from '../models/User.js';
 import { RENEWAL_REMINDER_WINDOW_DAYS, TRIAL_REMINDER_WINDOW_DAYS } from '../config/reminderConfig.js';
 
 export const findUpcomingRenewals = async (userId = null) => {
@@ -86,11 +87,32 @@ export const generateNotifications = async () => {
 
   let created = 0;
   let skipped = 0;
+  let suppressed = 0;
   
   const notificationsToInsert = [];
 
+  // Fetch preferences for all users associated with these upcoming renewals
+  const userIds = [...new Set(upcomingRenewals.map(sub => sub.userId.toString()))];
+  const users = await User.find({ _id: { $in: userIds } }).select('notificationPreferences');
+  const userPreferencesMap = new Map();
+  users.forEach(user => {
+    userPreferencesMap.set(user._id.toString(), user.notificationPreferences || {});
+  });
+
   for (const sub of upcomingRenewals) {
     const type = sub.isTrial ? 'trial_ending' : 'renewal';
+    
+    // Check user preferences
+    const prefs = userPreferencesMap.get(sub.userId.toString()) || {};
+    if (type === 'renewal' && prefs.renewalReminders === false) {
+      suppressed++;
+      continue;
+    }
+    if (type === 'trial_ending' && prefs.trialEndingAlerts === false) {
+      suppressed++;
+      continue;
+    }
+
     const existing = await Notification.findOne({
       subscriptionId: sub._id,
       type,
@@ -130,6 +152,7 @@ export const generateNotifications = async () => {
   return {
     created,
     skipped,
+    suppressed,
     total: upcomingRenewals.length
   };
 };

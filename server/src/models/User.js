@@ -17,7 +17,14 @@ const userSchema = new mongoose.Schema({
   gmailConnectedAt: { type: Date, default: null },
   lastEmailScanAt: { type: Date, default: null },
   
-  connectedEmailAccounts: { type: [String], default: [] }
+  connectedEmailAccounts: { type: [String], default: [] },
+
+  notificationPreferences: {
+    renewalReminders: { type: Boolean, default: true },
+    trialEndingAlerts: { type: Boolean, default: true },
+    // Wasted-spend alerts currently don't generate actual Notification records, but this readies the schema
+    wastedSpendAlerts: { type: Boolean, default: true }
+  }
 }, { timestamps: false });
 
 export default mongoose.model('User', userSchema);

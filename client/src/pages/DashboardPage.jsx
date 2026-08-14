@@ -10,7 +10,9 @@ import WastedSpendPanel from '../components/dashboard/WastedSpendPanel';
 import PaymentsTimeline from '../components/dashboard/PaymentsTimeline';
 import SpendingVelocityCard from '../components/dashboard/SpendingVelocityCard';
 import InsightsPanel from '../components/dashboard/InsightsPanel';
+import ActivityFeedWidget from '../components/dashboard/ActivityFeedWidget';
 import Toast from '../components/common/Toast';
+import { getRecentActivity } from '../services/activityService';
 
 const DashboardPage = () => {
   const [toast, setToast] = useState(null);
@@ -25,7 +27,8 @@ const DashboardPage = () => {
     notifications: [],
     upcomingTimeline: { days: [], totalUpcoming14Days: 0 },
     velocity: null,
-    insights: []
+    insights: [],
+    recentActivity: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,7 +38,7 @@ const DashboardPage = () => {
     setLoading(true);
     setError(null);
     try {
-      const [summaryData, categoriesData, trendData, wastedData, notificationsData, timelineData, velocityData, insightsData] = await Promise.all([
+      const [summaryData, categoriesData, trendData, wastedData, notificationsData, timelineData, velocityData, insightsData, recentActivityData] = await Promise.all([
         getSpendSummary(),
         getCategoryBreakdown(),
         getSpendTrend(),
@@ -43,7 +46,8 @@ const DashboardPage = () => {
         getNotifications(false),
         getUpcomingTimeline(),
         getSpendingVelocity(),
-        getInsights()
+        getInsights(),
+        getRecentActivity()
       ]);
       
       setData({
@@ -54,7 +58,8 @@ const DashboardPage = () => {
         notifications: notificationsData,
         upcomingTimeline: timelineData,
         velocity: velocityData,
-        insights: insightsData.insights || []
+        insights: insightsData.insights || [],
+        recentActivity: recentActivityData.activities || []
       });
     } catch (err) {
       console.error(err);
@@ -182,6 +187,10 @@ const DashboardPage = () => {
             submittingUsage={submittingUsage}
           />
         </div>
+      </div>
+
+      <div className="animate-fade-in-up" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+        <ActivityFeedWidget activities={data.recentActivity} />
       </div>
 
     </PageTransition>

@@ -5,7 +5,7 @@ import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/AppError.js';
 import { daysSince } from '../utils/dateHelpers.js';
 import { analyzeWastedSpend } from '../services/insightsEngine.js';
-
+import { logActivity } from '../services/activityLogger.js';
 export const createSubscription = catchAsync(async (req, res, next) => {
   const { name, cost, billingCycle, billingCycleInterval, category, nextRenewalDate, isTrial, trialEndDate, paymentMethod } = req.body;
 
@@ -20,6 +20,14 @@ export const createSubscription = catchAsync(async (req, res, next) => {
     isTrial,
     trialEndDate,
     paymentMethod
+  });
+
+  logActivity({
+    userId: req.user.id,
+    action: 'subscription_created',
+    subscriptionId: subscription._id,
+    subscriptionName: subscription.name,
+    metadata: { cost: subscription.cost, category: subscription.category }
   });
 
   res.status(201).json({ subscription });
@@ -96,6 +104,14 @@ export const updateSubscription = catchAsync(async (req, res, next) => {
 
   await subscription.save();
 
+  logActivity({
+    userId: req.user.id,
+    action: 'subscription_updated',
+    subscriptionId: subscription._id,
+    subscriptionName: subscription.name,
+    metadata: { updatedFields: Object.keys(req.body) }
+  });
+
   res.status(200).json({ subscription });
 });
 
@@ -114,6 +130,13 @@ export const deleteSubscription = catchAsync(async (req, res, next) => {
   subscription.cancelledAt = new Date();
   
   await subscription.save();
+
+  logActivity({
+    userId: req.user.id,
+    action: 'subscription_cancelled',
+    subscriptionId: subscription._id,
+    subscriptionName: subscription.name
+  });
 
   res.status(200).json({
     message: "Subscription cancelled (soft-deleted)",
@@ -136,6 +159,14 @@ export const logUsage = catchAsync(async (req, res, next) => {
     subscriptionId: subscription._id,
     usedAt: new Date(),
     note: req.body.note || null
+  });
+
+  logActivity({
+    userId: req.user.id,
+    action: 'usage_logged',
+    subscriptionId: subscription._id,
+    subscriptionName: subscription.name,
+    metadata: { note: req.body.note || null }
   });
 
   res.status(201).json({ usageLog });
@@ -262,6 +293,13 @@ export const updateSubscriptionNotes = catchAsync(async (req, res, next) => {
 
   subscription.notes = req.body.notes;
   await subscription.save();
+
+  logActivity({
+    userId: req.user.id,
+    action: 'notes_updated',
+    subscriptionId: subscription._id,
+    subscriptionName: subscription.name
+  });
 
   res.status(200).json({ subscription });
 });

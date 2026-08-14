@@ -4,6 +4,7 @@ import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/AppError.js';
 import { searchSubscriptionEmails } from '../services/gmailService.js';
 import { parseAllCandidates, saveSuggestedSubscriptions } from '../services/emailParsingService.js';
+import { logActivity } from '../services/activityLogger.js';
 
 export const getSuggestedSubscriptions = catchAsync(async (req, res, next) => {
   const suggestions = await SuggestedSubscription.find({
@@ -67,6 +68,14 @@ export const confirmSuggestion = catchAsync(async (req, res, next) => {
   suggestion.confirmedSubscriptionId = subscription._id;
   await suggestion.save();
 
+  logActivity({
+    userId: req.user.id,
+    action: 'suggestion_confirmed',
+    subscriptionId: subscription._id,
+    subscriptionName: subscription.name,
+    metadata: { source: suggestion.sourceProvider }
+  });
+
   res.status(201).json({ subscription, suggestion });
 });
 
@@ -87,6 +96,13 @@ export const dismissSuggestion = catchAsync(async (req, res, next) => {
 
   suggestion.status = 'dismissed';
   await suggestion.save();
+
+  logActivity({
+    userId: req.user.id,
+    action: 'suggestion_dismissed',
+    subscriptionName: suggestion.suggestedName,
+    metadata: {}
+  });
 
   res.status(200).json({ message: "Suggestion dismissed" });
 });

@@ -9,6 +9,7 @@ import analyticsRoutes from './routes/analyticsRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import suggestedSubscriptionRoutes from './routes/suggestedSubscriptionRoutes.js';
+import activityRoutes from './routes/activityRoutes.js';
 import errorHandler from './middleware/errorHandler.js';
 import metricsMiddleware from './middleware/metricsMiddleware.js';
 import { register } from './config/metrics.js';
@@ -31,6 +32,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/suggestions', suggestedSubscriptionRoutes);
+app.use('/api/activity', activityRoutes);
 
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', register.contentType);

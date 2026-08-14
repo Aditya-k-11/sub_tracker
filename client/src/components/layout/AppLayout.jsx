@@ -24,6 +24,7 @@ const AppLayout = () => {
   const navLinks = [
     { path: '/', label: 'Dashboard' },
     { path: '/subscriptions', label: 'Subscriptions' },
+    { path: '/activity', label: 'Activity' },
     { path: '/settings', label: 'Settings' }
   ];
 

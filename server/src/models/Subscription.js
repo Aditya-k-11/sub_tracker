@@ -24,6 +24,8 @@ const subscriptionSchema = new mongoose.Schema({
   
   paymentMethod: { type: String, default: null },
   
+  notes: { type: String, default: null, maxlength: 1000 },
+  
   createdAt: { type: Date, default: Date.now },
   
   cancelledAt: { type: Date, default: null }

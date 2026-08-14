@@ -7,6 +7,7 @@ import UsageLog from '../models/UsageLog.js';
 import { daysSince, getDayLabel } from '../utils/dateHelpers.js';
 import { WASTE_THRESHOLD_DAYS, MIN_SUBSCRIPTION_AGE_DAYS } from '../config/wasteDetection.js';
 import { analyzeWastedSpend, generateInsights } from '../services/insightsEngine.js';
+import { HIGH_CATEGORY_SPEND_THRESHOLD } from '../config/insightsConfig.js';
 
 export const getSpendSummary = catchAsync(async (req, res, next) => {
   const subscriptions = await Subscription.find({ 
@@ -245,3 +246,50 @@ export const getSpendingVelocity = catchAsync(async (req, res, next) => {
     trend
   });
 });
+
+export const getCategoryDetail = catchAsync(async (req, res, next) => {
+  const { category } = req.params;
+  
+  const subscriptions = await Subscription.find({
+    userId: req.user.id,
+    category,
+    status: 'active'
+  }).lean();
+  
+  let totalMonthlySpend = 0;
+  subscriptions.forEach(sub => {
+    totalMonthlySpend += normalizeToMonthly(sub.cost, sub.billingCycle, sub.billingCycleInterval);
+  });
+  
+  const snapshots = await SpendSnapshot.find({ userId: req.user.id }).sort({ 'month.year': 1, 'month.month': 1 }).lean();
+  
+  const categoryTrend = snapshots.map(snapshot => {
+    const monthLabel = `${snapshot.month.year}-${String(snapshot.month.month).padStart(2, '0')}`;
+    let categorySpend = 0;
+    
+    if (snapshot.totalByCategory) {
+      const catObj = snapshot.totalByCategory.find(c => c.category === category);
+      if (catObj) {
+        categorySpend = catObj.amount;
+      }
+    }
+    
+    return {
+      month: monthLabel,
+      categorySpend
+    };
+  });
+  
+  const subscriptionCount = subscriptions.length;
+  const overlapWarning = subscriptionCount >= HIGH_CATEGORY_SPEND_THRESHOLD;
+  
+  res.status(200).json({
+    category,
+    subscriptions,
+    totalMonthlySpend: Math.round(totalMonthlySpend * 100) / 100,
+    subscriptionCount,
+    categoryTrend,
+    overlapWarning
+  });
+});
+

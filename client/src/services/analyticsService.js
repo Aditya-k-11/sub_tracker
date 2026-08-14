@@ -49,3 +49,8 @@ export const getInsights = async () => {
   const response = await apiClient.get('/analytics/insights');
   return response.data;
 };
+
+export const getCategoryDetail = async (category) => {
+  const response = await apiClient.get(`/analytics/category/${encodeURIComponent(category)}`);
+  return response.data;
+};

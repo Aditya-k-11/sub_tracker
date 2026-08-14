@@ -65,9 +65,11 @@ const InsightsPanel = ({ insights }) => {
     if (insight.actionType === 'log_usage') {
       setUsageTarget({ _id: insight.actionTarget, name: insight.title.replace("You're not using ", "") });
     } else if (insight.actionType === 'view_subscription') {
-      navigate(`/subscriptions?highlight=${insight.actionTarget}`);
+      navigate(`/subscriptions/${insight.actionTarget}`);
     } else if (insight.actionType === 'view_category') {
-      navigate(`/categories/${insight.actionTarget}`);
+      navigate(`/categories/${encodeURIComponent(insight.actionTarget)}`);
+    } else {
+      console.log(`Action: ${insight.actionType} on target: ${insight.actionTarget}`);
     }
   };
 

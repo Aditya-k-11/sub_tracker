@@ -10,7 +10,6 @@ import WastedSpendPanel from '../components/dashboard/WastedSpendPanel';
 import PaymentsTimeline from '../components/dashboard/PaymentsTimeline';
 import SpendingVelocityCard from '../components/dashboard/SpendingVelocityCard';
 import InsightsPanel from '../components/dashboard/InsightsPanel';
-import LogUsageModal from '../components/dashboard/LogUsageModal'; // ensure this exists, or use existing logic
 import Toast from '../components/common/Toast';
 
 const DashboardPage = () => {

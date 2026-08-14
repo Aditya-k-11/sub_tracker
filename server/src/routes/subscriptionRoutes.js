@@ -15,7 +15,9 @@ import {
   logUsage,
   getUsageLogs,
   deleteUsageLog,
-  getUsageSummary
+  getUsageSummary,
+  getSubscriptionDetail,
+  updateSubscriptionNotes
 } from '../controllers/subscriptionController.js';
 
 const router = express.Router();
@@ -31,5 +33,7 @@ router.post('/:id/usage', logUsageValidation, validateRequest, logUsage);
 router.get('/:id/usage/summary', getUsageSummary);
 router.get('/:id/usage', getUsageLogs);
 router.delete('/:id/usage/:usageId', deleteUsageLog);
+router.get('/:id/detail', getSubscriptionDetail);
+router.patch('/:id/notes', updateSubscriptionNotes);
 
 export default router;

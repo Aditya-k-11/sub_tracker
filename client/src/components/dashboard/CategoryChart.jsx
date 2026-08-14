@@ -1,5 +1,6 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { formatCurrency } from '../../utils/formatters';
@@ -9,6 +10,7 @@ const CHART_COLORS = ['#e64f0b', '#f76c2e', '#f9d2be', '#fa82fa', '#d750d7', '#f
 
 const CategoryChart = ({ categories }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   if (!categories || categories.length === 0) {
     return (
@@ -40,7 +42,12 @@ const CategoryChart = ({ categories }) => {
               animationEasing="ease-in-out"
             >
               {categories.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={CHART_COLORS[index % CHART_COLORS.length]} 
+                  onClick={() => navigate(`/categories/${encodeURIComponent(entry.category)}`)}
+                  style={{ cursor: 'pointer', outline: 'none' }}
+                />
               ))}
             </Pie>
             <Tooltip 
@@ -55,7 +62,11 @@ const CategoryChart = ({ categories }) => {
 
       <div className="space-y-3 mt-auto overflow-y-auto pr-2">
         {categories.map((cat, idx) => (
-          <div key={cat.category} className="flex justify-between items-center text-sm">
+          <div 
+            key={cat.category} 
+            className="flex justify-between items-center text-sm cursor-pointer hover:bg-white/5 p-1 -mx-1 rounded transition-colors"
+            onClick={() => navigate(`/categories/${encodeURIComponent(cat.category)}`)}
+          >
             <div className="flex items-center space-x-3">
               <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: CHART_COLORS[idx % CHART_COLORS.length] }}></span>
               <span className="text-brand-text/90 font-medium">{cat.category}</span>

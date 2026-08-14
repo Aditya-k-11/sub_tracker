@@ -1,8 +1,10 @@
 import Subscription from '../models/Subscription.js';
 import UsageLog from '../models/UsageLog.js';
+import Notification from '../models/Notification.js';
 import catchAsync from '../utils/catchAsync.js';
 import AppError from '../utils/AppError.js';
 import { daysSince } from '../utils/dateHelpers.js';
+import { analyzeWastedSpend } from '../services/insightsEngine.js';
 
 export const createSubscription = catchAsync(async (req, res, next) => {
   const { name, cost, billingCycle, billingCycleInterval, category, nextRenewalDate, isTrial, trialEndDate, paymentMethod } = req.body;
@@ -194,3 +196,64 @@ export const getUsageSummary = catchAsync(async (req, res, next) => {
     daysSinceLastUse
   });
 });
+
+export const getSubscriptionDetail = catchAsync(async (req, res, next) => {
+  const subscription = await Subscription.findById(req.params.id);
+
+  if (!subscription) {
+    throw new AppError("Subscription not found", 404);
+  }
+
+  if (subscription.userId.toString() !== req.user.id) {
+    throw new AppError("Not authorized to access this subscription", 403);
+  }
+
+  const [usageLogs, notifications, wastedSpendInsights] = await Promise.all([
+    UsageLog.find({ subscriptionId: subscription._id }).sort({ usedAt: -1 }).lean(),
+    Notification.find({ subscriptionId: subscription._id }).sort({ sentAt: -1 }).lean(),
+    analyzeWastedSpend(req.user.id)
+  ]);
+
+  const totalUsageCount = usageLogs.length;
+  let daysSinceLastUse = null;
+  
+  if (totalUsageCount > 0) {
+    daysSinceLastUse = daysSince(usageLogs[0].usedAt);
+  } else {
+    daysSinceLastUse = daysSince(subscription.createdAt);
+  }
+
+  const isCurrentlyFlaggedWasted = wastedSpendInsights.some(
+    insight => insight.subscriptionId.toString() === subscription._id.toString()
+  );
+
+  res.status(200).json({
+    subscription,
+    usageLogs,
+    notifications,
+    costHistory: subscription.costHistory || [],
+    summary: {
+      daysSinceLastUse,
+      totalUsageCount,
+      isCurrentlyFlaggedWasted
+    }
+  });
+});
+
+export const updateSubscriptionNotes = catchAsync(async (req, res, next) => {
+  const subscription = await Subscription.findById(req.params.id);
+
+  if (!subscription) {
+    throw new AppError("Subscription not found", 404);
+  }
+
+  if (subscription.userId.toString() !== req.user.id) {
+    throw new AppError("Not authorized to access this subscription", 403);
+  }
+
+  subscription.notes = req.body.notes !== undefined ? req.body.notes : subscription.notes;
+  await subscription.save();
+
+  res.status(200).json({ subscription });
+});
+

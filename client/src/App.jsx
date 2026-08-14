@@ -7,6 +7,8 @@ import Spinner from './components/common/Spinner';
 
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const SubscriptionsPage = lazy(() => import('./pages/SubscriptionsPage'));
+const SubscriptionDetailPage = lazy(() => import('./pages/SubscriptionDetailPage'));
+const CategoryDetailPage = lazy(() => import('./pages/CategoryDetailPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
@@ -26,6 +28,8 @@ function App() {
         <Route element={<AppLayout />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/subscriptions" element={<SubscriptionsPage />} />
+          <Route path="/subscriptions/:id" element={<SubscriptionDetailPage />} />
+          <Route path="/categories/:categoryName" element={<CategoryDetailPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
 

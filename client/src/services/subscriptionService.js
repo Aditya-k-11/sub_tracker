@@ -40,6 +40,16 @@ export const getUsageSummary = async (id) => {
   return response.data;
 };
 
+export const getSubscriptionDetail = async (id) => {
+  const response = await apiClient.get(`/subscriptions/${id}/detail`);
+  return response.data;
+};
+
+export const updateSubscriptionNotes = async (id, notes) => {
+  const response = await apiClient.patch(`/subscriptions/${id}/notes`, { notes });
+  return response.data;
+};
+
 export const deleteUsageLog = async (id, usageId) => {
   const response = await apiClient.delete(`/subscriptions/${id}/usage/${usageId}`);
   return response.data;

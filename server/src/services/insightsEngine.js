@@ -2,6 +2,7 @@ import Subscription from '../models/Subscription.js';
 import UsageLog from '../models/UsageLog.js';
 import { daysSince } from '../utils/dateHelpers.js';
 import { WASTE_THRESHOLD_DAYS, MIN_SUBSCRIPTION_AGE_DAYS } from '../config/wasteDetection.js';
+import { HIGH_CATEGORY_SPEND_THRESHOLD } from '../config/insightsConfig.js';
 import { normalizeToMonthly } from '../utils/normalizeToMonthly.js';
 import { findUpcomingRenewals } from './renewalScanService.js';
 
@@ -79,8 +80,8 @@ const getWastedSpendInsights = async (userId) => {
 };
 
 const getTrialEndingInsights = async (userId) => {
-  // `findUpcomingRenewals` has been updated to optionally accept a userId
-  const { trials } = await findUpcomingRenewals(userId);
+  const upcoming = await findUpcomingRenewals(userId);
+  const trials = upcoming.filter(sub => sub.isTrial);
   const today = new Date();
   
   return trials.map(trial => {
@@ -130,7 +131,7 @@ const getHighCategorySpendInsights = async (userId) => {
   const insights = [];
   
   for (const cat of Object.values(categoryMap)) {
-    if (cat.count >= 3) {
+    if (cat.count >= HIGH_CATEGORY_SPEND_THRESHOLD) {
       const formattedSpend = Math.round(cat.monthlySpend).toLocaleString();
       insights.push({
         id: `high-category:${cat.category}`,

@@ -1,0 +1,1 @@
+export const HIGH_CATEGORY_SPEND_THRESHOLD = 3;

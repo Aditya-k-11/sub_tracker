@@ -2,6 +2,7 @@ import React from 'react';
 import Badge from '../common/Badge';
 import { formatCurrency, daysUntil, billingCycleLabel } from '../../utils/formatters';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import Button from '../common/Button';
 
 const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage }) => {
@@ -18,6 +19,8 @@ const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage }) => {
     trialEndDate, 
     nextRenewalDate 
   } = subscription;
+
+  const navigate = useNavigate();
 
   const displayStatus = isTrial ? 'trial' : status;
 
@@ -49,7 +52,8 @@ const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage }) => {
   return (
     <motion.div 
       whileHover={{ y: -4 }}
-      className="bg-gradient-to-br from-brand-bg/90 via-primary/20 to-brand-bg/90 bg-[length:200%_200%] animate-gradient-shift backdrop-blur-md border border-white/10 shadow-xl shadow-primary/5 rounded-2xl p-5 flex flex-col h-full"
+      className="bg-gradient-to-br from-brand-bg/90 via-primary/20 to-brand-bg/90 bg-[length:200%_200%] animate-gradient-shift backdrop-blur-md border border-white/10 shadow-xl shadow-primary/5 rounded-2xl p-5 flex flex-col h-full cursor-pointer"
+      onClick={() => navigate(`/subscriptions/${_id}`)}
     >
       <div className="flex justify-between items-start mb-2">
         <h3 className="text-lg font-bold text-brand-text truncate pr-2">{name}</h3>
@@ -71,14 +75,14 @@ const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage }) => {
         <Button 
           variant="secondary"
           size="sm"
-          onClick={() => onLogUsage(_id)}
+          onClick={(e) => { e.stopPropagation(); onLogUsage(_id); }}
         >
           Log Usage
         </Button>
         <Button 
           variant="secondary"
           size="sm"
-          onClick={() => onEdit(subscription)}
+          onClick={(e) => { e.stopPropagation(); onEdit(subscription); }}
         >
           Edit
         </Button>
@@ -86,7 +90,7 @@ const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage }) => {
           <Button 
             variant="danger"
             size="sm"
-            onClick={() => onCancel(_id)}
+            onClick={(e) => { e.stopPropagation(); onCancel(_id); }}
           >
             Cancel
           </Button>

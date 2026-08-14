@@ -2,7 +2,7 @@ import Subscription from '../models/Subscription.js';
 import Notification from '../models/Notification.js';
 import { RENEWAL_REMINDER_WINDOW_DAYS, TRIAL_REMINDER_WINDOW_DAYS } from '../config/reminderConfig.js';
 
-export const findUpcomingRenewals = async () => {
+export const findUpcomingRenewals = async (userId = null) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -14,23 +14,29 @@ export const findUpcomingRenewals = async () => {
   trialWindowEnd.setDate(today.getDate() + TRIAL_REMINDER_WINDOW_DAYS);
   trialWindowEnd.setHours(23, 59, 59, 999);
 
-  const regularRenewals = await Subscription.find({
+  const regularQuery = {
     status: 'active',
     isTrial: { $ne: true },
     nextRenewalDate: {
       $gte: today,
       $lte: renewalWindowEnd
     }
-  }).lean();
+  };
+  if (userId) regularQuery.userId = userId;
+
+  const regularRenewals = await Subscription.find(regularQuery).lean();
   
-  const trialRenewals = await Subscription.find({
+  const trialQuery = {
     status: 'active',
     isTrial: true,
     trialEndDate: {
       $gte: today,
       $lte: trialWindowEnd
     }
-  }).lean();
+  };
+  if (userId) trialQuery.userId = userId;
+
+  const trialRenewals = await Subscription.find(trialQuery).lean();
 
   const processedRegular = regularRenewals.map(sub => ({
     ...sub,

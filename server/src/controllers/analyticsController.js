@@ -6,6 +6,7 @@ import SpendSnapshot from '../models/SpendSnapshot.js';
 import UsageLog from '../models/UsageLog.js';
 import { daysSince, getDayLabel } from '../utils/dateHelpers.js';
 import { WASTE_THRESHOLD_DAYS, MIN_SUBSCRIPTION_AGE_DAYS } from '../config/wasteDetection.js';
+import { analyzeWastedSpend, generateInsights } from '../services/insightsEngine.js';
 
 export const getSpendSummary = catchAsync(async (req, res, next) => {
   const subscriptions = await Subscription.find({ 
@@ -96,68 +97,27 @@ export const getSpendTrend = catchAsync(async (req, res, next) => {
 });
 
 export const getWastedSpend = catchAsync(async (req, res, next) => {
-  const subscriptions = await Subscription.find({ 
-    userId: req.user.id, 
-    status: 'active' 
+  const flaggedSubscriptions = await analyzeWastedSpend(req.user.id);
+  
+  let potentialMonthlySavings = 0;
+  flaggedSubscriptions.forEach(sub => {
+    potentialMonthlySavings += sub.monthlyCost;
   });
   
-  const flaggedSubscriptions = [];
-  let potentialMonthlySavings = 0;
-  
-  for (const sub of subscriptions) {
-    const ageInDays = daysSince(sub.createdAt);
-    if (ageInDays < MIN_SUBSCRIPTION_AGE_DAYS) {
-      continue;
-    }
-    
-    const recentLog = await UsageLog.findOne({ subscriptionId: sub._id }).sort({ usedAt: -1 });
-    
-    let daysSinceLastUse;
-    let totalUsageCount = 0;
-    
-    if (recentLog) {
-      daysSinceLastUse = daysSince(recentLog.usedAt);
-      totalUsageCount = await UsageLog.countDocuments({ subscriptionId: sub._id });
-    } else {
-      daysSinceLastUse = ageInDays;
-    }
-    
-    if (daysSinceLastUse >= WASTE_THRESHOLD_DAYS) {
-      const monthlyCost = normalizeToMonthly(sub.cost, sub.billingCycle, sub.billingCycleInterval);
-      
-      let costPerUse = null;
-      let reason = '';
-      
-      if (totalUsageCount > 0) {
-        
-        const monthsSinceCreated = Math.max(1, ageInDays / 30);
-        costPerUse = Math.round(((monthlyCost * monthsSinceCreated) / totalUsageCount) * 100) / 100;
-        reason = `No usage logged in ${daysSinceLastUse} days`;
-      } else {
-        reason = `Never logged as used since created ${daysSinceLastUse} days ago`;
-      }
-      
-      flaggedSubscriptions.push({
-        subscriptionId: sub._id,
-        name: sub.name,
-        category: sub.category,
-        monthlyCost,
-        daysSinceLastUse,
-        totalUsageCount,
-        costPerUse,
-        reason
-      });
-      
-      potentialMonthlySavings += monthlyCost;
-    }
-  }
-  
-  flaggedSubscriptions.sort((a, b) => b.daysSinceLastUse - a.daysSinceLastUse);
   potentialMonthlySavings = Math.round(potentialMonthlySavings * 100) / 100;
   
   res.status(200).json({
     flaggedSubscriptions,
     potentialMonthlySavings
+  });
+});
+
+export const getInsights = catchAsync(async (req, res, next) => {
+  const insights = await generateInsights(req.user.id);
+  
+  res.status(200).json({
+    insights,
+    count: insights.length
   });
 });
 

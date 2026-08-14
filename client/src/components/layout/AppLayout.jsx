@@ -7,6 +7,9 @@ import { getNotifications, markNotificationRead, markAllNotificationsRead } from
 import NotificationBell from '../dashboard/NotificationBell';
 import NotificationPanel from '../dashboard/NotificationPanel';
 import Button from '../common/Button';
+import CommandBar from '../common/CommandBar';
+import { useCommandBar } from '../../context/CommandBarContext';
+import { Search } from 'lucide-react';
 
 const AppLayout = () => {
   const { user, logout } = useAuth();
@@ -16,6 +19,7 @@ const AppLayout = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [notifLoading, setNotifLoading] = useState(false);
+  const { open: openCommandBar } = useCommandBar();
 
   const navLinks = [
     { path: '/', label: 'Dashboard' },
@@ -98,6 +102,16 @@ const AppLayout = () => {
               ))}
               
               <div className="flex items-center space-x-4 border-l border-white/20 pl-6 ml-2">
+                {user && (
+                  <button
+                    onClick={openCommandBar}
+                    className="flex items-center space-x-1.5 text-gray-400 hover:text-white transition-colors p-1"
+                    aria-label="Open command bar"
+                  >
+                    <Search className="h-5 w-5" />
+                    <span className="hidden sm:inline-block text-xs font-mono border border-gray-600 rounded px-1.5 py-0.5">⌘K</span>
+                  </button>
+                )}
                 {user ? (
                   <>
                     <div className="relative">
@@ -147,6 +161,9 @@ const AppLayout = () => {
       <main>
         <Outlet />
       </main>
+
+      {/* Render CommandBar once at root level */}
+      <CommandBar />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import express from 'express';
-import { getSpendSummary, getCategoryBreakdown, getSpendTrend, getWastedSpend, getUpcomingPaymentsTimeline, getSpendingVelocity } from '../controllers/analyticsController.js';
+import { getSpendSummary, getCategoryBreakdown, getSpendTrend, getWastedSpend, getUpcomingPaymentsTimeline, getSpendingVelocity, getInsights } from '../controllers/analyticsController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -13,5 +13,6 @@ router.get('/wasted', getWastedSpend);
 
 router.get('/upcoming-timeline', getUpcomingPaymentsTimeline);
 router.get('/velocity', getSpendingVelocity);
+router.get('/insights', getInsights);
 
 export default router;

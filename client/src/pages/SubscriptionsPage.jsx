@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import PageTransition from '../components/common/PageTransition';
 import { getSubscriptions, createSubscription, updateSubscription, cancelSubscription, logUsage } from '../services/subscriptionService';
 import SubscriptionList from '../components/subscriptions/SubscriptionList';
@@ -42,9 +43,19 @@ const SubscriptionsPage = () => {
     }
   }, []);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   useEffect(() => {
     fetchSubscriptions();
   }, [fetchSubscriptions]);
+
+  useEffect(() => {
+    if (searchParams.get('openAdd') === 'true') {
+      setIsFormOpen(true);
+      searchParams.delete('openAdd');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const showToast = (message, type = 'success') => setToast({ message, type });
   const dismissToast = () => setToast(null);

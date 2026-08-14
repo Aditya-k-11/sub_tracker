@@ -100,6 +100,21 @@ const seed = async () => {
         isTrial: true, trialEndDate: futuredate(1), nextRenewalDate: futuredate(1), createdAt: backdate(6) 
       },
       {
+        userId, name: 'Xbox Game Pass', cost: 349, currency: 'INR', billingCycle: 'monthly',
+        category: 'Entertainment', status: 'active',
+        nextRenewalDate: futuredate(12), createdAt: backdate(120)
+      },
+      {
+        userId, name: 'Dropbox', cost: 999, currency: 'INR', billingCycle: 'monthly',
+        category: 'Productivity', status: 'active',
+        nextRenewalDate: futuredate(4), createdAt: backdate(300)
+      },
+      {
+        userId, name: 'YouTube Premium', cost: 129, currency: 'INR', billingCycle: 'monthly',
+        category: 'Entertainment', status: 'active',
+        nextRenewalDate: futuredate(22), createdAt: backdate(200)
+      },
+      {
         userId, name: 'Old Gym Membership', cost: 999, currency: 'INR', billingCycle: 'monthly',
         category: 'Fitness', status: 'cancelled',
         cancelledAt: backdate(20), nextRenewalDate: backdate(20), createdAt: backdate(100)

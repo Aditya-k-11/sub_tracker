@@ -44,3 +44,8 @@ export const getSpendingVelocity = async () => {
   const response = await apiClient.get('/analytics/velocity');
   return response.data;
 };
+
+export const getInsights = async () => {
+  const response = await apiClient.get('/analytics/insights');
+  return response.data;
+};

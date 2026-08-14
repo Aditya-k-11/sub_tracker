@@ -26,8 +26,8 @@ spec:
     spec:
       containers:
         - name: backend
-          image: adityakanojia11/subtrack-backend:3a0dffb
-          imagePullPolicy: Always
+          image: subtrack-backend:latest
+          imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:
                 name: subtrack-config

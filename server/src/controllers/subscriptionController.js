@@ -35,7 +35,16 @@ export const getSubscriptions = catchAsync(async (req, res, next) => {
     query.status = req.query.status;
   }
 
-  const subscriptions = await Subscription.find(query).sort({ nextRenewalDate: 1 });
+  // Sorting logic
+  let sortParams = { nextRenewalDate: 1 };
+  const validSortFields = ['cost', 'nextRenewalDate', 'name', 'createdAt'];
+  
+  if (req.query.sortBy && validSortFields.includes(req.query.sortBy)) {
+    const order = req.query.sortOrder === 'desc' ? -1 : 1;
+    sortParams = { [req.query.sortBy]: order };
+  }
+
+  const subscriptions = await Subscription.find(query).sort(sortParams);
 
   res.status(200).json({
     count: subscriptions.length,
@@ -251,9 +260,63 @@ export const updateSubscriptionNotes = catchAsync(async (req, res, next) => {
     throw new AppError("Not authorized to access this subscription", 403);
   }
 
-  subscription.notes = req.body.notes !== undefined ? req.body.notes : subscription.notes;
+  subscription.notes = req.body.notes;
   await subscription.save();
 
   res.status(200).json({ subscription });
 });
 
+export const bulkUpdateSubscriptions = catchAsync(async (req, res, next) => {
+  const { subscriptionIds, action } = req.body;
+
+  if (!Array.isArray(subscriptionIds) || subscriptionIds.length === 0) {
+    throw new AppError("subscriptionIds must be a non-empty array", 400);
+  }
+
+  if (!action || !['cancel', 'recategorize'].includes(action.type)) {
+    throw new AppError("Invalid action type. Must be 'cancel' or 'recategorize'", 400);
+  }
+
+  // Find matching subscriptions that belong to the current user
+  // This ensures we only operate on owned subscriptions, silently excluding others
+  const filter = {
+    _id: { $in: subscriptionIds },
+    userId: req.user.id
+  };
+
+  const matchingSubscriptions = await Subscription.find(filter).select('_id');
+  const matchedCount = matchingSubscriptions.length;
+  let modifiedCount = 0;
+
+  if (matchedCount > 0) {
+    if (action.type === 'cancel') {
+      const result = await Subscription.updateMany(
+        { ...filter, status: { $ne: 'cancelled' } },
+        { 
+          $set: { 
+            status: 'cancelled',
+            cancelledAt: new Date()
+          } 
+        }
+      );
+      modifiedCount = result.modifiedCount;
+    } else if (action.type === 'recategorize') {
+      const validCategories = ['Entertainment', 'Fitness', 'Productivity', 'Utilities', 'Other'];
+      if (!validCategories.includes(action.category)) {
+        throw new AppError("Invalid category", 400);
+      }
+      
+      const result = await Subscription.updateMany(
+        filter,
+        { $set: { category: action.category } }
+      );
+      modifiedCount = result.modifiedCount;
+    }
+  }
+
+  res.status(200).json({
+    matchedCount,
+    modifiedCount,
+    requestedCount: subscriptionIds.length
+  });
+});

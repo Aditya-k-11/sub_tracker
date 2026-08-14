@@ -21,67 +21,60 @@ const testApi = () => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
-        const { token, user } = JSON.parse(data);
-        console.log('Logged in!', user.email);
+        const { token } = JSON.parse(data);
+        console.log('Logged in!');
 
-        // Fetch subscriptions to get an ID
-        const subReq = http.request(
+        // 1. Test Sort
+        const sortReq = http.request(
           {
             hostname: 'localhost',
             port: 5000,
-            path: '/api/subscriptions',
+            path: '/api/subscriptions?sortBy=cost&sortOrder=desc',
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` }
           },
-          (subRes) => {
-            let subData = '';
-            subRes.on('data', chunk => subData += chunk);
-            subRes.on('end', () => {
-              const parsed = JSON.parse(subData);
-              const subId = parsed.subscriptions[0]._id;
-              console.log('Found sub ID:', subId);
+          (sortRes) => {
+            let sortData = '';
+            sortRes.on('data', chunk => sortData += chunk);
+            sortRes.on('end', () => {
+              const parsed = JSON.parse(sortData);
+              if (parsed.subscriptions && parsed.subscriptions.length > 0) {
+                console.log('Highest cost sub:', parsed.subscriptions[0].cost);
+                const subIds = parsed.subscriptions.slice(0, 3).map(s => s._id);
 
-              // Test Subscription Detail
-              const detailReq = http.request(
-                {
-                  hostname: 'localhost',
-                  port: 5000,
-                  path: `/api/subscriptions/${subId}/detail`,
-                  method: 'GET',
-                  headers: { 'Authorization': `Bearer ${token}` }
-                },
-                (detailRes) => {
-                  let detailData = '';
-                  detailRes.on('data', chunk => detailData += chunk);
-                  detailRes.on('end', () => {
-                    console.log('Subscription Detail:', detailData.substring(0, 150) + '...');
-                  });
-                }
-              );
-              detailReq.end();
-
-              // Test Category Detail
-              const catReq = http.request(
-                {
-                  hostname: 'localhost',
-                  port: 5000,
-                  path: `/api/analytics/category/Entertainment`,
-                  method: 'GET',
-                  headers: { 'Authorization': `Bearer ${token}` }
-                },
-                (catRes) => {
-                  let catData = '';
-                  catRes.on('data', chunk => catData += chunk);
-                  catRes.on('end', () => {
-                    console.log('Category Detail:', catData.substring(0, 150) + '...');
-                  });
-                }
-              );
-              catReq.end();
+                // 2. Test Bulk
+                const bulkPayload = JSON.stringify({
+                  subscriptionIds: subIds,
+                  action: { type: 'recategorize', category: 'Other' }
+                });
+                
+                const bulkReq = http.request(
+                  {
+                    hostname: 'localhost',
+                    port: 5000,
+                    path: '/api/subscriptions/bulk',
+                    method: 'PATCH',
+                    headers: { 
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json',
+                      'Content-Length': bulkPayload.length
+                    }
+                  },
+                  (bulkRes) => {
+                    let bulkData = '';
+                    bulkRes.on('data', chunk => bulkData += chunk);
+                    bulkRes.on('end', () => {
+                      console.log('Bulk Result:', bulkData);
+                    });
+                  }
+                );
+                bulkReq.write(bulkPayload);
+                bulkReq.end();
+              }
             });
           }
         );
-        subReq.end();
+        sortReq.end();
       });
     }
   );

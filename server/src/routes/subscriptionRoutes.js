@@ -17,7 +17,8 @@ import {
   deleteUsageLog,
   getUsageSummary,
   getSubscriptionDetail,
-  updateSubscriptionNotes
+  updateSubscriptionNotes,
+  bulkUpdateSubscriptions
 } from '../controllers/subscriptionController.js';
 
 const router = express.Router();
@@ -26,6 +27,10 @@ router.use(protect);
 
 router.post('/', createSubscriptionValidation, validateRequest, createSubscription);
 router.get('/', getSubscriptions);
+
+// bulk routes MUST come before /:id routes to avoid param collision
+router.patch('/bulk', bulkUpdateSubscriptions);
+
 router.get('/:id', getSubscriptionById);
 router.patch('/:id', updateSubscriptionValidation, validateRequest, updateSubscription);
 router.delete('/:id', deleteSubscription);

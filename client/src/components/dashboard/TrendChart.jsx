@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { formatCurrency } from '../../utils/formatters';
 
-const formatShortCurrency = (value, currencyCode = 'INR') => {
+const formatShortCurrency = (value, currencyCode = 'USD') => {
   
   const parts = new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).formatToParts(0);
   const symbol = parts.find(p => p.type === 'currency')?.value || '$';
@@ -31,7 +31,7 @@ const CustomTooltip = ({ active, payload, label, currencyCode }) => {
 
 const TrendChart = ({ trend }) => {
   const { user } = useAuth();
-  const currencyCode = user?.currency || 'INR';
+  const currencyCode = user?.currency || 'USD';
 
   if (!trend || trend.length === 0) return null;
 

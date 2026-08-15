@@ -219,7 +219,7 @@ const SubscriptionDetailPage = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-black/20 rounded-xl mb-4">
           <div>
             <p className="text-xs text-brand-text/60 uppercase tracking-wider mb-1">Cost</p>
-            <p className="text-lg font-medium text-brand-text">{formatCurrency(subscription.cost, user?.currency)}</p>
+            <p className="text-lg font-medium text-brand-text">{formatCurrency(subscription.cost, subscription.currency || 'USD')}</p>
           </div>
           <div>
             <p className="text-xs text-brand-text/60 uppercase tracking-wider mb-1">Billing Cycle</p>

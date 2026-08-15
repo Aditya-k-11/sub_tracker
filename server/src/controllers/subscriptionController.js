@@ -7,12 +7,13 @@ import { daysSince } from '../utils/dateHelpers.js';
 import { analyzeWastedSpend } from '../services/insightsEngine.js';
 import { logActivity } from '../services/activityLogger.js';
 export const createSubscription = catchAsync(async (req, res, next) => {
-  const { name, cost, billingCycle, billingCycleInterval, category, nextRenewalDate, isTrial, trialEndDate, paymentMethod } = req.body;
+  const { name, cost, currency, billingCycle, billingCycleInterval, category, nextRenewalDate, isTrial, trialEndDate, paymentMethod } = req.body;
 
   const subscription = await Subscription.create({
     userId: req.user.id,
     name,
     cost,
+    currency,
     billingCycle,
     billingCycleInterval,
     category,
@@ -27,7 +28,7 @@ export const createSubscription = catchAsync(async (req, res, next) => {
     action: 'subscription_created',
     subscriptionId: subscription._id,
     subscriptionName: subscription.name,
-    metadata: { cost: subscription.cost, category: subscription.category }
+    metadata: { cost: subscription.cost, currency: subscription.currency, category: subscription.category }
   });
 
   res.status(201).json({ subscription });
@@ -85,7 +86,7 @@ export const updateSubscription = catchAsync(async (req, res, next) => {
     throw new AppError("Not authorized to access this subscription", 403);
   }
 
-  const allowedUpdates = ['name', 'cost', 'billingCycle', 'billingCycleInterval', 'category', 'nextRenewalDate', 'status', 'isTrial', 'trialEndDate', 'paymentMethod'];
+  const allowedUpdates = ['name', 'cost', 'currency', 'billingCycle', 'billingCycleInterval', 'category', 'nextRenewalDate', 'status', 'isTrial', 'trialEndDate', 'paymentMethod'];
   
   let willBeCancelled = false;
   if (req.body.status === 'cancelled' && subscription.status !== 'cancelled') {

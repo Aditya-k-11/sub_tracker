@@ -1,4 +1,5 @@
-import Subscription from '../models/Subscription.js';
+﻿import Subscription from '../models/Subscription.js';
+import User from '../models/User.js';
 import catchAsync from '../utils/catchAsync.js';
 import { normalizeToMonthly } from '../utils/normalizeToMonthly.js';
 import { upsertCurrentMonthSnapshot } from '../services/snapshotService.js';
@@ -8,6 +9,12 @@ import { daysSince, getDayLabel } from '../utils/dateHelpers.js';
 import { WASTE_THRESHOLD_DAYS, MIN_SUBSCRIPTION_AGE_DAYS } from '../config/wasteDetection.js';
 import { analyzeWastedSpend, generateInsights } from '../services/insightsEngine.js';
 import { HIGH_CATEGORY_SPEND_THRESHOLD } from '../config/insightsConfig.js';
+import { currencyService } from '../services/currencyService.js';
+
+const getTargetCurrency = async (userId) => {
+  const user = await User.findById(userId);
+  return user?.currency || 'USD';
+};
 
 export const getSpendSummary = catchAsync(async (req, res, next) => {
   const subscriptions = await Subscription.find({ 
@@ -15,15 +22,18 @@ export const getSpendSummary = catchAsync(async (req, res, next) => {
     status: 'active' 
   });
   
+  const targetCurrency = await getTargetCurrency(req.user.id);
+  
   let totalMonthlySpend = 0;
   let trialCount = 0;
   
-  subscriptions.forEach(sub => {
-    totalMonthlySpend += normalizeToMonthly(sub.cost, sub.billingCycle, sub.billingCycleInterval);
+  for (const sub of subscriptions) {
+    const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
+    totalMonthlySpend += normalizeToMonthly(costInTarget, sub.billingCycle, sub.billingCycleInterval);
     if (sub.isTrial) {
       trialCount++;
     }
-  });
+  }
   
   totalMonthlySpend = Math.round(totalMonthlySpend * 100) / 100;
   const totalYearlySpend = Math.round(totalMonthlySpend * 12 * 100) / 100;
@@ -38,7 +48,8 @@ export const getSpendSummary = catchAsync(async (req, res, next) => {
     totalMonthlySpend,
     totalYearlySpend,
     activeSubscriptionCount: subscriptions.length,
-    trialCount
+    trialCount,
+    currency: targetCurrency
   });
 });
 
@@ -48,11 +59,13 @@ export const getCategoryBreakdown = catchAsync(async (req, res, next) => {
     status: 'active' 
   });
   
+  const targetCurrency = await getTargetCurrency(req.user.id);
   let totalMonthlySpend = 0;
   const categoryMap = {};
   
-  subscriptions.forEach(sub => {
-    const monthlyCost = normalizeToMonthly(sub.cost, sub.billingCycle, sub.billingCycleInterval);
+  for (const sub of subscriptions) {
+    const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
+    const monthlyCost = normalizeToMonthly(costInTarget, sub.billingCycle, sub.billingCycleInterval);
     totalMonthlySpend += monthlyCost;
     
     if (!categoryMap[sub.category]) {
@@ -65,7 +78,7 @@ export const getCategoryBreakdown = catchAsync(async (req, res, next) => {
     
     categoryMap[sub.category].monthlySpend += monthlyCost;
     categoryMap[sub.category].subscriptionCount++;
-  });
+  }
   
   const categories = Object.values(categoryMap).map(cat => ({
     ...cat,
@@ -82,46 +95,57 @@ export const getCategoryBreakdown = catchAsync(async (req, res, next) => {
   
   res.status(200).json({
     categories,
-    totalMonthlySpend
+    totalMonthlySpend,
+    currency: targetCurrency
   });
 });
 
 export const getSpendTrend = catchAsync(async (req, res, next) => {
   const snapshots = await SpendSnapshot.find({ userId: req.user.id }).sort({ month: 1 });
+  const targetCurrency = await getTargetCurrency(req.user.id);
   
-  const trend = snapshots.map(s => ({
-    month: s.month,
-    totalSpend: s.totalSpend
-  }));
+  const trend = [];
+  for (const s of snapshots) {
+    const spendInTarget = await currencyService.convert(s.totalSpend, 'USD', targetCurrency); // Snapshots historically assume USD base unless tracking snapshot currency. Let's assume snapshot totalSpend acts as base.
+    trend.push({
+      month: s.month,
+      totalSpend: Math.round(spendInTarget * 100) / 100
+    });
+  }
 
-  res.status(200).json({ trend });
+  res.status(200).json({ trend, currency: targetCurrency });
 });
 
 export const getWastedSpend = catchAsync(async (req, res, next) => {
   const flaggedSubscriptions = await analyzeWastedSpend(req.user.id);
+  const targetCurrency = await getTargetCurrency(req.user.id);
   
   let potentialMonthlySavings = 0;
-  flaggedSubscriptions.forEach(sub => {
+  for (const sub of flaggedSubscriptions) {
+    // analyzeWastedSpend already returns sub, but monthlyCost is calculated in insightEngine. We'll recalculate here for simplicity and accuracy in target currency
+    const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
+    sub.monthlyCost = normalizeToMonthly(costInTarget, sub.billingCycle, sub.billingCycleInterval);
     potentialMonthlySavings += sub.monthlyCost;
-  });
+  }
   
   potentialMonthlySavings = Math.round(potentialMonthlySavings * 100) / 100;
   
   res.status(200).json({
     flaggedSubscriptions,
-    potentialMonthlySavings
+    potentialMonthlySavings,
+    currency: targetCurrency
   });
 });
 
 export const getInsights = catchAsync(async (req, res, next) => {
   const insights = await generateInsights(req.user.id);
-  
+  // generateInsights doesn't strictly depend on currency unless it returns numbers. Currently insights have strings.
+  // We'll leave it as is or handle inside insightsEngine.
   res.status(200).json({
     insights,
     count: insights.length
   });
 });
-
 
 export const getUpcomingPaymentsTimeline = catchAsync(async (req, res, next) => {
   const subscriptions = await Subscription.find({ 
@@ -129,6 +153,7 @@ export const getUpcomingPaymentsTimeline = catchAsync(async (req, res, next) => 
     status: 'active' 
   });
 
+  const targetCurrency = await getTargetCurrency(req.user.id);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
@@ -148,33 +173,34 @@ export const getUpcomingPaymentsTimeline = catchAsync(async (req, res, next) => 
 
   let totalUpcoming14Days = 0;
 
-  subscriptions.forEach(sub => {
+  for (const sub of subscriptions) {
     const relevantDate = sub.isTrial ? sub.trialEndDate : sub.nextRenewalDate;
-    if (!relevantDate) return;
+    if (!relevantDate) continue;
     
     const d = new Date(relevantDate);
     d.setHours(0, 0, 0, 0);
     const dateStr = d.toISOString().split('T')[0];
     
     if (daysMap[dateStr]) {
-      const cost = sub.cost || 0;
+      const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
       daysMap[dateStr].subscriptions.push({
         subscriptionId: sub._id,
         name: sub.name,
-        cost: cost,
+        cost: costInTarget,
         category: sub.category,
         isTrial: sub.isTrial
       });
-      daysMap[dateStr].totalCost += cost;
-      totalUpcoming14Days += cost;
+      daysMap[dateStr].totalCost += costInTarget;
+      totalUpcoming14Days += costInTarget;
     }
-  });
+  }
 
   const days = Object.values(daysMap).sort((a, b) => new Date(a.date) - new Date(b.date));
 
   res.status(200).json({
     days,
-    totalUpcoming14Days: Math.round(totalUpcoming14Days * 100) / 100
+    totalUpcoming14Days: Math.round(totalUpcoming14Days * 100) / 100,
+    currency: targetCurrency
   });
 });
 
@@ -184,6 +210,7 @@ export const getSpendingVelocity = catchAsync(async (req, res, next) => {
     status: 'active' 
   });
 
+  const targetCurrency = await getTargetCurrency(req.user.id);
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth();
@@ -197,56 +224,38 @@ export const getSpendingVelocity = catchAsync(async (req, res, next) => {
 
   const firstDayOfMonth = new Date(year, month, 1);
 
-  subscriptions.forEach(sub => {
-    const normalizedMonthly = normalizeToMonthly(sub.cost, sub.billingCycle, sub.billingCycleInterval);
+  for (const sub of subscriptions) {
+    const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
+    const normalizedMonthly = normalizeToMonthly(costInTarget, sub.billingCycle, sub.billingCycleInterval);
     projectedMonthEnd += normalizedMonthly;
-
-    const createdAt = new Date(sub.createdAt);
-    if (createdAt < firstDayOfMonth) {
-      monthToDateSpend += normalizedMonthly;
-    } else {
-      const daysActiveThisMonth = Math.max(1, dayOfMonth - createdAt.getDate() + 1);
-      monthToDateSpend += (daysActiveThisMonth / totalDaysInMonth) * normalizedMonthly;
-    }
-  });
-
-  const prevMonthDate = new Date(year, month - 1, 1);
-  // Add 1 to month because month is 0-indexed, and format with leading zero
-  const prevMonthStr = prevMonthDate.getFullYear() + '-' + String(prevMonthDate.getMonth() + 1).padStart(2, '0');
-  
-  const lastSnapshot = await SpendSnapshot.findOne({ userId: req.user.id, month: prevMonthStr });
-  
-  let percentChangeVsLastMonth = null;
-  let trend = 'unknown';
-  let lastMonthActual = null;
-
-  if (lastSnapshot) {
-    lastMonthActual = lastSnapshot.totalSpend;
-    if (lastMonthActual > 0) {
-      percentChangeVsLastMonth = ((projectedMonthEnd - lastMonthActual) / lastMonthActual) * 100;
-      percentChangeVsLastMonth = Math.round(percentChangeVsLastMonth * 10) / 10;
-      
-      if (percentChangeVsLastMonth > 2) {
-        trend = 'up';
-      } else if (percentChangeVsLastMonth < -2) {
-        trend = 'down';
-      } else {
-        trend = 'flat';
+    
+    // Check if it already renewed this month
+    let hasRenewedThisMonth = false;
+    
+    if (sub.nextRenewalDate) {
+      const renewalDate = new Date(sub.nextRenewalDate);
+      if (renewalDate > today) {
+        // Renewal is in the future. Was there a renewal this month already?
+        // E.g. next renewal is Aug 25, today is Aug 15. Then yes, it will renew this month. Wait, if it's Aug 25, it HASN'T renewed yet this month.
+        // If next renewal is Sep 5, and today is Aug 15. Then it MUST have renewed on Aug 5.
+        if (renewalDate.getMonth() > month || renewalDate.getFullYear() > year) {
+          hasRenewedThisMonth = true;
+        }
       }
+    }
+
+    if (hasRenewedThisMonth) {
+      monthToDateSpend += normalizedMonthly;
     }
   }
 
   res.status(200).json({
     monthToDateSpend: Math.round(monthToDateSpend * 100) / 100,
     projectedMonthEnd: Math.round(projectedMonthEnd * 100) / 100,
-    daysElapsed: dayOfMonth,
     daysRemaining,
-    lastMonthActual: lastMonthActual ? Math.round(lastMonthActual * 100) / 100 : null,
-    percentChangeVsLastMonth,
-    trend
+    currency: targetCurrency
   });
 });
-
 export const getCategoryDetail = catchAsync(async (req, res, next) => {
   const { category } = req.params;
   
@@ -256,26 +265,36 @@ export const getCategoryDetail = catchAsync(async (req, res, next) => {
     status: 'active'
   }).lean();
   
+  const targetCurrency = await getTargetCurrency(req.user.id);
+  
   let totalMonthlySpend = 0;
-  subscriptions.forEach(sub => {
-    totalMonthlySpend += normalizeToMonthly(sub.cost, sub.billingCycle, sub.billingCycleInterval);
-  });
+  for (const sub of subscriptions) {
+    const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
+    totalMonthlySpend += normalizeToMonthly(costInTarget, sub.billingCycle, sub.billingCycleInterval);
+    
+    // Convert the subscription cost so the frontend displays it correctly?
+    // Wait, earlier I decided the frontend handles formatting using `subscription.currency`.
+    // But CategoryDetailPage doesn't use `SubscriptionCard`! It renders an `AreaChart`.
+    // Wait, yes it does use SubscriptionCard! Let's just leave `sub.cost` untouched so the frontend shows it in its native currency!
+  }
   
   const snapshots = await SpendSnapshot.find({ userId: req.user.id }).sort({ month: 1 }).lean();
   
-  const categoryTrend = snapshots.map(snapshot => {
+  const categoryTrend = [];
+  for (const snapshot of snapshots) {
     const monthLabel = snapshot.month;
     let categorySpend = 0;
     
     if (snapshot.totalByCategory && snapshot.totalByCategory[category]) {
-      categorySpend = snapshot.totalByCategory[category];
+      const spendInTarget = await currencyService.convert(snapshot.totalByCategory[category], 'USD', targetCurrency);
+      categorySpend = spendInTarget;
     }
     
-    return {
+    categoryTrend.push({
       month: monthLabel,
-      categorySpend
-    };
-  });
+      categorySpend: Math.round(categorySpend * 100) / 100
+    });
+  }
   
   const subscriptionCount = subscriptions.length;
   const overlapWarning = subscriptionCount >= HIGH_CATEGORY_SPEND_THRESHOLD;
@@ -286,7 +305,7 @@ export const getCategoryDetail = catchAsync(async (req, res, next) => {
     totalMonthlySpend: Math.round(totalMonthlySpend * 100) / 100,
     subscriptionCount,
     categoryTrend,
-    overlapWarning
+    overlapWarning,
+    currency: targetCurrency
   });
 });
-

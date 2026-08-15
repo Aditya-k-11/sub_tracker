@@ -198,7 +198,10 @@ const CategoryDetailPage = () => {
                   <YAxis 
                     stroke="rgba(255,255,255,0.3)" 
                     tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
-                    tickFormatter={(val) => `₹${val}`}
+                    tickFormatter={(val) => {
+                      const symbol = new Intl.NumberFormat('en-US', {style:'currency', currency: user?.currency || 'USD'}).formatToParts(0).find(p=>p.type==='currency')?.value || '$';
+                      return `${symbol}${val}`;
+                    }}
                   />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#1c011a', color: '#fed8fb', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}

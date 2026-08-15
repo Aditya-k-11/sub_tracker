@@ -8,6 +8,8 @@ const subscriptionSchema = new mongoose.Schema({
   
   cost: { type: Number, required: true, min: 0 },
   
+  currency: { type: String, default: 'USD' },
+  
   billingCycle: { type: String, enum: ["weekly", "monthly", "yearly"], required: true },
   
   billingCycleInterval: { type: Number, default: 1, min: 1 },

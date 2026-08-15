@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../common/Button';
+import { useAuth } from '../../context/AuthContext';
 
 const CATEGORIES = ['Entertainment', 'Fitness', 'Productivity', 'Utilities', 'Other'];
 
 const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formError }) => {
+  const { user } = useAuth();
+
   const [formData, setFormData] = useState({
     name: '',
     cost: '',
+    currency: user?.currency || 'USD',
     billingCycle: 'monthly',
     billingCycleInterval: 1,
     category: 'Entertainment',
@@ -23,6 +27,7 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
       setFormData({
         name: initialData.name || '',
         cost: initialData.cost || '',
+        currency: initialData.currency || user?.currency || 'USD',
         billingCycle: initialData.billingCycle || 'monthly',
         billingCycleInterval: initialData.billingCycleInterval || 1,
         category: initialData.category || 'Entertainment',
@@ -98,16 +103,31 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-white/80 font-medium mb-1">Cost *</label>
-          <input 
-            type="number" 
-            name="cost"
-            min="0"
-            step="0.01"
-            value={formData.cost}
-            onChange={handleChange}
-            className="w-full bg-black/20 text-white border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
-          />
+          <label className="block text-white/80 font-medium mb-1">Cost & Currency *</label>
+          <div className="flex space-x-2">
+            <input 
+              type="number" 
+              name="cost"
+              min="0"
+              step="0.01"
+              value={formData.cost}
+              onChange={handleChange}
+              className="w-2/3 bg-black/20 text-white border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            />
+            <select
+              name="currency"
+              value={formData.currency}
+              onChange={handleChange}
+              className="w-1/3 bg-black/20 text-white border border-white/20 rounded-lg px-2 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            >
+              <option className="bg-brand-bg" value="USD">USD</option>
+              <option className="bg-brand-bg" value="EUR">EUR</option>
+              <option className="bg-brand-bg" value="GBP">GBP</option>
+              <option className="bg-brand-bg" value="INR">INR</option>
+              <option className="bg-brand-bg" value="AUD">AUD</option>
+              <option className="bg-brand-bg" value="CAD">CAD</option>
+            </select>
+          </div>
           {validationErrors.cost && <p className="text-red-500 text-xs mt-1">{validationErrors.cost}</p>}
         </div>
         <div>

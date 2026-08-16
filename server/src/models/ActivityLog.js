@@ -17,7 +17,8 @@ const activityLogSchema = new mongoose.Schema({
       'suggestion_confirmed',
       'suggestion_dismissed',
       'budget_set',
-      'notes_updated'
+      'notes_updated',
+      'data_exported'
     ],
     required: true
   },

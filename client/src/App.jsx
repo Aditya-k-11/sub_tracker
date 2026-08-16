@@ -12,6 +12,7 @@ const CategoryDetailPage = lazy(() => import('./pages/CategoryDetailPage'));
 const ActivityHistoryPage = lazy(() => import('./pages/ActivityHistoryPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
@@ -33,6 +34,7 @@ function App() {
           <Route path="/subscriptions/:id" element={<SubscriptionDetailPage />} />
           <Route path="/categories/:categoryName" element={<CategoryDetailPage />} />
           <Route path="/activity" element={<ActivityHistoryPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>

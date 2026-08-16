@@ -24,7 +24,8 @@ const AppLayout = () => {
   const navLinks = [
     { path: '/', label: 'Dashboard' },
     { path: '/subscriptions', label: 'Subscriptions' },
-    { path: '/activity', label: 'Activity' }
+    { path: '/activity', label: 'Activity' },
+    { path: '/reports', label: 'Reports' }
   ];
 
   const fetchNotifications = async () => {

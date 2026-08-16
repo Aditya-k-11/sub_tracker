@@ -1,7 +1,7 @@
 import Subscription from '../models/Subscription.js';
 import User from '../models/User.js';
 import catchAsync from '../utils/catchAsync.js';
-import { getEffectiveMonthlyCost } from '../utils/effectiveCost.js';
+import { getEffectiveMonthlyCost, getEffectiveMonthlyCostInCurrency } from '../utils/effectiveCost.js';
 import { upsertCurrentMonthSnapshot } from '../services/snapshotService.js';
 import SpendSnapshot from '../models/SpendSnapshot.js';
 import UsageLog from '../models/UsageLog.js';
@@ -9,7 +9,7 @@ import { daysSince, getDayLabel } from '../utils/dateHelpers.js';
 import { WASTE_THRESHOLD_DAYS, MIN_SUBSCRIPTION_AGE_DAYS } from '../config/wasteDetection.js';
 import { analyzeWastedSpend, generateInsights } from '../services/insightsEngine.js';
 import { HIGH_CATEGORY_SPEND_THRESHOLD } from '../config/insightsConfig.js';
-import { currencyService } from '../services/currencyService.js';
+import { exchangeRateService } from '../services/exchangeRateService.js';
 
 const getTargetCurrency = async (userId) => {
   const user = await User.findById(userId);
@@ -28,14 +28,17 @@ export const getSpendSummary = catchAsync(async (req, res, next) => {
   
   let totalMonthlySpend = 0;
   let trialCount = 0;
+  let trialCount = 0;
   
-  for (const sub of subscriptions) {
-    const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
-    totalMonthlySpend += getEffectiveMonthlyCost(sub, costInTarget);
+  const costPromises = subscriptions.map(sub => getEffectiveMonthlyCostInCurrency(sub, targetCurrency));
+  const convertedCosts = await Promise.all(costPromises);
+
+  subscriptions.forEach((sub, index) => {
+    totalMonthlySpend += convertedCosts[index];
     if (sub.isTrial) {
       trialCount++;
     }
-  }
+  });
   
   totalMonthlySpend = Math.round(totalMonthlySpend * 100) / 100;
   const totalYearlySpend = Math.round(totalMonthlySpend * 12 * 100) / 100;
@@ -71,10 +74,11 @@ export const getCategoryBreakdown = catchAsync(async (req, res, next) => {
   const targetCurrency = await getTargetCurrency(req.user.id);
   let totalMonthlySpend = 0;
   const categoryMap = {};
-  
-  for (const sub of subscriptions) {
-    const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
-    const monthlyCost = getEffectiveMonthlyCost(sub, costInTarget);
+  const costPromises = subscriptions.map(sub => getEffectiveMonthlyCostInCurrency(sub, targetCurrency));
+  const convertedCosts = await Promise.all(costPromises);
+
+  subscriptions.forEach((sub, index) => {
+    const monthlyCost = convertedCosts[index];
     totalMonthlySpend += monthlyCost;
     
     if (!categoryMap[sub.category]) {
@@ -87,7 +91,7 @@ export const getCategoryBreakdown = catchAsync(async (req, res, next) => {
     
     categoryMap[sub.category].monthlySpend += monthlyCost;
     categoryMap[sub.category].subscriptionCount++;
-  }
+  });
   
   const categories = Object.values(categoryMap).map(cat => ({
     ...cat,
@@ -114,8 +118,11 @@ export const getSpendTrend = catchAsync(async (req, res, next) => {
   const targetCurrency = await getTargetCurrency(req.user.id);
   
   const trend = [];
+  const rates = await exchangeRateService.getCachedExchangeRates('USD');
+  const rateToTarget = rates[targetCurrency] || 1;
+
   for (const s of snapshots) {
-    const spendInTarget = await currencyService.convert(s.totalSpend, 'USD', targetCurrency); // Snapshots historically assume USD base unless tracking snapshot currency. Let's assume snapshot totalSpend acts as base.
+    const spendInTarget = s.totalSpend * rateToTarget;
     trend.push({
       month: s.month,
       totalSpend: Math.round(spendInTarget * 100) / 100
@@ -130,12 +137,13 @@ export const getWastedSpend = catchAsync(async (req, res, next) => {
   const targetCurrency = await getTargetCurrency(req.user.id);
   
   let potentialMonthlySavings = 0;
-  for (const sub of flaggedSubscriptions) {
-    // analyzeWastedSpend already returns sub, but monthlyCost is calculated in insightEngine. We'll recalculate here for simplicity and accuracy in target currency
-    const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
-    sub.monthlyCost = getEffectiveMonthlyCost(sub, costInTarget);
+  const costPromises = flaggedSubscriptions.map(sub => getEffectiveMonthlyCostInCurrency(sub, targetCurrency));
+  const convertedCosts = await Promise.all(costPromises);
+
+  flaggedSubscriptions.forEach((sub, index) => {
+    sub.monthlyCost = convertedCosts[index];
     potentialMonthlySavings += sub.monthlyCost;
-  }
+  });
   
   potentialMonthlySavings = Math.round(potentialMonthlySavings * 100) / 100;
   
@@ -182,16 +190,25 @@ export const getUpcomingPaymentsTimeline = catchAsync(async (req, res, next) => 
 
   let totalUpcoming14Days = 0;
 
-  for (const sub of subscriptions) {
+  const costPromises = subscriptions.map(sub => {
+    const ratesPromise = exchangeRateService.getCachedExchangeRates(sub.currency || 'USD');
+    return ratesPromise.then(rates => {
+      const rateToTarget = rates[targetCurrency] || 1;
+      return sub.cost * rateToTarget;
+    }).catch(() => sub.cost); // fallback
+  });
+  const rawCostsInTarget = await Promise.all(costPromises);
+
+  subscriptions.forEach((sub, index) => {
     const relevantDate = sub.isTrial ? sub.trialEndDate : sub.nextRenewalDate;
-    if (!relevantDate) continue;
+    if (!relevantDate) return;
     
     const d = new Date(relevantDate);
     d.setHours(0, 0, 0, 0);
     const dateStr = d.toISOString().split('T')[0];
     
     if (daysMap[dateStr]) {
-      const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
+      const costInTarget = rawCostsInTarget[index];
       daysMap[dateStr].subscriptions.push({
         subscriptionId: sub._id,
         name: sub.name,
@@ -202,7 +219,7 @@ export const getUpcomingPaymentsTimeline = catchAsync(async (req, res, next) => 
       daysMap[dateStr].totalCost += costInTarget;
       totalUpcoming14Days += costInTarget;
     }
-  }
+  });
 
   const days = Object.values(daysMap).sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -233,9 +250,11 @@ export const getSpendingVelocity = catchAsync(async (req, res, next) => {
 
   const firstDayOfMonth = new Date(year, month, 1);
 
-  for (const sub of subscriptions) {
-    const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
-    const normalizedMonthly = getEffectiveMonthlyCost(sub, costInTarget);
+  const costPromises = subscriptions.map(sub => getEffectiveMonthlyCostInCurrency(sub, targetCurrency));
+  const convertedCosts = await Promise.all(costPromises);
+
+  subscriptions.forEach((sub, index) => {
+    const normalizedMonthly = convertedCosts[index];
     projectedMonthEnd += normalizedMonthly;
     
     // Check if it already renewed this month
@@ -244,9 +263,6 @@ export const getSpendingVelocity = catchAsync(async (req, res, next) => {
     if (sub.nextRenewalDate) {
       const renewalDate = new Date(sub.nextRenewalDate);
       if (renewalDate > today) {
-        // Renewal is in the future. Was there a renewal this month already?
-        // E.g. next renewal is Aug 25, today is Aug 15. Then yes, it will renew this month. Wait, if it's Aug 25, it HASN'T renewed yet this month.
-        // If next renewal is Sep 5, and today is Aug 15. Then it MUST have renewed on Aug 5.
         if (renewalDate.getMonth() > month || renewalDate.getFullYear() > year) {
           hasRenewedThisMonth = true;
         }
@@ -256,7 +272,7 @@ export const getSpendingVelocity = catchAsync(async (req, res, next) => {
     if (hasRenewedThisMonth) {
       monthToDateSpend += normalizedMonthly;
     }
-  }
+  });
 
   const prevMonthDate = new Date(year, month - 1, 1);
   const prevMonthStr = prevMonthDate.getFullYear() + '-' + String(prevMonthDate.getMonth() + 1).padStart(2, '0');
@@ -268,8 +284,9 @@ export const getSpendingVelocity = catchAsync(async (req, res, next) => {
   let lastMonthActual = null;
 
   if (lastSnapshot) {
-    const spendInTarget = await currencyService.convert(lastSnapshot.totalSpend, 'USD', targetCurrency);
-    lastMonthActual = spendInTarget;
+    const rates = await exchangeRateService.getCachedExchangeRates('USD');
+    const rateToTarget = rates[targetCurrency] || 1;
+    lastMonthActual = lastSnapshot.totalSpend * rateToTarget;
     if (lastMonthActual > 0) {
       percentChangeVsLastMonth = ((projectedMonthEnd - lastMonthActual) / lastMonthActual) * 100;
       percentChangeVsLastMonth = Math.round(percentChangeVsLastMonth * 10) / 10;
@@ -307,15 +324,12 @@ export const getCategoryDetail = catchAsync(async (req, res, next) => {
   const targetCurrency = await getTargetCurrency(req.user.id);
   
   let totalMonthlySpend = 0;
-  for (const sub of subscriptions) {
-    const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
-    totalMonthlySpend += getEffectiveMonthlyCost(sub, costInTarget);
-    
-    // Convert the subscription cost so the frontend displays it correctly?
-    // Wait, earlier I decided the frontend handles formatting using `subscription.currency`.
-    // But CategoryDetailPage doesn't use `SubscriptionCard`! It renders an `AreaChart`.
-    // Wait, yes it does use SubscriptionCard! Let's just leave `sub.cost` untouched so the frontend shows it in its native currency!
-  }
+  const costPromises = subscriptions.map(sub => getEffectiveMonthlyCostInCurrency(sub, targetCurrency));
+  const convertedCosts = await Promise.all(costPromises);
+
+  subscriptions.forEach((sub, index) => {
+    totalMonthlySpend += convertedCosts[index];
+  });
   
   const snapshots = await SpendSnapshot.find({ userId: req.user.id }).sort({ month: 1 }).lean();
   
@@ -325,8 +339,9 @@ export const getCategoryDetail = catchAsync(async (req, res, next) => {
     let categorySpend = 0;
     
     if (snapshot.totalByCategory && snapshot.totalByCategory[category]) {
-      const spendInTarget = await currencyService.convert(snapshot.totalByCategory[category], 'USD', targetCurrency);
-      categorySpend = spendInTarget;
+      const rates = await exchangeRateService.getCachedExchangeRates('USD');
+      const rateToTarget = rates[targetCurrency] || 1;
+      categorySpend = snapshot.totalByCategory[category] * rateToTarget;
     }
     
     categoryTrend.push({

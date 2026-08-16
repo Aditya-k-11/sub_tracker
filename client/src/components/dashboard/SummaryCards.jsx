@@ -10,7 +10,11 @@ const SummaryCards = ({ summary }) => {
   const currency = summary.currency || 'USD';
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div className="relative mb-8">
+      <div className="absolute -top-6 right-0 text-xs text-brand-text/50">
+        All amounts shown in {currency}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {}
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
@@ -86,6 +90,7 @@ const SummaryCards = ({ summary }) => {
           <div className="text-sm text-brand-text/70 mt-2">No active trials</div>
         )}
       </motion.div>
+      </div>
     </div>
   );
 };

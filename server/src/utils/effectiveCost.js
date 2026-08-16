@@ -1,4 +1,5 @@
 import { normalizeToMonthly } from './normalizeToMonthly.js';
+import { exchangeRateService } from '../services/exchangeRateService.js';
 
 /**
  * Returns the cost divided by the number of people sharing the subscription.
@@ -20,4 +21,37 @@ export const getEffectiveMonthlyCost = (subscription, overrideCost = null) => {
   
   const effectiveCost = getEffectiveCost(subscription, overrideCost);
   return normalizeToMonthly(effectiveCost, subscription.billingCycle, subscription.billingCycleInterval);
+};
+
+/**
+ * Returns the effective monthly cost converted to the target currency.
+ * This is async because it fetches real exchange rates.
+ */
+export const getEffectiveMonthlyCostInCurrency = async (subscription, targetCurrency) => {
+  if (!subscription) return 0;
+
+  const baseEffectiveMonthlyCost = getEffectiveMonthlyCost(subscription);
+  const subCurrency = subscription.currency || 'USD';
+
+  if (subCurrency === targetCurrency) {
+    return baseEffectiveMonthlyCost;
+  }
+
+  try {
+    const rates = await exchangeRateService.getCachedExchangeRates(subCurrency);
+    const rateToTarget = rates[targetCurrency];
+    
+    if (rateToTarget) {
+      return baseEffectiveMonthlyCost * rateToTarget;
+    } else {
+      // If the target currency is not found in the rates, return unconverted 
+      // (or log a warning)
+      console.warn(`Target currency ${targetCurrency} not found in exchange rates for base ${subCurrency}`);
+      return baseEffectiveMonthlyCost;
+    }
+  } catch (error) {
+    console.error(`Error during currency conversion from ${subCurrency} to ${targetCurrency}:`, error);
+    // Graceful fallback to unconverted if everything fails
+    return baseEffectiveMonthlyCost;
+  }
 };

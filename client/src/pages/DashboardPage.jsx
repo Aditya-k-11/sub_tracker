@@ -182,10 +182,10 @@ const DashboardPage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
         <div className="h-[400px]">
-          <CategoryChart categories={data.categories} />
+          <CategoryChart categories={data.categories} currency={data.summary.currency} />
         </div>
         <div className="h-[400px]">
-          <TrendChart trend={data.trend} />
+          <TrendChart trend={data.trend} currency={data.summary.currency} />
         </div>
       </div>
 
@@ -194,6 +194,7 @@ const DashboardPage = () => {
           <WastedSpendPanel 
             flagged={data.wasted.flaggedSubscriptions} 
             potentialSavings={data.wasted.potentialMonthlySavings} 
+            currency={data.wasted.currency}
             onUsageLogged={handleUsageLogged}
             submittingUsage={submittingUsage}
           />

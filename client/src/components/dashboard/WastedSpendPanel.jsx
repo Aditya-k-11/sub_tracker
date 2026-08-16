@@ -6,8 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../common/Button';
 import LogUsageModal from '../subscriptions/LogUsageModal';
 
-const WastedSpendPanel = ({ flagged, potentialSavings, onUsageLogged, submittingUsage }) => {
-  const { user } = useAuth();
+const WastedSpendPanel = ({ flagged, potentialSavings, currency = 'USD', onUsageLogged, submittingUsage }) => {
   const [usageTarget, setUsageTarget] = useState(null);
 
   if (!flagged || flagged.length === 0) {
@@ -30,7 +29,7 @@ const WastedSpendPanel = ({ flagged, potentialSavings, onUsageLogged, submitting
           <h3 className="text-xs uppercase tracking-wide text-secondary font-bold mb-1">Potential Wasted Spend</h3>
           <div className="text-2xl sm:text-3xl font-bold text-brand-text flex items-center tracking-tight">
             <AlertCircle className="mr-3 text-accent" size={28} />
-            {formatCurrency(potentialSavings, user?.currency)} <span className="text-sm font-normal text-secondary ml-2 mt-1">/ month</span>
+            {formatCurrency(potentialSavings, currency)} <span className="text-sm font-normal text-secondary ml-2 mt-1">/ month</span>
           </div>
         </div>
       </div>
@@ -53,13 +52,13 @@ const WastedSpendPanel = ({ flagged, potentialSavings, onUsageLogged, submitting
               </div>
               <p className="text-sm text-brand-text/70 mb-1.5">{sub.reason}</p>
               <p className="text-xs font-medium text-brand-text/50">
-                Cost per use: {sub.costPerUse !== null ? `${formatCurrency(sub.costPerUse, user?.currency)}/use` : 'Never used'}
+                Cost per use: {sub.costPerUse !== null ? `${formatCurrency(sub.costPerUse, currency)}/use` : 'Never used'}
               </p>
             </div>
             
             <div className="flex items-center justify-between md:justify-end space-x-6">
               <div className="text-left md:text-right">
-                <div className="font-bold text-brand-text tabular-nums">{formatCurrency(sub.monthlyCost, user?.currency)}</div>
+                <div className="font-bold text-brand-text tabular-nums">{formatCurrency(sub.monthlyCost, currency)}</div>
                 <div className="text-xs text-brand-text/70">per month</div>
               </div>
               <Button 

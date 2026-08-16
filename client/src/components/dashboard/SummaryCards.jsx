@@ -5,9 +5,9 @@ import { Layers, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const SummaryCards = ({ summary }) => {
-  const { user } = useAuth();
-  
   if (!summary) return null;
+
+  const currency = summary.currency || 'USD';
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -21,10 +21,10 @@ const SummaryCards = ({ summary }) => {
       >
         <h3 className="text-xs uppercase tracking-wide text-brand-text/70 mb-2 font-medium">Monthly Spend</h3>
         <div className="text-4xl lg:text-5xl font-bold tabular-nums text-brand-text mb-1">
-          {formatCurrency(summary.totalMonthlySpend, user?.currency)}
+          {formatCurrency(summary.totalMonthlySpend, currency)}
         </div>
         <p className="text-sm text-brand-text/70">
-          Yearly: {formatCurrency(summary.totalYearlySpend, user?.currency)}
+          Yearly: {formatCurrency(summary.totalYearlySpend, currency)}
         </p>
       </motion.div>
 

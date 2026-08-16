@@ -155,7 +155,7 @@ const CategoryDetailPage = () => {
           </div>
           <div className="mt-4 md:mt-0 text-left md:text-right bg-black/20 p-4 rounded-xl">
             <p className="text-xs text-brand-text/60 uppercase tracking-wider mb-1">Total Monthly Spend</p>
-            <p className="text-2xl font-bold text-brand-text">{formatCurrency(totalMonthlySpend, user?.currency)}</p>
+            <p className="text-2xl font-bold text-brand-text">{formatCurrency(totalMonthlySpend, detail.currency)}</p>
           </div>
         </motion.div>
 
@@ -199,13 +199,13 @@ const CategoryDetailPage = () => {
                     stroke="rgba(255,255,255,0.3)" 
                     tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
                     tickFormatter={(val) => {
-                      const symbol = new Intl.NumberFormat('en-US', {style:'currency', currency: user?.currency || 'USD'}).formatToParts(0).find(p=>p.type==='currency')?.value || '$';
+                      const symbol = new Intl.NumberFormat('en-US', {style:'currency', currency: detail.currency || 'USD'}).formatToParts(0).find(p=>p.type==='currency')?.value || '$';
                       return `${symbol}${val}`;
                     }}
                   />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#1c011a', color: '#fed8fb', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
-                    formatter={(value) => [formatCurrency(value, user?.currency), 'Spend']}
+                    formatter={(value) => [formatCurrency(value, detail.currency), 'Spend']}
                     labelFormatter={(label) => `Month: ${label}`}
                   />
                   <Area 

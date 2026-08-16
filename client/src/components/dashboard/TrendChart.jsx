@@ -29,9 +29,8 @@ const CustomTooltip = ({ active, payload, label, currencyCode }) => {
   return null;
 };
 
-const TrendChart = ({ trend }) => {
-  const { user } = useAuth();
-  const currencyCode = user?.currency || 'USD';
+const TrendChart = ({ trend, currency = 'USD' }) => {
+  const currencyCode = currency;
 
   if (!trend || trend.length === 0) return null;
 

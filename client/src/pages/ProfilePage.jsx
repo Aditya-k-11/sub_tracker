@@ -7,8 +7,10 @@ import Button from '../components/common/Button';
 import Toast from '../components/common/Toast';
 import { User, Shield, Bell, AlertTriangle } from 'lucide-react';
 import PageTransition from '../components/common/PageTransition';
+import { useAuth } from '../context/AuthContext';
 
 const ProfilePage = () => {
+  const { updateUser } = useAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
@@ -39,6 +41,7 @@ const ProfilePage = () => {
     try {
       const data = await updateProfile(formData);
       setUser(data.user);
+      updateUser(data.user);
       showToast('Profile updated successfully', 'success');
     } catch (error) {
       showToast(error.response?.data?.message || 'Failed to update profile', 'error');

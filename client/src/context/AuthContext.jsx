@@ -34,10 +34,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('subtrack_user');
   };
 
+  const updateUser = (userData) => {
+    setUser(userData);
+    localStorage.setItem('subtrack_user', JSON.stringify(userData));
+  };
+
   const isAuthenticated = !!token;
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -120,12 +120,12 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
               onChange={handleChange}
               className="w-1/3 bg-black/20 text-white border border-white/20 rounded-lg px-2 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
             >
-              <option className="bg-brand-bg" value="USD">USD</option>
-              <option className="bg-brand-bg" value="EUR">EUR</option>
-              <option className="bg-brand-bg" value="GBP">GBP</option>
-              <option className="bg-brand-bg" value="INR">INR</option>
-              <option className="bg-brand-bg" value="AUD">AUD</option>
-              <option className="bg-brand-bg" value="CAD">CAD</option>
+              <option className="bg-brand-bg" value="USD">USD ($)</option>
+              <option className="bg-brand-bg" value="EUR">EUR (€)</option>
+              <option className="bg-brand-bg" value="GBP">GBP (£)</option>
+              <option className="bg-brand-bg" value="INR">INR (₹)</option>
+              <option className="bg-brand-bg" value="AUD">AUD ($)</option>
+              <option className="bg-brand-bg" value="CAD">CAD ($)</option>
             </select>
           </div>
           {validationErrors.cost && <p className="text-red-500 text-xs mt-1">{validationErrors.cost}</p>}

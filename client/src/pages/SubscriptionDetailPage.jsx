@@ -249,7 +249,10 @@ const SubscriptionDetailPage = () => {
                     Split {subscription.sharedWithCount}
                   </span>
                 </p>
-                <p className="text-xs text-brand-text/50">Full: {formatCurrency(subscription.cost, subscription.currency || 'USD')}</p>
+                <p className="text-xs text-brand-text/50 mt-1">Full cost: {formatCurrency(subscription.cost, subscription.currency || 'USD')}</p>
+                {subscription.sharedNote && (
+                  <p className="text-xs text-brand-text/50 mt-1 italic break-words w-full">Note: {subscription.sharedNote}</p>
+                )}
               </div>
             ) : (
               <p className="text-lg font-medium text-brand-text">{formatCurrency(subscription.cost, subscription.currency || 'USD')}</p>

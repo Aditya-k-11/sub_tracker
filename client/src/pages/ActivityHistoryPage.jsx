@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import PageTransition from '../components/common/PageTransition';
 import ActivityFilters from '../components/activity/ActivityFilters';
 import { getActivityHistory } from '../services/activityService';
-import { formatActivityText, getActivityIcon, formatRelativeTime } from '../utils/activityFormatters';
+import { formatActivityText, getActivityIcon, formatRelativeTime, formatActivityMetadata } from '../utils/activityFormatters';
 
 const ActivityHistoryPage = () => {
   const [filters, setFilters] = useState({ action: '', startDate: '', endDate: '', page: 1 });
@@ -116,11 +116,11 @@ const ActivityHistoryPage = () => {
                       <p className="text-sm font-medium text-white leading-relaxed">
                         {formatActivityText(activity)}
                       </p>
-                      {activity.metadata && Object.keys(activity.metadata).length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-white/10">
-                          <pre className="text-xs text-white/60 font-mono overflow-x-auto whitespace-pre-wrap">
-                            {JSON.stringify(activity.metadata, null, 2)}
-                          </pre>
+                      {activity.metadata && formatActivityMetadata(activity) && (
+                        <div className="mt-2 pt-2 border-t border-white/5">
+                          <p className="text-xs text-white/50 italic">
+                            {formatActivityMetadata(activity)}
+                          </p>
                         </div>
                       )}
                     </div>

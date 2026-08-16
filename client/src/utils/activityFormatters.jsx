@@ -27,6 +27,36 @@ export const formatActivityText = (activity) => {
   }
 };
 
+export const formatActivityMetadata = (activity) => {
+  if (!activity.metadata || Object.keys(activity.metadata).length === 0) return null;
+
+  const { action, metadata } = activity;
+
+  if (action === 'subscription_updated' && metadata.updatedFields) {
+    return `Updated fields: ${metadata.updatedFields.join(', ')}`;
+  }
+
+  if (action === 'subscription_created') {
+    const parts = [];
+    if (metadata.cost !== undefined) parts.push(`Cost: ${metadata.cost} ${metadata.currency || ''}`);
+    if (metadata.category) parts.push(`Category: ${metadata.category}`);
+    if (parts.length > 0) return parts.join(' • ');
+  }
+
+  // Fallback for simple key-values
+  try {
+    const pairs = Object.entries(metadata)
+      .filter(([_, v]) => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean')
+      .map(([k, v]) => `${k.charAt(0).toUpperCase() + k.slice(1)}: ${v}`);
+    
+    if (pairs.length > 0) return pairs.join(' • ');
+  } catch (e) {
+    return null;
+  }
+  
+  return null;
+};
+
 export const getActivityIcon = (action) => {
   switch (action) {
     case 'subscription_created':

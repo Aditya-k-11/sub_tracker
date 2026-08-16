@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { exportSubscriptions } from '../services/exportService';
 import { Download, FileText, PieChart } from 'lucide-react';
 import Spinner from '../components/common/Spinner';
+import Button from '../components/common/Button';
 
 const ReportsPage = () => {
   const [isExportingCsv, setIsExportingCsv] = useState(false);
@@ -52,7 +53,8 @@ const ReportsPage = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-brand-bg/90 to-brand-bg/50 backdrop-blur-xl border border-brand-primary/20 rounded-2xl p-6"
+          whileHover={{ y: -4 }}
+          className="bg-gradient-to-br from-brand-bg/90 via-primary/20 to-brand-bg/90 bg-[length:200%_200%] animate-gradient-shift backdrop-blur-md border border-white/10 shadow-primary/5 shadow-xl rounded-2xl p-6 flex flex-col transition-all"
         >
           <div className="flex items-center space-x-4 mb-4">
             <div className="p-3 bg-brand-primary/20 rounded-lg">
@@ -63,17 +65,18 @@ const ReportsPage = () => {
               <p className="text-sm text-brand-text-muted">Raw data for spreadsheets</p>
             </div>
           </div>
-          <p className="text-brand-text-muted mb-6">
+          <p className="text-brand-text/70 mb-6 flex-grow">
             Export all your subscriptions (both active and cancelled) in a flat, comma-separated format. Perfect for importing into Excel, Google Sheets, or personal finance software.
           </p>
-          <button
+          <Button
+            variant="secondary"
+            className="w-full"
             onClick={() => handleExport('csv')}
-            disabled={isExportingCsv}
-            className="w-full py-3 px-4 bg-brand-bg border border-brand-primary/30 rounded-xl text-brand-primary hover:bg-brand-primary/10 transition-colors disabled:opacity-50 flex items-center justify-center font-medium"
+            loading={isExportingCsv}
           >
-            {isExportingCsv ? <Spinner size="sm" className="mr-2" /> : <Download className="w-5 h-5 mr-2" />}
-            {isExportingCsv ? 'Generating CSV...' : 'Download CSV'}
-          </button>
+            <Download className="w-5 h-5 mr-2" />
+            Download CSV
+          </Button>
         </motion.div>
 
         {/* PDF Export Card */}
@@ -81,7 +84,8 @@ const ReportsPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-brand-bg/90 to-brand-bg/50 backdrop-blur-xl border border-brand-primary/20 rounded-2xl p-6"
+          whileHover={{ y: -4 }}
+          className="bg-gradient-to-br from-brand-bg/90 via-primary/20 to-brand-bg/90 bg-[length:200%_200%] animate-gradient-shift backdrop-blur-md border border-white/10 shadow-primary/5 shadow-xl rounded-2xl p-6 flex flex-col transition-all"
         >
           <div className="flex items-center space-x-4 mb-4">
             <div className="p-3 bg-brand-secondary/20 rounded-lg">
@@ -92,17 +96,18 @@ const ReportsPage = () => {
               <p className="text-sm text-brand-text-muted">Formatted document</p>
             </div>
           </div>
-          <p className="text-brand-text-muted mb-6">
+          <p className="text-brand-text/70 mb-6 flex-grow">
             Generate a clean, printable PDF document containing a summary of your spending and a complete list of all your tracked subscriptions.
           </p>
-          <button
+          <Button
+            variant="secondary"
+            className="w-full"
             onClick={() => handleExport('pdf')}
-            disabled={isExportingPdf}
-            className="w-full py-3 px-4 bg-gradient-to-r from-brand-primary to-brand-secondary text-white rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center font-medium shadow-lg shadow-brand-primary/20"
+            loading={isExportingPdf}
           >
-            {isExportingPdf ? <Spinner size="sm" className="mr-2" color="white" /> : <Download className="w-5 h-5 mr-2" />}
-            {isExportingPdf ? 'Generating PDF...' : 'Download PDF'}
-          </button>
+            <Download className="w-5 h-5 mr-2" />
+            Download PDF
+          </Button>
         </motion.div>
       </div>
       

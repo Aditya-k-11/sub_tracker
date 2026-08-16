@@ -6,8 +6,19 @@ import { WASTE_THRESHOLD_DAYS, MIN_SUBSCRIPTION_AGE_DAYS } from '../config/waste
 import { HIGH_CATEGORY_SPEND_THRESHOLD } from '../config/insightsConfig.js';
 import { getEffectiveMonthlyCost } from '../utils/effectiveCost.js';
 import { findUpcomingRenewals } from './renewalScanService.js';
-import { currencyService } from './currencyService.js';
+import { exchangeRateService } from './exchangeRateService.js';
 import { estimateAnnualSavings } from '../utils/annualSavingsCalculator.js';
+
+const convertCurrency = async (amount, fromCurrency, toCurrency) => {
+  if (fromCurrency === toCurrency) return amount;
+  try {
+    const rates = await exchangeRateService.getCachedExchangeRates(fromCurrency);
+    const rateToTarget = rates[toCurrency];
+    return rateToTarget ? amount * rateToTarget : amount;
+  } catch (err) {
+    return amount;
+  }
+};
 
 const getTargetCurrency = async (userId) => {
   const user = await User.findById(userId);
@@ -46,7 +57,7 @@ export const analyzeWastedSpend = async (userId) => {
     }
     
     if (daysSinceLastUse >= WASTE_THRESHOLD_DAYS) {
-      const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
+      const costInTarget = await convertCurrency(sub.cost, sub.currency || 'USD', targetCurrency);
       const monthlyCost = getEffectiveMonthlyCost(sub, costInTarget);
       
       let costPerUse = null;
@@ -128,7 +139,7 @@ const getHighCategorySpendInsights = async (userId, targetCurrency) => {
   const categoryMap = {};
   
   for (const sub of subscriptions) {
-    const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
+    const costInTarget = await convertCurrency(sub.cost, sub.currency || 'USD', targetCurrency);
     const monthlyCost = getEffectiveMonthlyCost(sub, costInTarget);
     
     if (!categoryMap[sub.category]) {
@@ -180,8 +191,8 @@ const getPriceChangeInsights = async (userId, targetCurrency) => {
       
       // If changed within last 30 days and cost INCREASED
       if (mostRecentChange.changedAt > thirtyDaysAgo && sub.cost > mostRecentChange.cost) {
-        const oldCostInTarget = await currencyService.convert(mostRecentChange.cost, sub.currency || 'USD', targetCurrency);
-        const newCostInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
+        const oldCostInTarget = await convertCurrency(mostRecentChange.cost, sub.currency || 'USD', targetCurrency);
+        const newCostInTarget = await convertCurrency(sub.cost, sub.currency || 'USD', targetCurrency);
         
         const oldStr = formatCurrencyString(oldCostInTarget, targetCurrency);
         const newStr = formatCurrencyString(newCostInTarget, targetCurrency);
@@ -220,7 +231,7 @@ const getSavingsInsights = async (userId, targetCurrency) => {
   for (const sub of subscriptions) {
     const savingsEstimate = estimateAnnualSavings(sub);
     if (savingsEstimate && savingsEstimate.estimatedSavings > 0) {
-      const savingsInTarget = await currencyService.convert(savingsEstimate.estimatedSavings, sub.currency || 'USD', targetCurrency);
+      const savingsInTarget = await convertCurrency(savingsEstimate.estimatedSavings, sub.currency || 'USD', targetCurrency);
       
       // Threshold: Don't show trivial savings (e.g. less than 12 in their currency per year)
       if (savingsInTarget > 12) {

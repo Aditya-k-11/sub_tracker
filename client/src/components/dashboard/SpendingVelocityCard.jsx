@@ -11,7 +11,8 @@ const SpendingVelocityCard = ({ velocity }) => {
     daysRemaining,
     lastMonthActual,
     percentChangeVsLastMonth,
-    trend
+    trend,
+    currency
   } = velocity;
 
   const totalDays = daysElapsed + daysRemaining;
@@ -38,13 +39,13 @@ const SpendingVelocityCard = ({ velocity }) => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="flex-1">
           <h2 className="text-3xl md:text-4xl font-bold text-brand-text tracking-tight mb-2">
-            You're on track to spend <span className="text-primary">{formatCurrency(projectedMonthEnd)}</span> this month
+            You're on track to spend <span className="text-primary">{formatCurrency(projectedMonthEnd, currency)}</span> this month
           </h2>
           
           <div className={`text-sm font-medium ${trendColorClass}`}>
             {percentChangeVsLastMonth !== null ? (
               <span>
-                {Math.abs(percentChangeVsLastMonth)}% {trend === 'up' ? 'more' : trend === 'down' ? 'less' : 'about the same as'} than last month ({formatCurrency(lastMonthActual)})
+                {Math.abs(percentChangeVsLastMonth)}% {trend === 'up' ? 'more' : trend === 'down' ? 'less' : 'about the same as'} than last month ({formatCurrency(lastMonthActual, currency)})
               </span>
             ) : (
               <span className="text-brand-text/70">Not enough history yet to compare to last month</span>

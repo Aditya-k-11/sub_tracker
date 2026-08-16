@@ -1,4 +1,4 @@
-﻿import Subscription from '../models/Subscription.js';
+import Subscription from '../models/Subscription.js';
 import User from '../models/User.js';
 import catchAsync from '../utils/catchAsync.js';
 import { normalizeToMonthly } from '../utils/normalizeToMonthly.js';
@@ -249,10 +249,40 @@ export const getSpendingVelocity = catchAsync(async (req, res, next) => {
     }
   }
 
+  const prevMonthDate = new Date(year, month - 1, 1);
+  const prevMonthStr = prevMonthDate.getFullYear() + '-' + String(prevMonthDate.getMonth() + 1).padStart(2, '0');
+  
+  const lastSnapshot = await SpendSnapshot.findOne({ userId: req.user.id, month: prevMonthStr });
+  
+  let percentChangeVsLastMonth = null;
+  let trend = 'unknown';
+  let lastMonthActual = null;
+
+  if (lastSnapshot) {
+    const spendInTarget = await currencyService.convert(lastSnapshot.totalSpend, 'USD', targetCurrency);
+    lastMonthActual = spendInTarget;
+    if (lastMonthActual > 0) {
+      percentChangeVsLastMonth = ((projectedMonthEnd - lastMonthActual) / lastMonthActual) * 100;
+      percentChangeVsLastMonth = Math.round(percentChangeVsLastMonth * 10) / 10;
+      
+      if (percentChangeVsLastMonth > 2) {
+        trend = 'up';
+      } else if (percentChangeVsLastMonth < -2) {
+        trend = 'down';
+      } else {
+        trend = 'flat';
+      }
+    }
+  }
+
   res.status(200).json({
     monthToDateSpend: Math.round(monthToDateSpend * 100) / 100,
     projectedMonthEnd: Math.round(projectedMonthEnd * 100) / 100,
+    daysElapsed: dayOfMonth,
     daysRemaining,
+    lastMonthActual: lastMonthActual !== null ? Math.round(lastMonthActual * 100) / 100 : null,
+    percentChangeVsLastMonth,
+    trend,
     currency: targetCurrency
   });
 });

@@ -390,4 +390,3 @@ export const getSavingsEstimate = catchAsync(async (req, res, next) => {
 
   res.status(200).json({ savingsEstimate });
 });
-});

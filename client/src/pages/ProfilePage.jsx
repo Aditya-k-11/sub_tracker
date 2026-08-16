@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCurrentUser, updateProfile } from '../services/userService';
+import { getCurrentUser, updateProfile, updateBudget } from '../services/userService';
 import ChangePasswordForm from '../components/profile/ChangePasswordForm';
 import DeleteAccountSection from '../components/profile/DeleteAccountSection';
 import NotificationPreferences from '../components/profile/NotificationPreferences';
@@ -58,8 +58,8 @@ const ProfilePage = () => {
     setSavingBudget(true);
     try {
       const budgetValue = budgetData.monthlyBudget === '' ? null : Number(budgetData.monthlyBudget);
-      const { updateBudget } = await import('../services/userService');
       const res = await updateBudget(budgetValue);
+      setUser(prev => ({ ...prev, monthlyBudget: res.monthlyBudget }));
       setUser(prev => ({ ...prev, monthlyBudget: res.monthlyBudget }));
       showToast('Budget updated successfully', 'success');
     } catch (error) {

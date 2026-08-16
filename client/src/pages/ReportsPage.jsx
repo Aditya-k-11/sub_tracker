@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { exportSubscriptions } from '../services/exportService';
-import { useToast } from '../context/ToastContext';
-import { FiDownload, FiFileText, FiPieChart } from 'react-icons/fi';
+import { Download, FileText, PieChart } from 'lucide-react';
 import Spinner from '../components/common/Spinner';
 
 const ReportsPage = () => {
   const [isExportingCsv, setIsExportingCsv] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
-  const { showToast } = useToast();
+  const [message, setMessage] = useState({ text: '', type: '' });
 
   const handleExport = async (format) => {
+    setMessage({ text: '', type: '' });
     if (format === 'csv') setIsExportingCsv(true);
     else setIsExportingPdf(true);
 
     try {
       await exportSubscriptions(format);
-      showToast(`Successfully exported as ${format.toUpperCase()}`, 'success');
+      setMessage({ text: `Successfully exported as ${format.toUpperCase()}`, type: 'success' });
     } catch (error) {
       console.error('Export failed:', error);
-      showToast(`Failed to export ${format.toUpperCase()}`, 'error');
+      setMessage({ text: `Failed to export ${format.toUpperCase()}`, type: 'error' });
     } finally {
       if (format === 'csv') setIsExportingCsv(false);
       else setIsExportingPdf(false);
@@ -37,6 +37,16 @@ const ReportsPage = () => {
         </p>
       </div>
 
+      {message.text && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`p-4 rounded-xl border ${message.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}
+        >
+          {message.text}
+        </motion.div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* CSV Export Card */}
         <motion.div
@@ -46,7 +56,7 @@ const ReportsPage = () => {
         >
           <div className="flex items-center space-x-4 mb-4">
             <div className="p-3 bg-brand-primary/20 rounded-lg">
-              <FiFileText className="w-6 h-6 text-brand-primary" />
+              <FileText className="w-6 h-6 text-brand-primary" />
             </div>
             <div>
               <h2 className="text-xl font-semibold text-brand-text">CSV Export</h2>
@@ -61,7 +71,7 @@ const ReportsPage = () => {
             disabled={isExportingCsv}
             className="w-full py-3 px-4 bg-brand-bg border border-brand-primary/30 rounded-xl text-brand-primary hover:bg-brand-primary/10 transition-colors disabled:opacity-50 flex items-center justify-center font-medium"
           >
-            {isExportingCsv ? <Spinner size="sm" className="mr-2" /> : <FiDownload className="mr-2" />}
+            {isExportingCsv ? <Spinner size="sm" className="mr-2" /> : <Download className="w-5 h-5 mr-2" />}
             {isExportingCsv ? 'Generating CSV...' : 'Download CSV'}
           </button>
         </motion.div>
@@ -75,7 +85,7 @@ const ReportsPage = () => {
         >
           <div className="flex items-center space-x-4 mb-4">
             <div className="p-3 bg-brand-secondary/20 rounded-lg">
-              <FiPieChart className="w-6 h-6 text-brand-secondary" />
+              <PieChart className="w-6 h-6 text-brand-secondary" />
             </div>
             <div>
               <h2 className="text-xl font-semibold text-brand-text">PDF Report</h2>
@@ -90,7 +100,7 @@ const ReportsPage = () => {
             disabled={isExportingPdf}
             className="w-full py-3 px-4 bg-gradient-to-r from-brand-primary to-brand-secondary text-white rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center font-medium shadow-lg shadow-brand-primary/20"
           >
-            {isExportingPdf ? <Spinner size="sm" className="mr-2" color="white" /> : <FiDownload className="mr-2" />}
+            {isExportingPdf ? <Spinner size="sm" className="mr-2" color="white" /> : <Download className="w-5 h-5 mr-2" />}
             {isExportingPdf ? 'Generating PDF...' : 'Download PDF'}
           </button>
         </motion.div>

@@ -1,4 +1,4 @@
-import { apiClient } from './api';
+import apiClient from './apiClient';
 
 export const exportSubscriptions = async (format = 'csv') => {
   const response = await apiClient.get('/export/subscriptions', {

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { Users } from 'lucide-react';
 import { 
   getSubscriptionDetail, 
   updateSubscriptionNotes,
@@ -180,6 +182,25 @@ const SubscriptionDetailPage = () => {
     show: { opacity: 1, y: 0 }
   };
 
+  const effectiveCost = subscription.cost / (subscription.sharedWithCount || 1);
+  const isShared = (subscription.sharedWithCount || 1) > 1;
+
+  // Prepare chart data
+  let chartData = [];
+  if (subscription.costHistory && subscription.costHistory.length > 0) {
+    chartData = subscription.costHistory.map(entry => ({
+      ...entry,
+      dateStr: formatDate(entry.changedAt)
+    }));
+    // Append current cost
+    chartData.push({
+      cost: subscription.cost,
+      billingCycle: subscription.billingCycle,
+      changedAt: new Date().toISOString(),
+      dateStr: 'Current'
+    });
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <Button variant="ghost" onClick={() => navigate(-1)} className="mb-2 -ml-2 text-brand-text/70">
@@ -219,7 +240,20 @@ const SubscriptionDetailPage = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-black/20 rounded-xl mb-4">
           <div>
             <p className="text-xs text-brand-text/60 uppercase tracking-wider mb-1">Cost</p>
-            <p className="text-lg font-medium text-brand-text">{formatCurrency(subscription.cost, subscription.currency || 'USD')}</p>
+            {isShared ? (
+              <div className="flex flex-col">
+                <p className="text-lg font-medium text-brand-text flex items-center">
+                  {formatCurrency(effectiveCost, subscription.currency || 'USD')} 
+                  <span className="text-xs ml-2 bg-primary-900/40 text-primary-300 px-2 py-0.5 rounded-full border border-primary-500/30 flex items-center" title={subscription.sharedNote || `Split ${subscription.sharedWithCount} ways`}>
+                    <Users className="w-3 h-3 mr-1" />
+                    Split {subscription.sharedWithCount}
+                  </span>
+                </p>
+                <p className="text-xs text-brand-text/50">Full: {formatCurrency(subscription.cost, subscription.currency || 'USD')}</p>
+              </div>
+            ) : (
+              <p className="text-lg font-medium text-brand-text">{formatCurrency(subscription.cost, subscription.currency || 'USD')}</p>
+            )}
           </div>
           <div>
             <p className="text-xs text-brand-text/60 uppercase tracking-wider mb-1">Billing Cycle</p>
@@ -267,10 +301,60 @@ const SubscriptionDetailPage = () => {
           {/* Cost History */}
           <div className="bg-white/5 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10">
             <h2 className="text-xl font-bold text-brand-text mb-4">Cost History</h2>
-            {detail.costHistory && detail.costHistory.length > 0 ? (
-              <div className="h-48 flex items-center justify-center text-brand-text/50 italic">
-                {/* Recharts chart will go here when E.2 is built */}
-                Chart rendering coming soon...
+            {chartData.length > 0 ? (
+              <div className="space-y-6">
+                <div className="h-48">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
+                      <XAxis 
+                        dataKey="dateStr" 
+                        stroke="rgba(255,255,255,0.3)" 
+                        tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }} 
+                      />
+                      <YAxis 
+                        stroke="rgba(255,255,255,0.3)" 
+                        tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }}
+                        tickFormatter={(val) => {
+                          const symbol = new Intl.NumberFormat('en-US', {style:'currency', currency: subscription.currency || 'USD'}).formatToParts(0).find(p=>p.type==='currency')?.value || '$';
+                          return `${symbol}${val}`;
+                        }}
+                      />
+                      <RechartsTooltip 
+                        contentStyle={{ backgroundColor: '#1c011a', color: '#fed8fb', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}
+                        formatter={(value, name, props) => [
+                          `${formatCurrency(value, subscription.currency || 'USD')} / ${props.payload.billingCycle}`,
+                          'Cost'
+                        ]}
+                        labelStyle={{ color: 'rgba(255,255,255,0.7)' }}
+                      />
+                      <Line 
+                        type="stepAfter" 
+                        dataKey="cost" 
+                        stroke="#fed8fb" 
+                        strokeWidth={2} 
+                        dot={{ r: 4, fill: '#1c011a', stroke: '#fed8fb', strokeWidth: 2 }}
+                        activeDot={{ r: 6, fill: '#fed8fb' }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                <div className="space-y-2 mt-4 pt-4 border-t border-white/10">
+                  {chartData.slice(0, -1).map((entry, index) => {
+                    const nextEntry = chartData[index + 1];
+                    return (
+                      <div key={index} className="flex justify-between items-center text-sm text-brand-text/80 bg-black/20 p-2 rounded-lg">
+                        <span>
+                          {formatCurrency(entry.cost, subscription.currency || 'USD')} → {formatCurrency(nextEntry.cost, subscription.currency || 'USD')}
+                        </span>
+                        <span className="text-brand-text/50">
+                          {entry.billingCycle} &middot; {entry.dateStr}
+                        </span>
+                      </div>
+                    );
+                  }).reverse()}
+                </div>
               </div>
             ) : (
               <EmptyState 

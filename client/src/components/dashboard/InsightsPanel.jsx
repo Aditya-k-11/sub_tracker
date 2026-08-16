@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertTriangle, Clock, Layers, ChevronLeft, ChevronRight, XCircle } from 'lucide-react';
+import { AlertTriangle, Clock, Layers, ChevronLeft, ChevronRight, XCircle, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import LogUsageModal from '../subscriptions/LogUsageModal';
 
@@ -12,6 +12,8 @@ const getInsightIcon = (type) => {
       return <Clock className="h-6 w-6 text-blue-500" />;
     case 'high_category_spend':
       return <Layers className="h-6 w-6 text-purple-500" />;
+    case 'price_increase':
+      return <TrendingUp className="h-6 w-6 text-red-500" />;
     default:
       return <AlertTriangle className="h-6 w-6 text-gray-400" />;
   }

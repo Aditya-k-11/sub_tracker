@@ -9,7 +9,9 @@ export const createSubscriptionValidation = [
   body('nextRenewalDate').isISO8601().withMessage('Must be a valid ISO 8601 date'),
   body('isTrial').optional().isBoolean().withMessage('isTrial must be a boolean'),
   body('trialEndDate').optional({ nullable: true, checkFalsy: true }).isISO8601().withMessage('Must be a valid ISO 8601 date'),
-  body('paymentMethod').optional({ nullable: true, checkFalsy: true }).trim()
+  body('paymentMethod').optional({ nullable: true, checkFalsy: true }).trim(),
+  body('sharedWithCount').optional().isInt({ min: 1, max: 20 }).withMessage('sharedWithCount must be between 1 and 20'),
+  body('sharedNote').optional({ nullable: true, checkFalsy: true }).trim().isLength({ max: 200 }).withMessage('sharedNote cannot exceed 200 characters')
 ];
 
 export const updateSubscriptionValidation = [
@@ -22,7 +24,9 @@ export const updateSubscriptionValidation = [
   body('status').optional().isIn(['active', 'paused', 'cancelled']).withMessage('Invalid status'),
   body('isTrial').optional().isBoolean().withMessage('isTrial must be a boolean'),
   body('trialEndDate').optional({ nullable: true, checkFalsy: true }).isISO8601().withMessage('Must be a valid ISO 8601 date'),
-  body('paymentMethod').optional({ nullable: true, checkFalsy: true }).trim()
+  body('paymentMethod').optional({ nullable: true, checkFalsy: true }).trim(),
+  body('sharedWithCount').optional().isInt({ min: 1, max: 20 }).withMessage('sharedWithCount must be between 1 and 20'),
+  body('sharedNote').optional({ nullable: true, checkFalsy: true }).trim().isLength({ max: 200 }).withMessage('sharedNote cannot exceed 200 characters')
 ];
 
 export const logUsageValidation = [

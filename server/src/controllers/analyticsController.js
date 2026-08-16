@@ -1,7 +1,7 @@
 import Subscription from '../models/Subscription.js';
 import User from '../models/User.js';
 import catchAsync from '../utils/catchAsync.js';
-import { normalizeToMonthly } from '../utils/normalizeToMonthly.js';
+import { getEffectiveMonthlyCost } from '../utils/effectiveCost.js';
 import { upsertCurrentMonthSnapshot } from '../services/snapshotService.js';
 import SpendSnapshot from '../models/SpendSnapshot.js';
 import UsageLog from '../models/UsageLog.js';
@@ -29,7 +29,7 @@ export const getSpendSummary = catchAsync(async (req, res, next) => {
   
   for (const sub of subscriptions) {
     const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
-    totalMonthlySpend += normalizeToMonthly(costInTarget, sub.billingCycle, sub.billingCycleInterval);
+    totalMonthlySpend += getEffectiveMonthlyCost(sub, costInTarget);
     if (sub.isTrial) {
       trialCount++;
     }
@@ -65,7 +65,7 @@ export const getCategoryBreakdown = catchAsync(async (req, res, next) => {
   
   for (const sub of subscriptions) {
     const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
-    const monthlyCost = normalizeToMonthly(costInTarget, sub.billingCycle, sub.billingCycleInterval);
+    const monthlyCost = getEffectiveMonthlyCost(sub, costInTarget);
     totalMonthlySpend += monthlyCost;
     
     if (!categoryMap[sub.category]) {
@@ -124,7 +124,7 @@ export const getWastedSpend = catchAsync(async (req, res, next) => {
   for (const sub of flaggedSubscriptions) {
     // analyzeWastedSpend already returns sub, but monthlyCost is calculated in insightEngine. We'll recalculate here for simplicity and accuracy in target currency
     const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
-    sub.monthlyCost = normalizeToMonthly(costInTarget, sub.billingCycle, sub.billingCycleInterval);
+    sub.monthlyCost = getEffectiveMonthlyCost(sub, costInTarget);
     potentialMonthlySavings += sub.monthlyCost;
   }
   
@@ -226,7 +226,7 @@ export const getSpendingVelocity = catchAsync(async (req, res, next) => {
 
   for (const sub of subscriptions) {
     const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
-    const normalizedMonthly = normalizeToMonthly(costInTarget, sub.billingCycle, sub.billingCycleInterval);
+    const normalizedMonthly = getEffectiveMonthlyCost(sub, costInTarget);
     projectedMonthEnd += normalizedMonthly;
     
     // Check if it already renewed this month
@@ -300,7 +300,7 @@ export const getCategoryDetail = catchAsync(async (req, res, next) => {
   let totalMonthlySpend = 0;
   for (const sub of subscriptions) {
     const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
-    totalMonthlySpend += normalizeToMonthly(costInTarget, sub.billingCycle, sub.billingCycleInterval);
+    totalMonthlySpend += getEffectiveMonthlyCost(sub, costInTarget);
     
     // Convert the subscription cost so the frontend displays it correctly?
     // Wait, earlier I decided the frontend handles formatting using `subscription.currency`.

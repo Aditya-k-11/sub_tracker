@@ -4,6 +4,7 @@ import { formatCurrency, daysUntil, billingCycleLabel } from '../../utils/format
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Button from '../common/Button';
+import { Users } from 'lucide-react';
 
 const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage, selectable = false, isSelected = false, onToggleSelect }) => {
   const { 
@@ -17,8 +18,11 @@ const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage, selectab
     status, 
     isTrial, 
     trialEndDate, 
-    nextRenewalDate 
+    nextRenewalDate,
+    sharedWithCount
   } = subscription;
+
+  const effectiveCost = cost / (sharedWithCount || 1);
 
   const navigate = useNavigate();
 
@@ -82,8 +86,21 @@ const SubscriptionCard = ({ subscription, onEdit, onCancel, onLogUsage, selectab
         <Badge text={displayStatus.toUpperCase()} variant={displayStatus} />
       </div>
       
-      <div className="text-brand-text/70 text-sm mb-4">
-        <span className="font-medium text-brand-text">{formatCurrency(cost, currency)}</span> / {billingCycleLabel(billingCycle, billingCycleInterval)}
+      <div className="text-brand-text/70 text-sm mb-4 flex items-center justify-between">
+        <div>
+          {sharedWithCount > 1 ? (
+            <span className="font-medium text-brand-text">{formatCurrency(effectiveCost, currency)}</span>
+          ) : (
+            <span className="font-medium text-brand-text">{formatCurrency(cost, currency)}</span>
+          )}
+          {' / '}{billingCycleLabel(billingCycle, billingCycleInterval)}
+        </div>
+        {sharedWithCount > 1 && (
+          <div className="flex items-center text-xs text-primary-300 bg-primary-900/40 px-2 py-1 rounded-full border border-primary-500/30" title={`Split ${sharedWithCount} ways`}>
+            <Users className="w-3 h-3 mr-1" />
+            <span>Split {sharedWithCount}</span>
+          </div>
+        )}
       </div>
       
       <div className="mb-4 text-sm text-brand-text/70 flex items-center justify-between">

@@ -7,7 +7,7 @@ import { daysSince } from '../utils/dateHelpers.js';
 import { analyzeWastedSpend } from '../services/insightsEngine.js';
 import { logActivity } from '../services/activityLogger.js';
 export const createSubscription = catchAsync(async (req, res, next) => {
-  const { name, cost, currency, billingCycle, billingCycleInterval, category, nextRenewalDate, isTrial, trialEndDate, paymentMethod } = req.body;
+  const { name, cost, currency, billingCycle, billingCycleInterval, category, nextRenewalDate, isTrial, trialEndDate, paymentMethod, sharedWithCount, sharedNote } = req.body;
 
   const subscription = await Subscription.create({
     userId: req.user.id,
@@ -20,7 +20,9 @@ export const createSubscription = catchAsync(async (req, res, next) => {
     nextRenewalDate,
     isTrial,
     trialEndDate,
-    paymentMethod
+    paymentMethod,
+    sharedWithCount,
+    sharedNote
   });
 
   logActivity({
@@ -86,11 +88,22 @@ export const updateSubscription = catchAsync(async (req, res, next) => {
     throw new AppError("Not authorized to access this subscription", 403);
   }
 
-  const allowedUpdates = ['name', 'cost', 'currency', 'billingCycle', 'billingCycleInterval', 'category', 'nextRenewalDate', 'status', 'isTrial', 'trialEndDate', 'paymentMethod'];
+  const allowedUpdates = ['name', 'cost', 'currency', 'billingCycle', 'billingCycleInterval', 'category', 'nextRenewalDate', 'status', 'isTrial', 'trialEndDate', 'paymentMethod', 'sharedWithCount', 'sharedNote'];
   
   let willBeCancelled = false;
   if (req.body.status === 'cancelled' && subscription.status !== 'cancelled') {
     willBeCancelled = true;
+  }
+
+  let costChanged = false;
+  if ((req.body.cost !== undefined && req.body.cost !== subscription.cost) || 
+      (req.body.billingCycle !== undefined && req.body.billingCycle !== subscription.billingCycle)) {
+    costChanged = true;
+    subscription.costHistory.push({
+      cost: subscription.cost,
+      billingCycle: subscription.billingCycle,
+      changedAt: new Date()
+    });
   }
 
   allowedUpdates.forEach(field => {

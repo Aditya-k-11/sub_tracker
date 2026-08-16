@@ -17,7 +17,9 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
     nextRenewalDate: '',
     isTrial: false,
     trialEndDate: '',
-    paymentMethod: ''
+    paymentMethod: '',
+    sharedWithCount: 1,
+    sharedNote: ''
   });
 
   const [validationErrors, setValidationErrors] = useState({});
@@ -34,7 +36,9 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
         nextRenewalDate: initialData.nextRenewalDate ? initialData.nextRenewalDate.split('T')[0] : '',
         isTrial: initialData.isTrial || false,
         trialEndDate: initialData.trialEndDate ? initialData.trialEndDate.split('T')[0] : '',
-        paymentMethod: initialData.paymentMethod || ''
+        paymentMethod: initialData.paymentMethod || '',
+        sharedWithCount: initialData.sharedWithCount || 1,
+        sharedNote: initialData.sharedNote || ''
       });
     }
   }, [initialData]);
@@ -69,7 +73,8 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
     const cleanedData = {
       ...formData,
       cost: Number(formData.cost),
-      billingCycleInterval: Number(formData.billingCycleInterval)
+      billingCycleInterval: Number(formData.billingCycleInterval),
+      sharedWithCount: Number(formData.sharedWithCount)
     };
 
     if (!cleanedData.isTrial) {
@@ -223,8 +228,38 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
           {validationErrors.trialEndDate && <p className="text-red-500 text-xs mt-1">{validationErrors.trialEndDate}</p>}
         </div>
       )}
+      
+      <div className="pt-4 border-t border-white/10">
+        <label className="block text-white/80 font-medium mb-1">Split with how many people?</label>
+        <div className="flex items-center space-x-2">
+          <input 
+            type="number" 
+            name="sharedWithCount"
+            value={formData.sharedWithCount}
+            onChange={handleChange}
+            min="1"
+            max="20"
+            className="w-24 bg-black/20 text-white border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+          />
+          <span className="text-sm text-white/50">e.g. 4 for a family plan split four ways (including you)</span>
+        </div>
+      </div>
+      
+      {formData.sharedWithCount > 1 && (
+        <div>
+          <label className="block text-white/80 font-medium mb-1">Shared Note (optional)</label>
+          <input 
+            type="text" 
+            name="sharedNote"
+            value={formData.sharedNote}
+            onChange={handleChange}
+            placeholder="e.g. Split with roommates"
+            className="w-full bg-black/20 text-white border border-white/20 rounded-lg px-3 py-2 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+          />
+        </div>
+      )}
 
-      <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-white/10">
+      <div className="flex justify-end space-x-3 pt-4 border-t border-white/10">
         <Button 
           variant="secondary"
           onClick={onCancel}

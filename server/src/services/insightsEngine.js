@@ -1,10 +1,10 @@
-﻿import Subscription from '../models/Subscription.js';
+import Subscription from '../models/Subscription.js';
 import UsageLog from '../models/UsageLog.js';
 import User from '../models/User.js';
 import { daysSince } from '../utils/dateHelpers.js';
 import { WASTE_THRESHOLD_DAYS, MIN_SUBSCRIPTION_AGE_DAYS } from '../config/wasteDetection.js';
 import { HIGH_CATEGORY_SPEND_THRESHOLD } from '../config/insightsConfig.js';
-import { normalizeToMonthly } from '../utils/normalizeToMonthly.js';
+import { getEffectiveMonthlyCost } from '../utils/effectiveCost.js';
 import { findUpcomingRenewals } from './renewalScanService.js';
 import { currencyService } from './currencyService.js';
 
@@ -46,7 +46,7 @@ export const analyzeWastedSpend = async (userId) => {
     
     if (daysSinceLastUse >= WASTE_THRESHOLD_DAYS) {
       const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
-      const monthlyCost = normalizeToMonthly(costInTarget, sub.billingCycle, sub.billingCycleInterval);
+      const monthlyCost = getEffectiveMonthlyCost(sub, costInTarget);
       
       let costPerUse = null;
       let reason = '';
@@ -128,7 +128,7 @@ const getHighCategorySpendInsights = async (userId, targetCurrency) => {
   
   for (const sub of subscriptions) {
     const costInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
-    const monthlyCost = normalizeToMonthly(costInTarget, sub.billingCycle, sub.billingCycleInterval);
+    const monthlyCost = getEffectiveMonthlyCost(sub, costInTarget);
     
     if (!categoryMap[sub.category]) {
       categoryMap[sub.category] = {
@@ -162,15 +162,61 @@ const getHighCategorySpendInsights = async (userId, targetCurrency) => {
   return insights;
 };
 
+const getPriceChangeInsights = async (userId, targetCurrency) => {
+  const subscriptions = await Subscription.find({ 
+    userId, 
+    status: 'active' 
+  });
+  
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  const insights = [];
+  
+  for (const sub of subscriptions) {
+    if (sub.costHistory && sub.costHistory.length > 0) {
+      const mostRecentChange = sub.costHistory[sub.costHistory.length - 1];
+      
+      // If changed within last 30 days and cost INCREASED
+      if (mostRecentChange.changedAt > thirtyDaysAgo && sub.cost > mostRecentChange.cost) {
+        const oldCostInTarget = await currencyService.convert(mostRecentChange.cost, sub.currency || 'USD', targetCurrency);
+        const newCostInTarget = await currencyService.convert(sub.cost, sub.currency || 'USD', targetCurrency);
+        
+        const oldStr = formatCurrencyString(oldCostInTarget, targetCurrency);
+        const newStr = formatCurrencyString(newCostInTarget, targetCurrency);
+        const percentIncrease = ((sub.cost - mostRecentChange.cost) / mostRecentChange.cost) * 100;
+        
+        // Priority scaled by % increase. Up to 100
+        const priority = Math.min(100, Math.max(30, percentIncrease * 2));
+        
+        const dateStr = mostRecentChange.changedAt.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+        
+        insights.push({
+          id: `price_increase_${sub._id}_${mostRecentChange.changedAt.getTime()}`,
+          type: 'price_increase',
+          priority,
+          title: `${sub.name} price increased`,
+          description: `${oldStr} → ${newStr} on ${dateStr}`,
+          actionType: 'view_subscription',
+          actionTarget: sub._id
+        });
+      }
+    }
+  }
+  
+  return insights;
+};
+
 export const generateInsights = async (userId) => {
   const targetCurrency = await getTargetCurrency(userId);
-  const [wastedSpend, trialEnding, highCategorySpend] = await Promise.all([
+  const [wastedSpend, trialEnding, highCategorySpend, priceChange] = await Promise.all([
     getWastedSpendInsights(userId, targetCurrency),
     getTrialEndingInsights(userId),
-    getHighCategorySpendInsights(userId, targetCurrency)
+    getHighCategorySpendInsights(userId, targetCurrency),
+    getPriceChangeInsights(userId, targetCurrency)
   ]);
   
-  let allInsights = [...wastedSpend, ...trialEnding, ...highCategorySpend];
+  let allInsights = [...wastedSpend, ...trialEnding, ...highCategorySpend, ...priceChange];
   allInsights.sort((a, b) => b.priority - a.priority);
   
   return allInsights;

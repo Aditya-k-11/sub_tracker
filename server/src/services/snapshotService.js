@@ -1,6 +1,6 @@
 import SpendSnapshot from '../models/SpendSnapshot.js';
 import Subscription from '../models/Subscription.js';
-import { normalizeToMonthly } from '../utils/normalizeToMonthly.js';
+import { getEffectiveMonthlyCost } from '../utils/effectiveCost.js';
 
 export const upsertCurrentMonthSnapshot = async (userId, monthOverride = null) => {
   const currentMonth = monthOverride || new Date().toISOString().substring(0, 7);
@@ -11,7 +11,7 @@ export const upsertCurrentMonthSnapshot = async (userId, monthOverride = null) =
   const totalByCategory = {};
   
   subscriptions.forEach(sub => {
-    const monthlyCost = normalizeToMonthly(sub.cost, sub.billingCycle, sub.billingCycleInterval);
+    const monthlyCost = getEffectiveMonthlyCost(sub);
     totalSpend += monthlyCost;
     
     if (!totalByCategory[sub.category]) {

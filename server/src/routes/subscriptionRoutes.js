@@ -18,7 +18,8 @@ import {
   getUsageSummary,
   getSubscriptionDetail,
   updateSubscriptionNotes,
-  bulkUpdateSubscriptions
+  bulkUpdateSubscriptions,
+  getSavingsEstimate
 } from '../controllers/subscriptionController.js';
 
 const router = express.Router();
@@ -40,5 +41,6 @@ router.get('/:id/usage', getUsageLogs);
 router.delete('/:id/usage/:usageId', deleteUsageLog);
 router.get('/:id/detail', getSubscriptionDetail);
 router.patch('/:id/notes', updateSubscriptionNotes);
+router.get('/:id/savings-estimate', getSavingsEstimate);
 
 export default router;

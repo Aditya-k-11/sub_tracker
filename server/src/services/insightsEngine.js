@@ -7,6 +7,7 @@ import { HIGH_CATEGORY_SPEND_THRESHOLD } from '../config/insightsConfig.js';
 import { getEffectiveMonthlyCost } from '../utils/effectiveCost.js';
 import { findUpcomingRenewals } from './renewalScanService.js';
 import { currencyService } from './currencyService.js';
+import { estimateAnnualSavings } from '../utils/annualSavingsCalculator.js';
 
 const getTargetCurrency = async (userId) => {
   const user = await User.findById(userId);
@@ -207,16 +208,53 @@ const getPriceChangeInsights = async (userId, targetCurrency) => {
   return insights;
 };
 
+const getSavingsInsights = async (userId, targetCurrency) => {
+  const subscriptions = await Subscription.find({ 
+    userId, 
+    status: 'active',
+    billingCycle: 'monthly'
+  });
+  
+  const insights = [];
+  
+  for (const sub of subscriptions) {
+    const savingsEstimate = estimateAnnualSavings(sub);
+    if (savingsEstimate && savingsEstimate.estimatedSavings > 0) {
+      const savingsInTarget = await currencyService.convert(savingsEstimate.estimatedSavings, sub.currency || 'USD', targetCurrency);
+      
+      // Threshold: Don't show trivial savings (e.g. less than 12 in their currency per year)
+      if (savingsInTarget > 12) {
+        const priority = Math.min(100, Math.max(20, Math.round(savingsInTarget / 5)));
+        const savingsStr = formatCurrencyString(savingsInTarget, targetCurrency);
+        
+        insights.push({
+          id: `annual_savings_${sub._id}`,
+          type: 'annual_savings',
+          priority,
+          title: `Save on ${sub.name} with annual billing`,
+          description: `Switching to yearly could save you ~${savingsStr}/year`,
+          actionLabel: 'View options',
+          actionType: 'view_subscription',
+          actionTarget: sub._id
+        });
+      }
+    }
+  }
+  
+  return insights;
+};
+
 export const generateInsights = async (userId) => {
   const targetCurrency = await getTargetCurrency(userId);
-  const [wastedSpend, trialEnding, highCategorySpend, priceChange] = await Promise.all([
+  const [wastedSpend, trialEnding, highCategorySpend, priceChange, savings] = await Promise.all([
     getWastedSpendInsights(userId, targetCurrency),
     getTrialEndingInsights(userId),
     getHighCategorySpendInsights(userId, targetCurrency),
-    getPriceChangeInsights(userId, targetCurrency)
+    getPriceChangeInsights(userId, targetCurrency),
+    getSavingsInsights(userId, targetCurrency)
   ]);
   
-  let allInsights = [...wastedSpend, ...trialEnding, ...highCategorySpend, ...priceChange];
+  let allInsights = [...wastedSpend, ...trialEnding, ...highCategorySpend, ...priceChange, ...savings];
   allInsights.sort((a, b) => b.priority - a.priority);
   
   return allInsights;

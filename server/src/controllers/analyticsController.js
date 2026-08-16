@@ -22,7 +22,9 @@ export const getSpendSummary = catchAsync(async (req, res, next) => {
     status: 'active' 
   });
   
-  const targetCurrency = await getTargetCurrency(req.user.id);
+  const user = await User.findById(req.user.id);
+  const targetCurrency = user?.currency || 'USD';
+  const monthlyBudget = user?.monthlyBudget || null;
   
   let totalMonthlySpend = 0;
   let trialCount = 0;
@@ -44,12 +46,19 @@ export const getSpendSummary = catchAsync(async (req, res, next) => {
     console.warn('Failed to upsert current month snapshot during getSpendSummary:', err.message);
   }
   
+  let budgetUsedPercentage = null;
+  if (monthlyBudget !== null && monthlyBudget > 0) {
+    budgetUsedPercentage = Math.round((totalMonthlySpend / monthlyBudget) * 100);
+  }
+
   res.status(200).json({
     totalMonthlySpend,
     totalYearlySpend,
     activeSubscriptionCount: subscriptions.length,
     trialCount,
-    currency: targetCurrency
+    currency: targetCurrency,
+    monthlyBudget,
+    budgetUsedPercentage
   });
 });
 

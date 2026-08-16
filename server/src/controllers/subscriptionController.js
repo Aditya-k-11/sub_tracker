@@ -6,6 +6,8 @@ import AppError from '../utils/AppError.js';
 import { daysSince } from '../utils/dateHelpers.js';
 import { analyzeWastedSpend } from '../services/insightsEngine.js';
 import { logActivity } from '../services/activityLogger.js';
+import { estimateAnnualSavings } from '../utils/annualSavingsCalculator.js';
+
 export const createSubscription = catchAsync(async (req, res, next) => {
   const { name, cost, currency, billingCycle, billingCycleInterval, category, nextRenewalDate, isTrial, trialEndDate, paymentMethod, sharedWithCount, sharedNote } = req.body;
 
@@ -371,4 +373,21 @@ export const bulkUpdateSubscriptions = catchAsync(async (req, res, next) => {
     modifiedCount,
     requestedCount: subscriptionIds.length
   });
+});
+
+export const getSavingsEstimate = catchAsync(async (req, res, next) => {
+  const subscription = await Subscription.findById(req.params.id);
+
+  if (!subscription) {
+    throw new AppError("Subscription not found", 404);
+  }
+
+  if (subscription.userId.toString() !== req.user.id) {
+    throw new AppError("Not authorized to access this subscription", 403);
+  }
+
+  const savingsEstimate = estimateAnnualSavings(subscription);
+
+  res.status(200).json({ savingsEstimate });
+});
 });

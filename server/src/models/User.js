@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema({
   currency: { type: String, default: "INR" },
   
   createdAt: { type: Date, default: Date.now },
+  
+  monthlyBudget: { type: Number, default: null },
 
   hasCompletedOnboarding: { type: Boolean, default: false },
 

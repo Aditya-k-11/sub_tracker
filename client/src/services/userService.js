@@ -29,3 +29,8 @@ export const completeOnboarding = async () => {
   const response = await apiClient.patch('/users/me/complete-onboarding');
   return response.data;
 };
+
+export const updateBudget = async (monthlyBudget) => {
+  const response = await apiClient.patch('/users/me/budget', { monthlyBudget });
+  return response.data;
+};

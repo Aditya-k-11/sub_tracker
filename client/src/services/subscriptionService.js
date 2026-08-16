@@ -59,3 +59,8 @@ export const bulkUpdateSubscriptions = async (subscriptionIds, action) => {
   const response = await apiClient.patch('/subscriptions/bulk', { subscriptionIds, action });
   return response.data;
 };
+
+export const getSavingsEstimate = async (id) => {
+  const response = await apiClient.get(`/subscriptions/${id}/savings-estimate`);
+  return response.data;
+};

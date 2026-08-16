@@ -8,7 +8,8 @@ import {
   updateSubscriptionNotes,
   updateSubscription,
   cancelSubscription,
-  logUsage
+  logUsage,
+  getSavingsEstimate
 } from '../services/subscriptionService';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency, daysUntil, formatDate, billingCycleLabel } from '../utils/formatters';
@@ -41,6 +42,7 @@ const SubscriptionDetailPage = () => {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isLogUsageModalOpen, setIsLogUsageModalOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [savingsEstimate, setSavingsEstimate] = useState(null);
 
   const fetchDetail = async () => {
     try {
@@ -62,6 +64,22 @@ const SubscriptionDetailPage = () => {
     fetchDetail();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  useEffect(() => {
+    const fetchSavings = async () => {
+      if (detail && detail.subscription.billingCycle === 'monthly') {
+        try {
+          const res = await getSavingsEstimate(id);
+          if (res.savingsEstimate) {
+            setSavingsEstimate(res.savingsEstimate);
+          }
+        } catch (err) {
+          console.error('Failed to fetch savings estimate', err);
+        }
+      }
+    };
+    fetchSavings();
+  }, [detail, id]);
 
   const handleNotesChange = (e) => {
     const newValue = e.target.value;
@@ -278,6 +296,24 @@ const SubscriptionDetailPage = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
             <span className="font-medium">Currently flagged as likely wasted spend</span>
+          </div>
+        )}
+
+        {savingsEstimate && savingsEstimate.estimatedSavings > 0 && (
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mt-4 flex items-start space-x-3 text-emerald-100">
+            <div className="mt-0.5">💡</div>
+            <div>
+              <p className="font-medium">
+                {savingsEstimate.isEstimate 
+                  ? `Similar services typically save around ${savingsEstimate.discountPercent}% with annual billing.` 
+                  : `Switching to yearly could save you ${formatCurrency(savingsEstimate.estimatedSavings, subscription.currency || 'USD')}/year.`}
+              </p>
+              {savingsEstimate.isEstimate && (
+                <p className="text-sm opacity-80 mt-1">
+                  Check if {subscription.name} offers an annual plan to save approximately {formatCurrency(savingsEstimate.estimatedSavings, subscription.currency || 'USD')}/year.
+                </p>
+              )}
+            </div>
           </div>
         )}
       </motion.div>

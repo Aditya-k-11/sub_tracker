@@ -17,7 +17,7 @@ const SummaryCards = ({ summary }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
         whileHover={{ y: -4 }}
-        className="bg-white/5 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10 flex flex-col justify-center"
+        className="bg-white/5 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10 flex flex-col justify-center relative"
       >
         <h3 className="text-xs uppercase tracking-wide text-brand-text/70 mb-2 font-medium">Monthly Spend</h3>
         <div className="text-4xl lg:text-5xl font-bold tabular-nums text-brand-text mb-1">
@@ -26,6 +26,27 @@ const SummaryCards = ({ summary }) => {
         <p className="text-sm text-brand-text/70">
           Yearly: {formatCurrency(summary.totalYearlySpend, currency)}
         </p>
+        
+        {summary.monthlyBudget && (
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <div className="flex justify-between text-xs mb-1">
+              <span className="text-white/60">Budget</span>
+              <span className="text-white/90 font-medium">
+                {summary.budgetUsedPercentage}% of {formatCurrency(summary.monthlyBudget, currency)}
+              </span>
+            </div>
+            <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+              <div 
+                className={`h-full rounded-full ${
+                  summary.budgetUsedPercentage >= 100 ? 'bg-red-500' : 
+                  summary.budgetUsedPercentage >= 85 ? 'bg-amber-500' : 
+                  'bg-emerald-500'
+                }`}
+                style={{ width: `${Math.min(100, summary.budgetUsedPercentage)}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
       </motion.div>
 
       {}

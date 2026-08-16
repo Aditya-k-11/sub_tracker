@@ -22,6 +22,7 @@ export const getCurrentUser = catchAsync(async (req, res, next) => {
       email: user.email,
       currency: user.currency,
       createdAt: user.createdAt,
+      monthlyBudget: user.monthlyBudget,
       notificationPreferences: user.notificationPreferences,
       hasCompletedOnboarding: user.hasCompletedOnboarding
     }
@@ -157,4 +158,28 @@ export const deleteAccount = catchAsync(async (req, res, next) => {
   await User.deleteOne({ _id: userId });
 
   res.status(200).json({ message: 'Account and all associated data deleted successfully' });
+});
+
+export const updateBudget = catchAsync(async (req, res, next) => {
+  const { monthlyBudget } = req.body;
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    throw new AppError('User not found', 404);
+  }
+
+  if (monthlyBudget !== null && (typeof monthlyBudget !== 'number' || monthlyBudget < 0)) {
+    throw new AppError('monthlyBudget must be null or a positive number', 400);
+  }
+
+  user.monthlyBudget = monthlyBudget;
+  await user.save();
+
+  await ActivityLog.create({
+    userId: user._id,
+    action: 'budget_set',
+    metadata: { monthlyBudget }
+  });
+
+  res.status(200).json({ monthlyBudget: user.monthlyBudget });
 });

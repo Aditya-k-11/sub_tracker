@@ -5,7 +5,7 @@ import DeleteAccountSection from '../components/profile/DeleteAccountSection';
 import NotificationPreferences from '../components/profile/NotificationPreferences';
 import Button from '../components/common/Button';
 import Toast from '../components/common/Toast';
-import { User, Shield, Bell, AlertTriangle } from 'lucide-react';
+import { User, Shield, Bell, AlertTriangle, Target } from 'lucide-react';
 import PageTransition from '../components/common/PageTransition';
 import { useAuth } from '../context/AuthContext';
 
@@ -14,7 +14,9 @@ const ProfilePage = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [savingBudget, setSavingBudget] = useState(false);
   const [formData, setFormData] = useState({ name: '', currency: 'USD' });
+  const [budgetData, setBudgetData] = useState({ monthlyBudget: '' });
   const [toast, setToast] = useState(null);
 
   const showToast = (message, type = 'success') => setToast({ message, type });
@@ -26,6 +28,7 @@ const ProfilePage = () => {
         const data = await getCurrentUser();
         setUser(data.user);
         setFormData({ name: data.user.name, currency: data.user.currency });
+        setBudgetData({ monthlyBudget: data.user.monthlyBudget ? data.user.monthlyBudget.toString() : '' });
       } catch (error) {
         showToast('Failed to load profile', 'error');
       } finally {
@@ -47,6 +50,22 @@ const ProfilePage = () => {
       showToast(error.response?.data?.message || 'Failed to update profile', 'error');
     } finally {
       setSavingProfile(false);
+    }
+  };
+
+  const handleBudgetSubmit = async (e) => {
+    e.preventDefault();
+    setSavingBudget(true);
+    try {
+      const budgetValue = budgetData.monthlyBudget === '' ? null : Number(budgetData.monthlyBudget);
+      const { updateBudget } = await import('../services/userService');
+      const res = await updateBudget(budgetValue);
+      setUser(prev => ({ ...prev, monthlyBudget: res.monthlyBudget }));
+      showToast('Budget updated successfully', 'success');
+    } catch (error) {
+      showToast(error.response?.data?.message || 'Failed to update budget', 'error');
+    } finally {
+      setSavingBudget(false);
     }
   };
 
@@ -131,6 +150,47 @@ const ProfilePage = () => {
             <div className="pt-2">
               <Button type="submit" variant="primary" disabled={savingProfile}>
                 {savingProfile ? 'Saving...' : 'Save Profile'}
+              </Button>
+            </div>
+          </form>
+        </section>
+
+        {/* Budget Setting */}
+        <section className="bg-brand-bg/50 backdrop-blur-md border border-white/10 rounded-2xl p-6 sm:p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-emerald-500/20 rounded-lg">
+              <Target className="w-5 h-5 text-emerald-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-white">Monthly Budget Cap</h2>
+          </div>
+          <p className="text-white/60 mb-6 max-w-xl text-sm">
+            Set a monthly spending limit for your subscriptions. We'll warn you if adding a new subscription will push you over this cap.
+          </p>
+          <form onSubmit={handleBudgetSubmit} className="space-y-4 max-w-md">
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-1">Budget Amount</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50">
+                  {user.currency === 'USD' || user.currency === 'AUD' || user.currency === 'CAD' ? '$' : 
+                   user.currency === 'EUR' ? '€' : 
+                   user.currency === 'GBP' ? '£' : 
+                   user.currency === 'INR' ? '₹' : ''}
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={budgetData.monthlyBudget}
+                  onChange={(e) => setBudgetData({ monthlyBudget: e.target.value })}
+                  placeholder="e.g. 100"
+                  className="w-full bg-black/20 border border-white/10 rounded-xl pl-8 pr-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                />
+              </div>
+              <p className="text-xs text-white/40 mt-1">Leave blank to clear your budget.</p>
+            </div>
+            <div className="pt-2">
+              <Button type="submit" variant="primary" disabled={savingBudget}>
+                {savingBudget ? 'Saving...' : 'Save Budget'}
               </Button>
             </div>
           </form>

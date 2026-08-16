@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../common/Button';
 import { useAuth } from '../../context/AuthContext';
+import { getSpendSummary } from '../../services/analyticsService';
+import { AlertTriangle } from 'lucide-react';
 
 const CATEGORIES = ['Entertainment', 'Fitness', 'Productivity', 'Utilities', 'Other'];
 
@@ -23,6 +25,19 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
   });
 
   const [validationErrors, setValidationErrors] = useState({});
+  const [spendSummary, setSpendSummary] = useState(null);
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        const summary = await getSpendSummary();
+        setSpendSummary(summary);
+      } catch (err) {
+        console.error('Failed to fetch spend summary for budget check', err);
+      }
+    };
+    fetchSummary();
+  }, []);
 
   useEffect(() => {
     if (initialData) {
@@ -93,6 +108,41 @@ const SubscriptionForm = ({ initialData, onSubmit, onCancel, submitting, formErr
           {formError}
         </div>
       )}
+
+      {(() => {
+        if (!spendSummary || !spendSummary.monthlyBudget) return null;
+        
+        // Calculate new monthly cost
+        const newCost = Number(formData.cost) || 0;
+        let monthlyEquivalent = newCost;
+        if (formData.billingCycle === 'yearly') monthlyEquivalent = newCost / 12;
+        if (formData.billingCycle === 'weekly') monthlyEquivalent = newCost * 4.33;
+        monthlyEquivalent = monthlyEquivalent / Math.max(1, Number(formData.sharedWithCount) || 1);
+        
+        // Calculate old monthly cost if editing
+        let oldMonthlyEquivalent = 0;
+        if (initialData && initialData.cost) {
+           const oldCost = Number(initialData.cost) || 0;
+           oldMonthlyEquivalent = oldCost;
+           if (initialData.billingCycle === 'yearly') oldMonthlyEquivalent = oldCost / 12;
+           if (initialData.billingCycle === 'weekly') oldMonthlyEquivalent = oldCost * 4.33;
+           oldMonthlyEquivalent = oldMonthlyEquivalent / Math.max(1, Number(initialData.sharedWithCount) || 1);
+        }
+        
+        const projectedSpend = spendSummary.totalMonthlySpend - oldMonthlyEquivalent + monthlyEquivalent;
+        
+        if (projectedSpend > spendSummary.monthlyBudget) {
+          return (
+            <div className="bg-amber-500/10 border border-amber-500/30 text-amber-200 p-3 rounded-xl text-sm mb-4 flex items-start space-x-3">
+              <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <p>
+                <strong>Budget Warning:</strong> Adding this will push your projected monthly spend to ~{Math.round(projectedSpend)} {user?.currency}, exceeding your {spendSummary.monthlyBudget} {user?.currency} budget.
+              </p>
+            </div>
+          );
+        }
+        return null;
+      })()}
 
       <div>
         <label className="block text-white/80 font-medium mb-1">Subscription Name *</label>

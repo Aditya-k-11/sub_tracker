@@ -264,8 +264,9 @@ const CategoryDetailPage = () => {
           message={`Are you sure you want to mark this subscription as cancelled?`}
           confirmLabel="Yes, Cancel it"
           onConfirm={handleCancelConfirm}
-          onCancel={() => setCancellingSubscriptionId(null)}
-          isDanger={true}
+          onClose={() => setCancellingSubscriptionId(null)}
+          confirmVariant="danger"
+          loading={actionLoading}
         />
       )}
 

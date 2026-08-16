@@ -114,7 +114,9 @@ const BulkActionsBar = ({ selectedCount, onBulkCancel, onBulkRecategorize, onCle
           message={`Are you sure you want to cancel ${selectedCount} subscriptions? This will mark them as cancelled and they won't appear in active totals, but their history will be retained.`}
           confirmLabel="Yes, Cancel Them"
           onConfirm={handleConfirmCancel}
-          onCancel={() => setShowConfirmCancel(false)}
+          onClose={() => setShowConfirmCancel(false)}
+          confirmVariant="danger"
+          loading={processing}
         />
       )}
     </>

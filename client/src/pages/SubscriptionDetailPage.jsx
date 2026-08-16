@@ -476,8 +476,9 @@ const SubscriptionDetailPage = () => {
           message={`Are you sure you want to mark ${subscription.name} as cancelled?`}
           confirmLabel="Yes, Cancel it"
           onConfirm={handleCancelConfirm}
-          onCancel={() => setIsCancelModalOpen(false)}
-          isDanger={true}
+          onClose={() => setIsCancelModalOpen(false)}
+          confirmVariant="danger"
+          loading={actionLoading}
         />
       )}
 

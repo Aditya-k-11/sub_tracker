@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: mongo
-          image: mongo:7
+          image: mongo:4.4
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
               valueFrom:
@@ -47,7 +47,7 @@ spec:
           readinessProbe:
             exec:
               command:
-                - mongosh
+                - mongo
                 - --eval
                 - "db.adminCommand('ping')"
             initialDelaySeconds: 5

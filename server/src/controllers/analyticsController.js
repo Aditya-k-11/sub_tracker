@@ -28,7 +28,6 @@ export const getSpendSummary = catchAsync(async (req, res, next) => {
   
   let totalMonthlySpend = 0;
   let trialCount = 0;
-  let trialCount = 0;
   
   const costPromises = subscriptions.map(sub => getEffectiveMonthlyCostInCurrency(sub, targetCurrency));
   const convertedCosts = await Promise.all(costPromises);

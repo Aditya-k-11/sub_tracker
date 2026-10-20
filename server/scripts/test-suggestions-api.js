@@ -3,10 +3,12 @@ import fetch from 'node-fetch';
 const testSuggestionsAPI = async () => {
   try {
     console.log("1. Logging in as seed user...");
+    const email = process.env.TEST_EMAIL || 'demo@subtrack.dev';
+    const password = process.env.TEST_PASSWORD || 'Demo@1234';
     const loginRes = await fetch('http://localhost:5000/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'adityakanojia.ad@gmail.com', password: 'aditya' }) 
+      body: JSON.stringify({ email, password }) 
     });
 
     const loginData = await loginRes.json();

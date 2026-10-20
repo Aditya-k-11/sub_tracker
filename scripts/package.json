@@ -2,6 +2,12 @@
   "type": "module",
   "dependencies": {
     "dotenv": "^17.4.2",
-    "mongoose": "^9.8.0"
+    "mongoose": "^9.8.0",
+    "pdf-lib": "^1.17.1"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "pptxgenjs": "^4.0.1",
+    "simple-icons": "^16.35.0"
   }
 }

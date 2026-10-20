@@ -1,841 +1,825 @@
-# "Sealed Secrets" for Kubernetes
-
-[![](https://img.shields.io/badge/install-docs-brightgreen.svg)](#Installation)
-[![](https://img.shields.io/github/release/bitnami-labs/sealed-secrets.svg)](https://github.com/bitnami-labs/sealed-secrets/releases/latest)
-[![](https://img.shields.io/homebrew/v/kubeseal)](https://formulae.brew.sh/formula/kubeseal)
-[![Build Status](https://github.com/bitnami-labs/sealed-secrets/actions/workflows/ci.yml/badge.svg)](https://github.com/bitnami-labs/sealed-secrets/actions/workflows/ci.yml)
-[![](https://img.shields.io/github/v/release/bitnami-labs/sealed-secrets?include_prereleases&label=helm&sort=semver)](https://github.com/bitnami-labs/sealed-secrets/releases)
-[![Download Status](https://img.shields.io/docker/pulls/bitnami/sealed-secrets-controller.svg)](https://hub.docker.com/r/bitnami/sealed-secrets-controller)
-[![Go Report Card](https://goreportcard.com/badge/github.com/bitnami-labs/sealed-secrets)](https://goreportcard.com/report/github.com/bitnami-labs/sealed-secrets)
-![Downloads](https://img.shields.io/github/downloads/bitnami-labs/sealed-secrets/total.svg)
-
-**Problem:** "I can manage all my K8s config in git, except Secrets."
-
-**Solution:** Encrypt your Secret into a SealedSecret, which *is* safe
-to store - even inside a public repository. The SealedSecret can be
-decrypted only by the controller running in the target cluster and
-nobody else (not even the original author) is able to obtain the
-original Secret from the SealedSecret.
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [Overview](#overview)
-  - [SealedSecrets as templates for secrets](#sealedsecrets-as-templates-for-secrets)
-  - [Public key / Certificate](#public-key--certificate)
-  - [Scopes](#scopes)
-- [Installation](#installation)
-  - [Controller](#controller)
-    - [Kustomize](#kustomize)
-    - [Helm Chart](#helm-chart)
-  - [Kubeseal](#kubeseal)
-    - [Homebrew](#homebrew)
-    - [MacPorts](#macports)
-    - [Linux](#linux)
-    - [Installation from source](#installation-from-source)
-- [Upgrade](#upgrade)
-- [Usage](#usage)
-  - [Managing existing secrets](#managing-existing-secrets)
-  - [Patching existing secrets](#patching-existing-secrets)
-  - [Update existing secrets](#update-existing-secrets)
-  - [Raw mode (experimental)](#raw-mode-experimental)
-  - [Validate a Sealed Secret](#validate-a-sealed-secret)
-- [Secret Rotation](#secret-rotation)
-  - [Sealing key renewal](#sealing-key-renewal)
-  - [User secret rotation](#user-secret-rotation)
-  - [Early key renewal](#early-key-renewal)
-  - [Common misconceptions about key renewal](#common-misconceptions-about-key-renewal)
-  - [Manual key management (advanced)](#manual-key-management-advanced)
-  - [Re-encryption (advanced)](#re-encryption-advanced)
-- [Details (advanced)](#details-advanced)
-  - [Crypto](#crypto)
-- [Developing](#developing)
-- [FAQ](#faq)
-  - [Will you still be able to decrypt if you no longer have access to your cluster?](#will-you-still-be-able-to-decrypt-if-you-no-longer-have-access-to-your-cluster)
-  - [How can I do a backup of my SealedSecrets?](#how-can-i-do-a-backup-of-my-sealedsecrets)
-  - [Can I decrypt my secrets offline with a backup key?](#can-i-decrypt-my-secrets-offline-with-a-backup-key)
-  - [What flags are available for kubeseal?](#what-flags-are-available-for-kubeseal)
-  - [How do I update parts of JSON/YAML/TOML/.. file encrypted with sealed secrets?](#how-do-i-update-parts-of-jsonyamltoml-file-encrypted-with-sealed-secrets)
-  - [Can I bring my own (pre-generated) certificates?](#can-i-bring-my-own-pre-generated-certificates)
-  - [How to use kubeseal if the controller is not running within the `kube-system` namespace?](#how-to-use-kubeseal-if-the-controller-is-not-running-within-the-kube-system-namespace)
-  - [How to verify the images?](#how-to-verify-the-images)
-  - [How to use one controller for a subset of namespaces](#How-to-use-one-controller-for-a-subset-of-namespaces)
-
-- [Community](#community)
-  - [Related projects](#related-projects)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-## Overview
-
-Sealed Secrets is composed of two parts:
-
-- A cluster-side controller / operator
-- A client-side utility: `kubeseal`
-
-The `kubeseal` utility uses asymmetric crypto to encrypt secrets that only the controller can decrypt.
-
-These encrypted secrets are encoded in a `SealedSecret` resource, which you can see as a recipe for creating
-a secret. Here is how it looks:
-
-```yaml
-apiVersion: bitnami.com/v1alpha1
-kind: SealedSecret
-metadata:
-  name: mysecret
-  namespace: mynamespace
-spec:
-  encryptedData:
-    foo: AgBy3i4OJSWK+PiTySYZZA9rO43cGDEq.....
-```
-
-Once unsealed this will produce a secret equivalent to this:
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: mysecret
-  namespace: mynamespace
-data:
-  foo: YmFy  # <- base64 encoded "bar"
-```
-
-This normal [kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/) will appear in the cluster
-after a few seconds you can use it as you would use any secret that you would have created directly (e.g. reference it from a `Pod`).
-
-Jump to the [Installation](#installation) section to get up and running.
-
-The [Usage](#usage) section explores in more detail how you craft `SealedSecret` resources.
-
-### SealedSecrets as templates for secrets
-
-The previous example only focused on the encrypted secret items themselves, but the relationship between a `SealedSecret` custom resource and the `Secret` it unseals into is similar in many ways (but not in all of them) to the familiar `Deployment` vs `Pod`.
-
-In particular, the annotations and labels of a `SealedSecret` resource are not the same as the annotations of the `Secret` that gets generated out of it.
-
-To capture this distinction, the `SealedSecret` object has a `template` section which encodes all the fields you want the controller to put in the unsealed `Secret`.
-
-The [Sprig function library](https://masterminds.github.io/sprig/) is available in addition to the default Go Text Template functions.
-
-The `metadata` block is copied as is (the `ownerReference` field will be updated [unless disabled](#seal-secret-which-can-skip-set-owner-references)).
-
-Other secret fields are handled individually. The `type` and `immutable` fields are copied, and the `data` field can be used to [template complex values](docs/examples/config-template) on the `Secret`. All other fields are currently ignored.
-
-```yaml
-apiVersion: bitnami.com/v1alpha1
-kind: SealedSecret
-metadata:
-  name: mysecret
-  namespace: mynamespace
-  annotations:
-    "kubectl.kubernetes.io/last-applied-configuration": ....
-spec:
-  encryptedData:
-    .dockerconfigjson: AgBy3i4OJSWK+PiTySYZZA9rO43cGDEq.....
-  template:
-    type: kubernetes.io/dockerconfigjson
-    immutable: true
-    # this is an example of labels and annotations that will be added to the output secret
-    metadata:
-      labels:
-        "jenkins.io/credentials-type": usernamePassword
-      annotations:
-        "jenkins.io/credentials-description": credentials from Kubernetes
-```
+# SubTrack
+
+> Cloud-native recurring spend &amp; subscription intelligence platform with automated GitOps delivery, zero-downtime rollouts, and Google SRE multiwindow observability.
+
+[![CI/CD Pipeline](https://img.shields.io/github/actions/workflow/status/Aditya-k-11/sub_tracker/ci-cd.yaml?branch=main&label=CI%2FCD&logo=githubactions&logoColor=white)](https://github.com/Aditya-k-11/sub_tracker/actions)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-v1.32-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![ArgoCD](https://img.shields.io/badge/ArgoCD-GitOps%20v3.4-EF7B4D?logo=argo&logoColor=white)](https://argo-cd.readthedocs.io/)
+[![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-E6522C?logo=prometheus&logoColor=white)](https://prometheus.io/)
+[![Grafana](https://img.shields.io/badge/Grafana-Dashboards-F46800?logo=grafana&logoColor=white)](https://grafana.com/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-20%20LTS-5FA04E?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-7.0-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+
+<p align="center">
+  <img src="docs/architecture.svg" alt="SubTrack Cloud-Native Architecture" width="100%">
+</p>
+
+<p align="center">
+  <em>Figure 1: Cloud-native system topology — GitOps delivery with ArgoCD, auto-scaled backend runtime on Kubernetes (kind), and Google SRE multiwindow observability.</em>
+</p>
+
+---
+
+## Demo & Environment
+
+- **Local Kubernetes Demo:** Tested and verified on a multi-node Kubernetes `kind` cluster with Ingress (`http://subtrack.local` / `http://192.168.1.20.nip.io`).
+- **Quickstart Options:** Spin up the stack via [Docker Compose](#option-b-docker-compose) or [Kubernetes with kind + ArgoCD](#option-c-kubernetes-with-kind--argocd).
+- **Architecture & Evidence Review:** See the [Architecture Diagram](docs/architecture.svg), [DevOps Evidence Audit](docs/DEVOPS_EVIDENCE_AUDIT.md), and [Visual Carousel Contact Sheet](docs/linkedin/contact-sheet.png).
+
+---
+
+## Table of Contents
+
+- [Why SubTrack Exists](#why-subtrack-exists)
+- [Key Features](#key-features)
+  - [Product Intelligence](#product-intelligence)
+  - [DevOps & Platform Engineering](#devops--platform-engineering)
+  - [Security & Secret Management](#security--secret-management)
+  - [AI & Automated Ingestion](#ai--automated-ingestion)
+- [System Architecture](#system-architecture)
+  - [Architecture Walkthrough](#architecture-walkthrough)
+- [CI/CD Pipeline & GitOps](#cicd-pipeline--gitops)
+- [Request Flow Architecture](#request-flow-architecture)
+- [Email Ingestion Architecture](#email-ingestion-architecture)
+- [Database Schema (ER Diagram)](#database-schema-er-diagram)
+- [Tech Stack](#tech-stack)
+- [Reliability Engineering](#reliability-engineering)
+  - [Zero-Downtime Rollouts](#zero-downtime-rollouts)
+  - [Autoscaling with Horizontal Pod Autoscaler (HPA)](#autoscaling-with-horizontal-pod-autoscaler-hpa)
+  - [SLIs, SLOs & Error Budget Policy](#slis-slos--error-budget-policy)
+- [Observability & SRE Alerting](#observability--sre-alerting)
+- [Security & Secret Management](#security--secret-management-1)
+- [Application Walkthrough & Screenshots](#application-walkthrough--screenshots)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+  - [Option A: Local Development (Node.js + MongoDB)](#option-a-local-development-nodejs--mongodb)
+  - [Option B: Docker Compose](#option-b-docker-compose)
+  - [Option C: Kubernetes with kind + ArgoCD](#option-c-kubernetes-with-kind--argocd)
+- [Environment Variables](#environment-variables)
+- [REST API Overview](#rest-api-overview)
+- [Known Limitations](#known-limitations)
+- [Roadmap](#roadmap)
+- [Author & Acknowledgments](#author--acknowledgments)
+- [License](#license)
+
+---
+
+## Why SubTrack Exists
+
+Modern consumers and businesses suffer from "subscription creep" — unmonitored recurring payments scattered across credit cards, forgotten free trials that convert into paid renewals, and recurring costs for services that sit unused for months. 
+
+SubTrack provides a single, intelligent source of truth that continuously tracks software spend, calculates true cost-per-use, surfaces forgotten recurring charges, and warns users before renewals hit. The platform is designed and operated not as a fragile side project, but as a resilient, observable cloud-native service built with strict Site Reliability Engineering (SRE) principles.
+
+---
+
+## Key Features
+
+### Product Intelligence
+- **Lifecycle Tracking:** Track recurring subscriptions across weekly, monthly, and annual billing intervals with real-time status management (`active`, `paused`, `cancelled`).
+- **Wasted-Spend Detection:** Automatically flags subscriptions when no usage activity has been recorded beyond configurable thresholds (e.g., 30+ days), calculating exact cost-per-use and clearing flags dynamically upon newly logged activity.
+- **Spend Creep Analytics:** Visualizes multi-month spend trajectories and category distributions to highlight subtle cost creep over time.
+- **Renewal & Free-Trial Radar:** Priority-ordered notifications alerting users about ending trials before first billing, alongside upcoming renewal countdowns.
+- **Annual Savings Calculator:** Highlights potential annual savings by modeling the financial impact of switching eligible monthly subscriptions to yearly commitments.
+- **Audit Activity Trail:** Comprehensive audit logging tracking all created, updated, cancelled, or usage-logged operations.
+- **Data Portability:** Complete data export to CSV and JSON formats for external accounting.
+
+### DevOps & Platform Engineering
+- **Containerized Architecture:** Production multi-stage Docker builds for client and server minimizing container image footprint and vulnerability surface.
+- **GitOps Continuous Delivery:** Fully automated deployment reconciliation using ArgoCD, targeting declarative Kubernetes manifests with automatic self-healing and drift detection.
+- **Zero-Downtime Rolling Updates:** Kubernetes `RollingUpdate` deployment strategy (`maxSurge: 1`, `maxUnavailable: 0`) coupled with liveness, readiness probes, and `minReadySeconds` ensuring zero dropped requests during live rollouts.
+- **High Availability & Fault Tolerance:** PodDisruptionBudgets (`minAvailable: 1`) preventing accidental voluntary disruptions from draining all healthy pods.
+- **Horizontal Pod Autoscaling (HPA):** Dynamic scaling of backend pods from 2 to 6 replicas triggered at 70% average CPU utilization, with a 300-second scale-down stabilization window preventing flapping.
+- **Nginx Ingress Routing:** Centralized ingress gateway routing both the React SPA (`/`) and REST API (`/api`) under a single domain with TLS termination.
+- **Automated CronJobs:** Scheduled Kubernetes `CronJob` (`0 9 * * *`) running daily renewal scans and alert evaluations independently of user traffic.
+
+### Security & Secret Management
+- **GitOps-Safe Secrets (Sealed Secrets):** Bitnami Sealed Secrets encrypts sensitive environment credentials into commit-safe `SealedSecret` custom resources using asymmetric cryptography.
+- **Non-Root Containers:** Backend services run under an unprivileged `node` user account (`USER node`, UID 1000) inside Alpine containers.
+- **Encrypted Token Storage:** Google OAuth 2.0 refresh tokens are AES-256 encrypted at rest before persistence in MongoDB.
+- **Security Limitations & Hardening:** Dedicated Kubernetes NetworkPolicies and automated CI container vulnerability scanning (Trivy) are planned enhancements (see [DevOps Evidence Audit](docs/DEVOPS_EVIDENCE_AUDIT.md) and [Roadmap](#roadmap)).
 
-The controller would unseal that into something like:
+### AI & Automated Ingestion
+- **Gmail OAuth Ingestion:** Read-only OAuth 2.0 integration allowing users to connect their Google inbox to discover subscription receipts and invoices.
+- **Generative AI Receipt Parsing:** Architectural integration with Google Gemini API to extract merchant identities, recurring amounts, billing cadences, and dates from unstructured email bodies.
+- **Confidence Scoring & User Confirmation:** Every detected candidate is graded (`high`, `medium`, `low`) and held in a staging queue for explicit user approval before becoming an active subscription.
 
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: mysecret
-  namespace: mynamespace
-  labels:
-    "jenkins.io/credentials-type": usernamePassword
-  annotations:
-    "jenkins.io/credentials-description": credentials from Kubernetes
-  ownerReferences:
-  - apiVersion: bitnami.com/v1alpha1
-    controller: true
-    kind: SealedSecret
-    name: mysecret
-    uid: 5caff6a0-c9ac-11e9-881e-42010aac003e
-type: kubernetes.io/dockerconfigjson
-immutable: true
-data:
-  .dockerconfigjson: ewogICJjcmVk...
-```
+---
 
-As you can see, the generated `Secret` resource is a "dependent object" of the `SealedSecret` and as such
-it will be updated and deleted whenever the `SealedSecret` object gets updated or deleted.
+## System Architecture
 
-### Public key / Certificate
+The SubTrack platform is structured into five distinct operational zones: **Source & CI**, **GitOps Deployment**, **Kubernetes Cluster**, **External Cloud APIs**, and **Observability & SRE**.
 
-The key certificate (public key portion) is used for sealing secrets,
-and needs to be available wherever `kubeseal` is going to be
-used. The certificate is not secret information, although you need to
-ensure you are using the correct one.
+![SubTrack System Architecture](docs/architecture.svg)
 
-`kubeseal` will fetch the certificate from the controller at runtime
-(requires secure access to the Kubernetes API server), which is
-convenient for interactive use, but it's known to be brittle when users
-have clusters with special configurations such as [private GKE clusters](docs/GKE.md#private-gke-clusters) that have
-firewalls between control plane and nodes.
+> **Fallback Image:** If your renderer does not support animated SVGs, a high-resolution PNG render is available at [`docs/architecture.png`](docs/architecture.png).
 
-An alternative workflow
-is to store the certificate somewhere (e.g. local disk) with
-`kubeseal --fetch-cert >mycert.pem`,
-and use it offline with `kubeseal --cert mycert.pem`.
-The certificate is also printed to the controller log on startup.
-
-Since v0.9.x certificates get automatically renewed every 30 days. It's good practice that you and your team
-update your offline certificate periodically. To help you with that, since v0.9.2 `kubeseal` accepts URLs too. You can set up your internal automation to publish certificates somewhere you trust.
-
-```bash
-kubeseal --cert https://your.intranet.company.com/sealed-secrets/your-cluster.cert
-```
-
-It also recognizes the `SEALED_SECRETS_CERT` env var. (pro-tip: see also [direnv](https://github.com/direnv/direnv)).
-
-> **NOTE**: we are working on providing key management mechanisms that offload the encryption to HSM based modules or managed cloud crypto solutions such as KMS.
-
-### Scopes
-
-SealedSecrets are from the POV of an end user a "write only" device.
-
-The idea is that the SealedSecret can be decrypted only by the controller running in the target cluster and
-nobody else (not even the original author) is able to obtain the original Secret from the SealedSecret.
-
-The user may or may not have direct access to the target cluster.
-More specifically, the user might or might not have access to the Secret unsealed by the controller.
-
-There are many ways to configure RBAC on k8s, but it's quite common to forbid low-privilege users
-from reading Secrets. It's also common to give users one or more namespaces where they have higher privileges,
-which would allow them to create and read secrets (and/or create deployments that can reference those secrets).
-
-Encrypted `SealedSecret` resources are designed to be safe to be looked at without gaining any knowledge about the secrets it conceals. This implies that we cannot allow users to read a SealedSecret meant for a namespace they wouldn't have access to
-and just push a copy of it in a namespace where they can read secrets from.
-
-Sealed-secrets thus behaves *as if* each namespace had its own independent encryption key and thus once you
-seal a secret for a namespace, it cannot be moved in another namespace and decrypted there.
-
-We don't technically use an independent private key for each namespace, but instead we *include* the namespace name
-during the encryption process, effectively achieving the same result.
-
-Furthermore, namespaces are not the only level at which RBAC configurations can decide who can see which secret. In fact, it's possible that users can access a secret called `foo` in a given namespace but not any other secret in the same namespace. We cannot thus by default let users freely rename `SealedSecret` resources otherwise a malicious user would be able to decrypt any SealedSecret for that namespace by just renaming it to overwrite the one secret user does have access to. We use the same mechanism used to include the namespace in the encryption key to also include the secret name.
-
-That said, there are many scenarios where you might not care about this level of protection. For example, the only people who have access to your clusters are either admins or they cannot read any `Secret` resource at all. You might have a use case for moving a sealed secret to other namespaces (e.g. you might not know the namespace name upfront), or you might not know the name of the secret (e.g. it could contain a unique suffix based on the hash of the contents etc).
-
-These are the possible scopes:
-
-- `strict` (default): the secret must be sealed with exactly the same *name* and *namespace*. These attributes become *part of the encrypted data* and thus changing name and/or namespace would lead to "decryption error".
-- `namespace-wide`: you can freely *rename* the sealed secret within a given namespace.
-- `cluster-wide`: the secret can be unsealed in *any* namespace and can be given *any* name.
-
-In contrast to the restrictions of *name* and *namespace*, secret *items* (i.e. JSON object keys like `spec.encryptedData.my-key`) can be renamed at will without losing the ability to decrypt the sealed secret.
-
-The scope is selected with the `--scope` flag:
-
-```bash
-kubeseal --scope cluster-wide <secret.yaml >sealed-secret.json
-```
-
-It's also possible to request a scope via annotations in the input secret you pass to `kubeseal`:
-
-- `sealedsecrets.bitnami.com/namespace-wide: "true"` -> for `namespace-wide`
-- `sealedsecrets.bitnami.com/cluster-wide: "true"` -> for `cluster-wide`
-
-The lack of any of such annotations means `strict` mode. If both are set, `cluster-wide` takes precedence.
-
-> NOTE: Next release will consolidate this into a single `sealedsecrets.bitnami.com/scope` annotation.
-
-## Installation
-
-See https://github.com/bitnami-labs/sealed-secrets/releases for the latest release and detailed installation instructions.
-
-Cloud platform specific notes and instructions:
-
-- [GKE](docs/GKE.md)
-
-### Controller
-
-Once you deploy the manifest it will create the `SealedSecret` resource
-and install the controller into `kube-system` namespace, create a service
-account and necessary RBAC roles.
-
-After a few moments, the controller will start, generate a key pair,
-and be ready for operation. If it does not, check the controller logs.
-
-#### Kustomize
-
-The official controller manifest installation mechanism is just a YAML file.
-
-In some cases you might need to apply your own customizations, like set a custom namespace or set some env variables.
-
-`kubectl` has native support for that, see [kustomize](https://kustomize.io/).
-
-#### Helm Chart
-
-The Sealed Secrets helm chart is now officially supported and hosted in this GitHub repo.
-
-```bash
-helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
-```
-
-> NOTE: The versioning scheme of the helm chart differs from the versioning scheme of the sealed secrets project itself.
-
-Originally the helm chart was maintained by the community and the first version adopted a major version of 1 while the
-sealed secrets project itself is still at major 0.
-This is ok because the version of the helm chart itself is not meant to be necessarily the version of the app itself.
-However this is confusing, so our current versioning rule is:
-
-1. The `SealedSecret` controller version scheme: 0.X.Y
-2. The helm chart version scheme: 1.X.Y-rZ
-
-There can be thus multiple revisions of the helm chart, with fixes that apply only to the helm chart without
-affecting the static YAML manifests or the controller image itself.
-
-> NOTE: The helm chart readme still contains a deprecation notice, but it no longer reflects reality and will be removed upon the next release.
-
-> NOTE: The helm chart by default installs the controller with the name `sealed-secrets`, while the `kubeseal` command line interface (CLI) tries to access the controller with the name `sealed-secrets-controller`. You can explicitly pass `--controller-name` to the CLI:
-
-```bash
-kubeseal --controller-name sealed-secrets <args>
-```
-
-Alternatively, you can set `fullnameOverride` when installing the chart to override the name. Note also that `kubeseal` assumes that the controller is installed within the `kube-system` namespace by default. So if you want to use the `kubeseal` CLI without having to pass the expected controller name and namespace you should install the Helm Chart like this:
-
-```bash
-helm install sealed-secrets -n kube-system --set-string fullnameOverride=sealed-secrets-controller sealed-secrets/sealed-secrets
-```
-
-##### Helm Chart on a restricted environment
-
-In some companies you might be given access only to a single namespace, not a full cluster.
-
-One of the most restrictive environments you can encounter is:
-- A `namespace` was allocated to you with some `service account`.
-- You do not have access to the rest of the cluster, not even cluster CRDs.
-- You may not even be able to create further service accounts or roles in your namespace.
-- You are required to include resource limits in all your deployments.
-
-Even with these restrictions you can still install the sealed secrets Helm Chart, there is only one pre-requisite:
-- *The cluster must already have the sealed secrets CRDs installed*.
-
-Once your admins installed the CRDs, if they were not there already, you can install the chart by preparing a YAML config file such as this:
-
-```shell
-serviceAccount:
-  create: false
-  name: {allocated-service-account}
-rbac:
-  create: false
-  clusterRole: false
-resources:
-  limits:
-    cpu: 150m
-    memory: 256Mi
-```
-
-Note that:
-- No service accounts are created, instead the one allocated to you will be used.
-  - `{allocated-service-account}` is the name of the `service account` you were allocated on the cluster.
-- No RBAC roles are created neither in the namespace nor the cluster.
-- Resource limits must be specified.
-  - The limits are samples that should work, but you might want to review them in your particular setup.
-
-Once that file is ready, if you named it `config.yaml` you now can install the sealed secrets Helm Chart like this:
-
-```shell
-helm install sealed-secrets -n {allocated-namespace} sealed-secrets/sealed-secrets --skip-crds -f config.yaml
-```
-
-Where `{allocated-namespace}` is the name of the `namespace` you were allocated in the cluster.
-
-### Kubeseal
-
-#### Homebrew
-
-The `kubeseal` client is also available on [homebrew](https://formulae.brew.sh/formula/kubeseal):
-
-```bash
-brew install kubeseal
-```
-
-#### MacPorts
-
-The `kubeseal` client is also available on [MacPorts](https://ports.macports.org/port/kubeseal/summary):
-
-```bash
-port install kubeseal
-```
-
-#### Nixpkgs
-
-The `kubeseal` client is also available on [Nixpkgs](https://search.nixos.org/packages?channel=unstable&show=kubeseal&from=0&size=50&sort=relevance&type=packages&query=kubeseal): (**DISCLAIMER**: Not maintained by bitnami-labs)
-
-```bash
-nix-env -iA nixpkgs.kubeseal
-```
-
-#### Linux
-
-The `kubeseal` client can be installed on Linux, using the below commands:
-
-```bash
-KUBESEAL_VERSION='' # Set this to, for example, KUBESEAL_VERSION='0.23.0'
-curl -OL "https://github.com/bitnami-labs/sealed-secrets/releases/download/v${KUBESEAL_VERSION:?}/kubeseal-${KUBESEAL_VERSION:?}-linux-amd64.tar.gz"
-tar -xvzf kubeseal-${KUBESEAL_VERSION:?}-linux-amd64.tar.gz kubeseal
-sudo install -m 755 kubeseal /usr/local/bin/kubeseal
-```
-
-If you have `curl` and `jq` installed on your machine, you can get the version dynamically this way. This can be useful for environments used in automation and such.
+### Architecture Walkthrough
 
 ```
-# Fetch the latest sealed-secrets version using GitHub API
-KUBESEAL_VERSION=$(curl -s https://api.github.com/repos/bitnami-labs/sealed-secrets/tags | jq -r '.[0].name' | cut -c 2-)
-
-# Check if the version was fetched successfully
-if [ -z "$KUBESEAL_VERSION" ]; then
-    echo "Failed to fetch the latest KUBESEAL_VERSION"
-    exit 1
-fi
-
-curl -OL "https://github.com/bitnami-labs/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-amd64.tar.gz"
-tar -xvzf kubeseal-${KUBESEAL_VERSION}-linux-amd64.tar.gz kubeseal
-sudo install -m 755 kubeseal /usr/local/bin/kubeseal
+[Developer] ──(1. Push)──► [GitHub] ──(Webhook)──► [GitHub Actions CI] ──(Build & Tag)──► [Docker Hub]
+                                                                                                │
+[GitOps Repo: Manifests] ◄──────────────────────────────────────────────────────────────────────┘
+           │
+           ▼ (2. Auto-Sync)
+       [ArgoCD] ◄── [Sealed Secrets] (6. Decrypts runtime secrets)
+           │
+           ▼ (3. Reconcile)
+ ┌───────────────────────── KUBERNETES CLUSTER (Namespace: subtrack) ─────────────────────────┐
+ │                                                                                            │
+ │   [End User] ──(7. HTTPS)──► [Nginx Ingress Controller]                                    │
+ │                                    │              │                                        │
+ │                         (Routes /) │              │ (Routes /api)                          │
+ │                                    ▼              ▼                                        │
+ │                        [Frontend Pods (x2)]   [Backend Pods (x2-6 HPA)] ◄───┐              │
+ │                         React 19 + Tailwind     Node.js 20 + Express 5      │ (Daily Scan) │
+ │                                                       │                     │              │
+ │                                                       ├──► [MongoDB (PVC)]  [CronJob]      │
+ │                                                       │    (v7.0)                          │
+ └───────────────────────────────────────────────────────┼────────────────────────────────────┘
+                                                         │
+                               (4. External APIs)        │
+                                ┌────────────────────────┴────────────────────────┐
+                                ▼                                                 ▼
+                     [Google Gemini API]                                [Gmail API (OAuth 2.0)]
+                  (LLM Receipt Extraction)                            (Read-Only Receipt Search)
+                                │                                                 │
+ ┌──────────────────────────────┴───────────────┬─────────────────────────────────┴───────────┐
+ │ (5. Telemetry & Alerting)                    ▼                                             │
+ │                     ┌──────────────────────────────────────────────────┐                   │
+ │                     │    Prometheus Server (Scrapes /metrics)          │                   │
+ │                     └────────┬────────────────────────────────┬────────┘                   │
+ │                              │                                │                            │
+ │                              ▼ (Fire Alerts)                  ▼ (PromQL Queries)           │
+ │                     [Alertmanager]                   [Grafana Dashboards]                  │
+ │                              │                       (Golden Signals & SLOs)               │
+ │                              ▼                                                             │
+ │                     [Alert Webhook Logger]                                                 │
+ └───────────────────── OBSERVABILITY (Namespace: observability) ─────────────────────────────┘
 ```
 
-where `KUBESEAL_VERSION` is the [version tag](https://github.com/bitnami-labs/sealed-secrets/tags) of the kubeseal release you want to use. For example: `v0.18.0`.
+1. **Step 1 (Source & CI):** Developers push code to the `main` branch. GitHub Actions triggers `.github/workflows/ci-cd.yaml` to set up Docker Buildx, build multi-stage images for client and server, tag them with short Git commit SHAs and `latest`, and publish them to Docker Hub. *(Note: automated test gates and Trivy scanning are tracked in [DevOps Evidence Audit](docs/DEVOPS_EVIDENCE_AUDIT.md) as planned CI additions).*
+2. **Step 2 (GitOps Sync):** GitHub Actions updates the deployment image tags in `k8s/base/` with `[skip ci]` and pushes back to Git. ArgoCD monitors the repository, detects commit drift, and initiates automated reconciliation.
+3. **Step 3 (Cluster Runtime):** Ingress routes public traffic to frontend pods (React 19 served via Nginx) and backend pods (Node.js 20 / Express 5). Pods are protected by PodDisruptionBudgets and dynamically scaled by the Horizontal Pod Autoscaler (HPA). Data persists in MongoDB 7.0 backed by a `PersistentVolumeClaim`. A scheduled Kubernetes `CronJob` runs automated renewal evaluations.
+4. **Step 4 (External Intelligence):** The backend queries the read-only Gmail API for billing candidates and invokes the receipt parsing engine to extract merchant names, amounts, and renewal cadences.
+5. **Step 5 (Observability Pipeline):** Prometheus scrapes application metrics from backend `/metrics` endpoints and infrastructure metrics from `kube-state-metrics`. Prometheus evaluates Multiwindow Multi-Burn-Rate alert rules, dispatching critical alerts to Alertmanager and streaming dashboards to Grafana.
+6. **Step 6 (Security Perimeter):** The Sealed Secrets controller decrypts encrypted secrets directly inside cluster memory without storing plaintext in Git. Backend containers run under unprivileged user `node` (UID 1000). *(Declarative NetworkPolicies are documented in the [Roadmap](#roadmap)).*
+7. **Step 7 (End-User Access):** End users access the platform via HTTPS through the Nginx Ingress gateway.
 
-#### Installation from source
+---
 
-If you just want the latest client tool, it can be installed into
-`$GOPATH/bin` with:
+## CI/CD Pipeline & GitOps
 
-```bash
-go install github.com/bitnami-labs/sealed-secrets/cmd/kubeseal@main
+The deployment workflow is fully automated from commit to production rollout using GitOps principles.
+
+```mermaid
+flowchart TD
+    A([fa:fa-code Developer Pushes Code]) --> B[GitHub Repository: main branch]
+    B --> C{GitHub Actions CI Triggered<br/>ci-cd.yaml}
+    C --> D[Docker Buildx Setup & Cache]
+    D --> E[Build Multi-Stage Docker Images<br/>client/Dockerfile & server/Dockerfile]
+    E --> F[Tag with Short Git SHA & latest]
+    F --> G[Push Images to Docker Hub Container Registry]
+    G --> H[Update Image Tags in k8s/base/ Deployments]
+    H --> I[Commit & Push [skip ci] to main]
+    I --> J[ArgoCD GitOps Auto-Sync Detects Manifest Drift]
+    J --> K[ArgoCD Reconciles & Self-Heals to Cluster]
+    K --> L[Zero-Downtime RollingUpdate Rollout<br/>maxSurge: 1, maxUnavailable: 0]
+    L --> M([✅ Healthy New Replicas Serving Traffic])
+
+    classDef success fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#ecfdf5;
+    classDef process fill:#1e1b4b,stroke:#6366f1,stroke-width:1.5px,color:#e0e7ff;
+    classDef trigger fill:#312e81,stroke:#818cf8,stroke-width:1.5px,color:#e0e7ff;
+
+    class M success;
+    class D,E,F,G,H,I,J,K,L process;
+    class C trigger;
 ```
 
-You can specify a release tag or a commit SHA instead of `main`.
+### Pipeline Stages Explained
+1. **Developer Push:** Changes pushed to `client/`, `server/`, or `.github/workflows/` trigger `.github/workflows/ci-cd.yaml`.
+2. **Container Image Build:** Docker Buildx builds production multi-stage images for frontend (Nginx SPA) and backend (Node.js runtime).
+3. **Registry Publishing:** Tags images with the Git commit short SHA (`adityakanojia11/subtrack-*:sha_short`) and `latest`, then pushes to Docker Hub. (Workflow Run #48 completed clean in 1m 6s).
+4. **GitOps Manifest Update:** CI uses `sed` to update the deployment image tags in `k8s/base/frontend/deployment.yaml` and `k8s/base/backend/deployment.yaml`, committing the change back to `main` with `[skip ci]`.
+5. **ArgoCD Reconciliation:** ArgoCD monitors the Git repository. Upon detecting commit drift, it initiates automated synchronization, applying kustomized manifests to the cluster with self-healing enabled (15/15 resources Synced & Healthy).
+6. **Rolling Update Execution:** Kubernetes executes a zero-downtime rolling update (`maxSurge: 1`, `maxUnavailable: 0`), verifying readiness before traffic cutover.
 
-The `go install` command will place the `kubeseal` binary at `$GOPATH/bin`:
+> [!NOTE]
+> **Pipeline Reality Note:** The active pipeline `.github/workflows/ci-cd.yaml` automates image build, tagging, push, and GitOps manifest patching. It does not currently contain automated test execution or Trivy vulnerability scanning stages; these are tracked in the [DevOps Evidence Audit](docs/DEVOPS_EVIDENCE_AUDIT.md) and [Roadmap](#roadmap).
 
-```bash
-$(go env GOPATH)/bin/kubeseal
+---
+
+## Request Flow Architecture
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as End User (Browser)
+    participant Ingress as Nginx Ingress Controller
+    participant Frontend as Frontend Pod (Nginx + React SPA)
+    participant Backend as Backend Pod (Express REST API)
+    participant DB as MongoDB (Persistent Volume)
+
+    User->>Ingress: HTTPS Request (subtrack.local / 192.168.1.20.nip.io)
+    alt Static Asset Route (/)
+        Ingress->>Frontend: Route request to frontend service (port 80)
+        Frontend-->>User: Return HTML / JS Bundle / CSS assets
+    else API Data Route (/api/*)
+        Ingress->>Backend: Route request to backend service (port 5000)
+        Note over Backend: Authenticate JWT / Rate Limiting / Metrics Middleware
+        Backend->>DB: Query Mongoose Model (e.g. Subscription.find)
+        DB-->>Backend: Return Document / Result Cursor
+        Backend-->>User: Return JSON Response ({ status: 'success', data })
+    end
 ```
 
-## Upgrade
+---
 
-Don't forget to check the [release notes](RELEASE-NOTES.md) for guidance about
-possible breaking changes when you upgrade the client tool
-and/or the controller.
+## Email Ingestion Architecture
 
-### Supported Versions
-Currently, only the latest version of Sealed Secrets is supported for production environments.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as User
+    participant Frontend as React Client
+    participant Backend as Express Backend
+    participant Gmail as Google Gmail API (OAuth 2.0)
+    participant Gemini as Google Gemini AI API
+    participant DB as MongoDB
 
-### Compatibility with Kubernetes versions
-The Sealed Secrets controller ensures compatibility with different versions of Kubernetes by relying on a stable Kubernetes API. Typically, Kubernetes versions above 1.16 are considered compatible. However, we officially support the [currently recommended Kubernetes versions](https://kubernetes.io/releases/). Additionally, versions above 1.24 undergo thorough verification through our CI process with every release.
+    User->>Frontend: Connect Gmail (OAuth 2.0 Consent)
+    Frontend->>Backend: Initiate OAuth Flow (/api/auth/google/connect)
+    Backend-->>User: Redirect to Google Accounts Consent Screen
+    User->>Backend: Google Callback with Auth Code (/api/auth/google/callback)
+    Backend->>Gmail: Exchange Code for Refresh Token
+    Gmail-->>Backend: Return Refresh Token (read-only scopes)
+    Note over Backend: AES-256 Encrypt & Save Token to User document
+    Backend->>DB: Save encrypted googleRefreshToken & gmailConnected: true
 
-## Usage
+    User->>Frontend: Click "Scan Emails for Subscriptions"
+    Frontend->>Backend: POST /api/suggestions/scan
+    Backend->>Gmail: Search candidate emails (query: receipt OR invoice OR subscription)
+    Gmail-->>Backend: Return email message list & snippets
+    Backend->>Gmail: Fetch full email payload (MIME text/html)
+    Gmail-->>Backend: Return decoded email contents
+    Backend->>Gemini: Send prompt with raw email body for entity extraction
+    Gemini-->>Backend: Structured JSON (serviceName, cost, cycle, confidence)
+    Backend->>DB: Upsert SuggestedSubscription records (status: 'pending')
+    Backend-->>Frontend: Return found suggestions list
 
-```bash
-# Create a json/yaml-encoded Secret somehow:
-# (note use of `--dry-run` - this is just a local file!)
-echo -n bar | kubectl create secret generic mysecret --dry-run=client --from-file=foo=/dev/stdin -o json >mysecret.json
-
-# This is the important bit:
-kubeseal -f mysecret.json -w mysealedsecret.json
-
-# At this point mysealedsecret.json is safe to upload to Github,
-# post on Twitter, etc.
-
-# Eventually:
-kubectl create -f mysealedsecret.json
-
-# Profit!
-kubectl get secret mysecret
+    User->>Frontend: Review suggestions & Click "Confirm"
+    Frontend->>Backend: PATCH /api/suggestions/:id/confirm
+    Backend->>DB: Create active Subscription & Update suggestion to 'confirmed'
+    Backend->>DB: Record ActivityLog (suggestion_confirmed)
+    Backend-->>Frontend: Confirmation Success (Dashboard updated)
 ```
 
-Note the `SealedSecret` and `Secret` must have **the same namespace and
-name**. This is a feature to prevent other users on the same cluster
-from re-using your sealed secrets. See the [Scopes](#scopes) section for more info.
+---
 
-`kubeseal` reads the namespace from the input secret, accepts an explicit `--namespace` argument, and uses
-the `kubectl` default namespace (in that order). Any labels,
-annotations, etc on the original `Secret` are preserved, but not
-automatically reflected in the `SealedSecret`.
+## Database Schema (ER Diagram)
 
-By design, this scheme *does not authenticate the user*. In other
-words, *anyone* can create a `SealedSecret` containing any `Secret`
-they like (provided the namespace/name matches). It is up to your
-existing config management workflow, cluster RBAC rules, etc to ensure
-that only the intended `SealedSecret` is uploaded to the cluster. The
-only change from existing Kubernetes is that the *contents* of the
-`Secret` are now hidden while outside the cluster.
+SubTrack uses MongoDB with Mongoose object modeling. The schema reflects the seven primary collections that exist in the codebase:
 
-### Managing existing secrets
+```mermaid
+erDiagram
+    USER ||--o{ SUBSCRIPTION : "owns"
+    USER ||--o{ SUGGESTED_SUBSCRIPTION : "receives"
+    USER ||--o{ NOTIFICATION : "receives"
+    USER ||--o{ ACTIVITY_LOG : "triggers"
+    USER ||--o{ SPEND_SNAPSHOT : "tracks"
+    SUBSCRIPTION ||--o{ USAGE_LOG : "has"
+    SUBSCRIPTION ||--o{ NOTIFICATION : "generates"
+    SUBSCRIPTION ||--o{ ACTIVITY_LOG : "referenced_in"
+    SUGGESTED_SUBSCRIPTION |o--o| SUBSCRIPTION : "confirms_to"
 
-If you want the Sealed Secrets controller to manage an existing `Secret`, you can annotate your `Secret` with the `sealedsecrets.bitnami.com/managed: "true"` annotation. The existing `Secret` will be overwritten when unsealing a `SealedSecret` with the same name and namespace, and the `SealedSecret` will take ownership of the `Secret` (so that when the `SealedSecret` is deleted the `Secret` will also be deleted).
+    USER {
+        ObjectId _id PK
+        string name
+        string email UK
+        string passwordHash
+        string currency
+        number monthlyBudget
+        boolean hasCompletedOnboarding
+        string googleRefreshToken
+        boolean gmailConnected
+        date gmailConnectedAt
+        date lastEmailScanAt
+        array connectedEmailAccounts
+        object notificationPreferences
+        date createdAt
+    }
 
-### Patching existing secrets
+    SUBSCRIPTION {
+        ObjectId _id PK
+        ObjectId userId FK
+        string name
+        number cost
+        string currency
+        string billingCycle
+        number billingCycleInterval
+        string category
+        date nextRenewalDate
+        string status
+        boolean isTrial
+        date trialEndDate
+        string paymentMethod
+        string notes
+        number sharedWithCount
+        string sharedNote
+        array costHistory
+        date createdAt
+        date cancelledAt
+    }
 
-> New in v0.23.0
+    SUGGESTED_SUBSCRIPTION {
+        ObjectId _id PK
+        ObjectId userId FK
+        string suggestedName
+        string suggestedCategory
+        number suggestedCost
+        string suggestedBillingCycle
+        string confidence
+        string sourceSubject
+        string sourceSender
+        date sourceDate
+        string sourceMessageId
+        string status
+        ObjectId confirmedSubscriptionId FK
+        date createdAt
+    }
 
-There are some use cases in which you don't want to replace the whole `Secret` but just add or modify some keys from the existing `Secret`. For this, you can annotate your `Secret` with `sealedsecrets.bitnami.com/patch: "true"`. Using this annotation will make sure that secret keys, labels and annotations in the `Secret` that are not present in the `SealedSecret` won't be deleted, and those present in the `SealedSecret` will be added to the `Secret` (secret keys, labels and annotations that exist both in the `Secret` and the `SealedSecret` will be modified by the `SealedSecret`).
+    NOTIFICATION {
+        ObjectId _id PK
+        ObjectId userId FK
+        ObjectId subscriptionId FK
+        string type
+        string message
+        string priority
+        boolean isRead
+        date sentAt
+    }
 
-This annotation does not make the `SealedSecret` take ownership of the `Secret`. You can add both the `patch` and `managed` annotations to obtain the patching behavior while also taking ownership of the `Secret`.
+    ACTIVITY_LOG {
+        ObjectId _id PK
+        ObjectId userId FK
+        string action
+        ObjectId subscriptionId FK
+        string subscriptionName
+        object metadata
+        date createdAt
+    }
 
-### Seal secret which can skip set owner references
+    SPEND_SNAPSHOT {
+        ObjectId _id PK
+        ObjectId userId FK
+        string month
+        number totalSpend
+        object totalByCategory
+        date createdAt
+    }
 
-If you want `SealedSecret` and the `Secret` to be independent, which mean when you delete the `SealedSecret` the `Secret` won't disappear with it, then you have to annotate that Secret with the annotation `sealedsecrets.bitnami.com/skip-set-owner-references: "true"` ahead of applying the Usage steps. You still may also add `sealedsecrets.bitnami.com/managed: "true"` to your `Secret` so that your secret will be updated when `SealedSecret` is updated.
-
-### Update existing secrets
-
-If you want to add or update existing sealed secrets without having the cleartext for the other items,
-you can just copy&paste the new encrypted data items and merge it into an existing sealed secret.
-
-You must take care of sealing the updated items with a compatible name and namespace (see note about scopes above).
-
-You can use the `--merge-into` command to update an existing sealed secrets if you don't want to copy&paste:
-
-```bash
-echo -n bar | kubectl create secret generic mysecret --dry-run=client --from-file=foo=/dev/stdin -o json \
-  | kubeseal > mysealedsecret.json
-echo -n baz | kubectl create secret generic mysecret --dry-run=client --from-file=bar=/dev/stdin -o json \
-  | kubeseal --merge-into mysealedsecret.json
+    USAGE_LOG {
+        ObjectId _id PK
+        ObjectId subscriptionId FK
+        date usedAt
+        string note
+    }
 ```
 
-### Raw mode (experimental)
+---
 
-Creating temporary Secret with the `kubectl` command, only to throw it away once piped to `kubeseal` can
-be a quite unfriendly user experience. We're working on an overhaul of the CLI experience. In the meantime,
-we offer an alternative mode where kubeseal only cares about encrypting a value to stdout, and it's your responsibility to put it inside a `SealedSecret` resource (not unlike any of the other k8s resources).
+## Tech Stack
 
-It can also be useful as a building block for editor/IDE integrations.
+| Technology | Logo | Category | Why It Was Chosen |
+| :--- | :---: | :--- | :--- |
+| **React 19** | ![React](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=black) | Frontend Framework | Fast component composition, declarative state management, and modern concurrent features for rich dashboard analytics. |
+| **Tailwind CSS** | ![Tailwind](https://img.shields.io/badge/-Tailwind-06B6D4?logo=tailwindcss&logoColor=white) | Styling | Utility-first CSS providing cohesive dark-mode design tokens and rapid UI iterations without bloated style sheets. |
+| **Node.js 20 LTS** | ![NodeJS](https://img.shields.io/badge/-Node.js-5FA04E?logo=nodedotjs&logoColor=white) | Backend Runtime | High-throughput asynchronous I/O optimized for handling concurrent REST traffic, OAuth token handshakes, and cron batch tasks. |
+| **Express 5** | ![Express](https://img.shields.io/badge/-Express-000000?logo=express&logoColor=white) | API Framework | Minimalist routing engine supporting robust middleware pipelines (validation, error handling, Prometheus metrics). |
+| **MongoDB 7.0** | ![MongoDB](https://img.shields.io/badge/-MongoDB-47A248?logo=mongodb&logoColor=white) | Database | Flexible document model accommodating varying subscription pricing histories, JSON metadata, and OAuth tokens. |
+| **Docker** | ![Docker](https://img.shields.io/badge/-Docker-2496ED?logo=docker&logoColor=white) | Containerization | Standardized immutable build artifacts separating development and production runtimes via multi-stage builds. |
+| **Kubernetes (kind)** | ![K8s](https://img.shields.io/badge/-Kubernetes-326CE5?logo=kubernetes&logoColor=white) | Orchestration | Declarative cluster orchestration managing rollouts, service discovery, persistent volumes, and pod autoscaling. |
+| **ArgoCD** | ![ArgoCD](https://img.shields.io/badge/-ArgoCD-EF7B4D?logo=argo&logoColor=white) | GitOps Continuous Delivery | Declarative synchronization maintaining cluster convergence against the Git repository with automated drift self-healing. |
+| **GitHub Actions** | ![GHA](https://img.shields.io/badge/-GitHub_Actions-2088FF?logo=githubactions&logoColor=white) | CI/CD Automation | Container image build, tagging with short Git commit SHA, and GitOps manifest deployment tag patching on push. |
+| **Trivy (Planned)** | ![Trivy](https://img.shields.io/badge/-Trivy-4B68FF?logo=trivy&logoColor=white) | Security Scanning (Roadmap) | Container security scanner for base image and dependency CVE auditing (tracked as planned CI gate in [DevOps Evidence Audit](docs/DEVOPS_EVIDENCE_AUDIT.md)). |
+| **Prometheus** | ![Prometheus](https://img.shields.io/badge/-Prometheus-E6522C?logo=prometheus&logoColor=white) | Telemetry & Alerting | Time-series metrics collection via `/metrics` endpoint with native PromQL evaluation of multiwindow SLO burn rates. |
+| **Grafana** | ![Grafana](https://img.shields.io/badge/-Grafana-F46800?logo=grafana&logoColor=white) | Observability UI | Real-time visualization of SRE Golden Signals, error budget burn rates, HPA replica states, and traffic patterns. |
+| **Alertmanager** | ![Alertmanager](https://img.shields.io/badge/-Alertmanager-E6522C?logo=prometheus&logoColor=white) | Alert Management | Deduplication, grouping, and dispatching of fast-burn and slow-burn alerts to webhooks and notification endpoints. |
+| **Bitnami Sealed Secrets** | ![SealedSecrets](https://img.shields.io/badge/-Sealed_Secrets-10B981?logo=kubernetes&logoColor=white) | Secret Management | Asymmetric public-key encryption enabling secure storage of Kubernetes secrets inside public Git repositories. |
+| **Nginx** | ![Nginx](https://img.shields.io/badge/-NGINX-009639?logo=nginx&logoColor=white) | Ingress & Static Proxy | High-performance reverse proxying, TLS termination, and static asset delivery with client-side SPA routing fallbacks. |
+| **Google Gemini API** | ![Gemini](https://img.shields.io/badge/-Google_Gemini-8E75B2?logo=googlegemini&logoColor=white) | Artificial Intelligence | Structured information extraction from complex unstructured email bodies to detect merchant names and billing cycles. |
+| **Gmail API** | ![Gmail](https://img.shields.io/badge/-Gmail_API-EA4335?logo=gmail&logoColor=white) | OAuth Email Service | Read-only access to user email receipts via scoped OAuth 2.0 without exposing user mailbox credentials. |
 
-The downside is that you have to be careful to be consistent with the sealing scope, the namespace and the name.
+---
 
-See [Scopes](#scopes)
+## Reliability Engineering
 
-`strict` scope (default):
+SubTrack was built to demonstrate operational rigor and production survivability.
 
-```console
-$ echo -n foo | kubeseal --raw --namespace bar --name mysecret
-AgBChHUWLMx...
+### Zero-Downtime Rollouts
+Live deployments must never compromise service availability. We achieve zero dropped requests through four cooperating mechanisms:
+
+1. **Deployment Strategy:** Configured with `type: RollingUpdate`, `maxSurge: 1`, and `maxUnavailable: 0` in both [`k8s/base/backend/deployment.yaml`](k8s/base/backend/deployment.yaml) and [`k8s/base/frontend/deployment.yaml`](k8s/base/frontend/deployment.yaml). New pods must become fully ready before old pods begin termination.
+2. **Probes & Readiness Guardrails:** 
+   - Backend Readiness Probe: `GET /api/health/ready` validates MongoDB connection state before the pod accepts incoming traffic.
+   - Backend Liveness Probe: `GET /api/health/live` monitors Node.js process responsiveness.
+   - `minReadySeconds: 10`: Guarantees new pods remain healthy for at least 10 seconds before Kubernetes marks the rollout step complete.
+3. **PodDisruptionBudgets (PDB):** Defined in [`k8s/base/backend/pdb.yaml`](k8s/base/backend/pdb.yaml) and [`k8s/base/frontend/pdb.yaml`](k8s/base/frontend/pdb.yaml) with `minAvailable: 1`, preventing cluster maintenance from draining all instances simultaneously.
+4. **Observed Load-Test Verification:**
+   - **Load Profile:** 10 Virtual Users (VUs) sustaining continuous requests for 90 seconds while a rolling update was executed across the cluster.
+   - **Empirical Verification Result:** **3,989 total HTTP requests** processed with **0 failed requests** (100% 200 OK availability). Tail latency p95 was **6.71 ms**, with only 17 requests (0.43%) taking >500 ms during pod swap-over. Raw output preserved in [`docs/evidence/k6-zero-downtime.json`](docs/evidence/k6-zero-downtime.json).
+
+### Autoscaling with Horizontal Pod Autoscaler (HPA)
+Traffic surges dynamically trigger horizontal pod scaling to preserve responsiveness without manual operator intervention:
+
+1. **HPA Resource Target:** Configured in [`k8s/base/backend/hpa.yaml`](k8s/base/backend/hpa.yaml) targeting `averageUtilization: 70%` CPU across pods, with a minimum of 2 replicas and a ceiling of 6 replicas.
+2. **Stabilization & Cooldown Windows:**
+   - `scaleUp.stabilizationWindowSeconds: 30`: Ramps up capacity within 30–60 seconds of sustained load.
+   - `scaleDown.stabilizationWindowSeconds: 300`: Holds scaled replicas for 5 minutes after traffic normalizes, preventing pod flapping during intermittent lulls.
+3. **Observed Scaling Verification:**
+   - **Load Profile:** Staged k6 load ramping to 50 VUs against `/api/analytics/categories`.
+   - **Empirical Scaling Result:** Baseline 3 pods scaled dynamically to **6 replicas** as CPU utilization peaked at **258%** (against the 70% target). The 300-second scale-down stabilization window held capacity before consolidating back. Raw watch log preserved in [`docs/evidence/hpa-scaling.txt`](docs/evidence/hpa-scaling.txt).
+
+### SLIs, SLOs & Error Budget Policy
+
+Formal reliability guarantees are defined in our dedicated reliability documentation:
+- [SLI Definitions](docs/reliability/SLI-definitions.md)
+- [SLO Definitions](docs/reliability/SLO-definitions.md)
+- [Error Budget Calculation](docs/reliability/error-budget-calculation.md)
+- [Error Budget Policy](docs/reliability/error-budget-policy.md)
+
+#### Service Level Objectives (SLOs)
+| Objective | Target | Rolling Window | SLI PromQL Metric |
+| :--- | :--- | :--- | :--- |
+| **SLO #1 — Availability** | **99.9%** (Allowed failure: 0.1%) | 30 Days | `sum(rate(subtrack_http_requests_total{status_code!~"5.."}[30d])) / sum(rate(subtrack_http_requests_total[30d]))` |
+| **SLO #2 — Latency** | **95.0% < 500ms** (Allowed slow: 5.0%) | 30 Days | `sum(rate(subtrack_http_request_duration_seconds_bucket{le="0.5"}[30d])) / sum(rate(subtrack_http_request_duration_seconds_count[30d]))` |
+
+#### Multiwindow Multi-Burn-Rate Alerting
+Rather than alerting on simplistic instantaneous thresholds (which generate noisy false positives) or 30-day averages (which alert too late), Prometheus evaluates Google SRE Multiwindow Burn-Rate alert rules defined in [`k8s/observability/prometheus-rules-configmap.yaml`](k8s/observability/prometheus-rules-configmap.yaml):
+
+```promql
+# Availability Fast Burn Alert: 14.4x burn rate over both 5m and 1h windows
+(
+  (1 - (sum(rate(subtrack_http_requests_total{status_code!~"5.."}[5m])) / sum(rate(subtrack_http_requests_total[5m])))) / 0.001 > 14.4
+)
+and
+(
+  (1 - (sum(rate(subtrack_http_requests_total{status_code!~"5.."}[1h])) / sum(rate(subtrack_http_requests_total[1h])))) / 0.001 > 14.4
+)
 ```
 
-`namespace-wide` scope:
+- **Fast Burn Alert (14.4x Rate):** Fires critical alerts within 2 minutes if the error budget is on track to exhaust completely in ~2 days.
+- **Slow Burn Alert (3x Rate):** Fires warning alerts within 15 minutes if steady budget depletion is on track to exhaust within ~10 days.
 
-```console
-$ echo -n foo | kubeseal --raw --namespace bar --scope namespace-wide
-AgAbbFNkM54...
-```
-Include the `sealedsecrets.bitnami.com/namespace-wide` annotation in the `SealedSecret`
-```yaml
-metadata:
-  annotations:
-    sealedsecrets.bitnami.com/namespace-wide: "true"
-```
+#### Three-Tier Error Budget Policy
+1. **Tier 1 (Healthy, <50% consumed):** Normal feature engineering continues.
+2. **Tier 2 (Warning, 50–100% consumed or Slow Burn active):** Risky infrastructure migrations deferred; PRs require reliability impact review.
+3. **Tier 3 (Exhausted, ≥100% consumed or Fast Burn active):** All new feature releases halt immediately. Engineering effort redirects entirely to root-cause mitigation until alerts clear.
 
-`cluster-wide` scope:
+---
 
-```console
-$ echo -n foo | kubeseal --raw --scope cluster-wide
-AgAjLKpIYV+...
-```
-Include the `sealedsecrets.bitnami.com/cluster-wide` annotation in the `SealedSecret`
-```yaml
-metadata:
-  annotations:
-    sealedsecrets.bitnami.com/cluster-wide: "true"
-```
+## Observability & SRE Alerting
 
-### Validate a Sealed Secret
+SubTrack operates a dedicated observability stack under the `observability` namespace:
 
-If you want to validate an existing sealed secret, `kubeseal` has the flag `--validate` to help you.
+- **Prometheus Server:** Scrapes `/metrics` from backend instances every 15 seconds using `prom-client` histogram collectors.
+- **Kube-State-Metrics:** Emits pod health, replica counts, deployment statuses, and persistent volume telemetry.
+- **Alertmanager:** Deduplicates and dispatches SRE burn-rate alerts to the internal audit logger and notification handlers.
+- **Grafana Dashboards:** Pre-configured with custom dashboards visualizing:
+  - **SRE Golden Signals:** Request rate (QPS), error rate (5xx), latency percentiles (p50, p90, p95, p99), and CPU saturation.
+  - **Error Budget Gauges:** Real-time percentage of availability and latency budgets remaining.
+  - **HPA Scaling Dynamics:** Target CPU utilization vs. real-time pod replica scaling.
 
-Giving a file named `sealed-secrets.yaml` containing the following sealed secret:
+- **Grafana Dashboard Preview:**
 
-```yaml
-apiVersion: bitnami.com/v1alpha1
-kind: SealedSecret
-metadata:
-  name: mysecret
-  namespace: mynamespace
-spec:
-  encryptedData:
-    foo: AgBy3i4OJSWK+PiTySYZZA9rO43cGDEq.....
-```
+![Grafana RED Dashboard & Error Budget Gauges](docs/linkedin/images/3-grafana-dashboard.png)
 
-You can validate if the sealed secret was properly created or not:
+---
 
-```console
-$ cat sealed-secrets.yaml | kubeseal --validate
-```
+## Security & Secret Management
 
-In case of an invalid sealed secret, `kubeseal` will show:
+- **Bitnami Sealed Secrets:** Secrets are encrypted client-side using `kubeseal` and the cluster public certificate ([`k8s/base/sealed-secrets-public-cert.pem`](k8s/base/sealed-secrets-public-cert.pem)). The resulting `SealedSecret` custom resources can be safely checked into version control; only the controller running in the cluster possesses the private decryption key.
+- **Least-Privilege Execution:** The Node.js application process runs as unprivileged user `node` (UID/GID 1000) inside container boundaries, mitigating container breakout risks.
+- **Network Isolation:** Network traffic isolation is managed via Kubernetes ClusterIP Service abstraction and Ingress routing rules. Dedicated default-deny `NetworkPolicy` resources are documented as a planned enhancement in the [Roadmap](#roadmap).
+- **Cryptographic At-Rest Token Protection:** User Google OAuth refresh tokens are encrypted using `crypto.createCipheriv('aes-256-cbc', key, iv)` before writing to MongoDB. Plaintext tokens never appear in database storage.
+- **Vulnerability Auditing:** Minimal Alpine container bases minimize the attack surface; automated Trivy scanning in CI is documented in the [Roadmap](#roadmap).
 
-```console
-$ cat sealed-secrets.yaml | kubeseal --validate
-error: unable to decrypt sealed secret
-```
+---
 
-## Secret Rotation
+## Application Walkthrough & Screenshots
 
-You should always rotate your secrets. But since your secrets are encrypted with another secret,
-you need to understand how these two layers relate to take the right decisions.
+### 1. Subscription Intelligence Dashboard
+Live dashboard displaying active recurring spend, upcoming renewals, and wasted-spend alerts:
+![SubTrack Analytics Dashboard](docs/linkedin/images/1-app-dashboard.png)
 
-TL;DR:
+### 2. GitOps Continuous Delivery (ArgoCD)
+Automated cluster convergence and drift detection across 15 Kubernetes resources:
+![ArgoCD GitOps Reconciliation](docs/linkedin/images/2-argocd-original-clean.png)
 
-> If a *sealing* private key is compromised, you need to follow the instructions below in "Early key renewal"
-> section before rotating any of your actual secret values.
->
-> SealedSecret key renewal and re-encryption features are **not a substitute** for periodical rotation of your actual secret values.
+### 3. Kubernetes Security & Non-Root Proof
+Terminal verification confirming UID 1000 non-root execution and Bitnami Sealed Secrets ciphertext:
+![Kubernetes Security Proof](docs/linkedin/images/8-security-proof.png)
 
-### Sealing key renewal
+---
 
-Sealing keys are automatically renewed every 30 days. Which means a new sealing key is created and appended to the set of active sealing keys the controller can use to unseal `SealedSecret` resources.
-
-The most recently created sealing key is the one used to seal new secrets when you use `kubeseal` and it's the one whose certificate is downloaded when you use `kubeseal --fetch-cert`.
-
-The renewal time of 30 days is a reasonable default, but it can be tweaked as needed
-with the `--key-renew-period=<value>` flag for the command in the pod template of the `SealedSecret` controller. The `value` field can be given as golang
-duration flag (eg: `720h30m`). Assuming that you've installed Sealed Secrets into the `kube-system` namespace, use the following command to edit the Deployment controller, and add the `--key-renew-period` parameter. Once you close your text editor, and the Deployment controller has been modified, a new Pod will be automatically created to replace the old Pod.
+## Project Structure
 
 ```
-kubectl edit deployment/sealed-secrets-controller --namespace=kube-system
+subtrack/
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yaml             # Automated CI pipeline: build, test, push, manifest patch
+├── client/                        # React 19 Single Page Application
+│   ├── src/
+│   │   ├── components/            # Modular dashboard, subscription, and layout widgets
+│   │   ├── pages/                 # Route views (Dashboard, Subscriptions, Reports, Profile)
+│   │   ├── context/               # Authentication & theme context providers
+│   │   ├── services/              # Axios API client connectors
+│   │   └── index.css              # Tailwind CSS configuration and base tokens
+│   ├── nginx.conf                 # Production Nginx reverse-proxy & client routing config
+│   ├── Dockerfile                 # Multi-stage Docker build (Node.js build -> Nginx release)
+│   └── package.json               # Client dependencies (React, Recharts, Lucide, Tailwind)
+├── server/                        # Node.js Express REST API
+│   ├── src/
+│   │   ├── config/                # Database, OAuth, and Prom-client metrics configuration
+│   │   ├── controllers/           # API controllers (auth, subscriptions, analytics, admin)
+│   │   ├── middleware/            # JWT protect, validator, and Prometheus metrics middleware
+│   │   ├── models/                # Mongoose schemas (User, Subscription, UsageLog, etc.)
+│   │   ├── routes/                # Express router declarations
+│   │   ├── services/              # Insights engine, Gmail service, renewal scanner
+│   │   └── utils/                 # Currency conversion, token encryption, date helpers
+│   ├── Dockerfile                 # Multi-stage Docker build running as non-root 'node'
+│   └── package.json               # Server dependencies (Express, Mongoose, Googleapis, Winston)
+├── k8s/                           # Declarative Kubernetes Manifests (Kustomize)
+│   ├── base/                      # Core SubTrack application resources
+│   │   ├── backend/               # Deployment, HPA, PDB, Service, CronJob, Logs PVC
+│   │   ├── frontend/              # Deployment, PDB, Service
+│   │   ├── mongo/                 # Deployment, PersistentVolumeClaim, Service
+│   │   ├── ingress/               # Ingress routing rules & TLS configuration
+│   │   ├── sealed-secret.yaml     # Asymmetrically encrypted production credentials
+│   │   └── kustomization.yaml     # Base Kustomize resource composition
+│   ├── argocd/                    # ArgoCD application declarations & notification hooks
+│   ├── observability/             # Prometheus, Alertmanager, Grafana, and KSM manifests
+│   └── kind-config.yaml           # Local multi-port kind cluster configuration
+├── load-tests/                    # k6 performance and reliability test suite
+│   ├── zero-downtime-check.js     # Rollout traffic test validating 0 dropped requests
+│   ├── hpa-scaling-test.js        # Staged load script verifying HPA scaling to 6 pods
+│   └── hpa-test-results.md        # Documented observations and test evidence
+├── scripts/                       # Database seeding, diagram generation, and utilities
+│   ├── generate-architecture-diagram.js # Compiles architecture SVG & renders PNG fallback
+│   └── seed/seed.js               # Populates realistic demo subscriptions and usage history
+├── docs/                          # Architectural and operational documentation
+│   ├── architecture.svg           # High-resolution animated vector architecture diagram
+│   ├── architecture.png           # Fallback pixel-rendered architecture image
+│   ├── DemoScript.md              # 5-minute live demonstration script for presentations
+│   └── reliability/               # Formal SRE SLI/SLO definitions and error budget policy
+├── docker-compose.yml             # Single-command local containerized stack
+├── README_TODO.md                 # Security findings, codebase audit items & action checklist
+└── package.json                   # Root monorepo workspace configuration
 ```
 
-A value of `0` will deactivate automatic key renewal. Of course, you may have a valid use case for deactivating automatic sealing key renewal but experience has shown that new users often tend to jump to conclusions that they want control over key renewal, before fully understanding how sealed secrets work. Read more about this in the [common misconceptions](#common-misconceptions-about-key-renewal) section below.
-
-> Unfortunately, you cannot use e.g. "d" as a unit for days because that's not supported by the Go stdlib. Instead of hitting your face with a palm, take this as an opportunity to meditate on the [falsehoods programmers believe about time](https://infiniteundo.com/post/25326999628/falsehoods-programmers-believe-about-time).
-
-A common misunderstanding is that key renewal is often thought of as a form of key rotation, where the old key is not only obsolete but actually bad and that you thus want to get rid of it.
-It doesn't help that this feature has been historically called "key rotation", which can add to the confusion.
-
-Sealed secrets are not automatically rotated and old keys are not deleted
-when new keys are generated. Old `SealedSecret` resources can be still decrypted (that's because old sealing keys are not deleted).
-
-### User secret rotation
-
-The *sealing key* renewal and SealedSecret rotation are **not a substitute** for rotating your actual secrets.
-
-A core value proposition of this tool is:
-
-> Encrypt your Secret into a SealedSecret, which *is* safe to store - even inside a public repository.
-
-If you store anything in a version control storage, and in a public one in particular, you must assume
-you cannot ever delete that information.
-
-*If* a sealing key somehow leaks out of the cluster you must consider all your `SealedSecret` resources
-encrypted with that key as compromised. No amount of sealing key rotation in the cluster or even re-encryption of existing SealedSecrets files can change that.
-
-The best practice is to periodically rotate all your actual secrets (e.g. change the password) **and** craft new
-`SealedSecret` resources with those new secrets.
-
-But if the `SealedSecret` controller was not renewing the *sealing key* that rotation would be moot,
-since the attacker could just decrypt the new secrets as well. Thus, you need to do both: periodically renew the sealing key and rotate your actual secrets!
-
-### Early key renewal
-
-If you know or suspect a *sealing key* has been compromised you should renew the key ASAP before you
-start sealing your new rotated secrets, otherwise you'll be giving attackers access to your new secrets as well.
-
-A key can be generated early by passing the current timestamp to the controller into a flag called `--key-cutoff-time` or an env var called `SEALED_SECRETS_KEY_CUTOFF_TIME`. The expected format is RFC1123, you can generate it with the `date -R` unix command.
-
-### Common misconceptions about key renewal
-
-Sealed secrets sealing keys are not access control keys (e.g. a password). They are more like the GPG key you might use to read encrypted mail sent to you. Let's continue with the email analogy for a bit:
-
-Imagine you have reasons to believe your private GPG key might have been compromised. You'd have more to lose than to gain if the first thing you do is just delete your private key. All the previous emails sent with that key are no longer accessible to you (unless you have a decrypted copy of those emails), nor are new emails sent by your friends whom you have not yet managed to tell to use the new key.
-
-Sure, the content of those encrypted emails is not secure, as an attacker might now be able to decrypt them, but what's done is done. Your sudden loss of the ability to read those emails surely doesn't undo the damage. If anything, it's worse because you no longer know for sure what secret the attacker got to know. What you really want to do is to make sure that your friend stops using your old key and that from now on all further communication is encrypted with a new key pair (i.e. your friend must know about that new key).
-
-The same logic applies to SealedSecrets. The ultimate goal is to secure your actual "user" secrets. The "sealing" secrets are just a mechanism, an "envelope". If a secret is leaked there is no going back, what's done is done.
-
-You first need to ensure that new secrets don't get encrypted with that old compromised key (in the email analogy above that's: create a new key pair and give all your friends your new public key).
-
-The second logical step is to neutralize the damage, which depends on the nature of the secret. A simple example is a database password: if you accidentally leak your database password, the thing you're supposed to do is simply to change your database password (on the database; and revoke the old one!) *and* update the `SealedSecret` resource with the new password (i.e. running `kubeseal` again).
-
-Both steps are described in the previous sections, albeit in a less verbose way. There is no shame in reading them again, now that you have a more in-depth grasp of the underlying rationale.
-
-### Manual key management (advanced)
-
-The `SealedSecret` controller and the associated workflow are designed to keep old sealing keys around and periodically add new ones. You should not delete old keys unless you know what you're doing.
-
-That said, if you want you can manually manage (create, move, delete) *sealing keys*. They are just normal k8s secrets living in the same namespace where the `SealedSecret` controller lives (usually `kube-system`, but it's configurable).
-
-There are advanced use cases that you can address by creative management of the sealing keys.
-For example, you can share the same sealing key among a few clusters so that you can apply exactly the same sealed secret in multiple clusters.
-Since sealing keys are just normal k8s secrets you can even use sealed secrets themselves and use a GitOps workflow to manage your sealing keys (useful when you want to share the same key among different clusters)!
-
-Labeling a *sealing key* secret with anything other than `active` effectively deletes
-the key from the `SealedSecret` controller, but it is still available in k8s for
-manual encryption/decryption if need be.
-
-**NOTE** `SealedSecret` controller currently does not automatically pick up manually created, deleted or relabeled sealing keys. An admin must restart the controller before the effect will apply.
-
-### Re-encryption (advanced)
-
-Before you can get rid of some old sealing keys you need to re-encrypt your SealedSecrets with the latest private key.
-
-```bash
-kubeseal --re-encrypt <my_sealed_secret.json >tmp.json \
-  && mv tmp.json my_sealed_secret.json
-```
-
-The invocation above will produce a new sealed secret file freshly encrypted with
-the latest key, without making the secrets leave the cluster to the client. You can then save that file
-in your version control system (`kubeseal --re-encrypt` doesn't update the in-cluster object).
-
-Currently, old keys are not garbage collected automatically.
-
-It's a good idea to periodically re-encrypt your SealedSecrets. But as mentioned above, don't lull yourself in a false sense of security: you must assume the old version of the `SealedSecret` resource (the one encrypted with a key you think of as dead) is still potentially around and accessible to attackers. I.e. re-encryption is not a substitute for periodically rotating your actual secrets.
-
-## Details (advanced)
-
-This controller adds a new `SealedSecret` custom resource. The
-interesting part of a `SealedSecret` is a base64-encoded
-asymmetrically encrypted `Secret`.
-
-The controller maintains a set of private/public key pairs as kubernetes
-secrets. Keys are labeled with `sealedsecrets.bitnami.com/sealed-secrets-key`
-and identified in the label as either `active` or `compromised`. On startup,
-The sealed secrets controller will...
-
-1. Search for these keys and add them to its local store if they are
-labeled as active.
-2. Create a new key
-3. Start the key rotation cycle
-
-### Crypto
-
-More details about crypto can be found [here](docs/developer/crypto.md).
-
-## Developing
-
-Developing guidelines can be found [in the Developer Guide](docs/developer/README.md).
-
-## FAQ
-
-### Can I encrypt multiple secrets at once, in one YAML / JSON file?
-
-Yes, you can! Drop as many secrets as you like in one file. Make sure to separate them via `---` for YAML and as extra, single objects in JSON.
-
-### Will you still be able to decrypt if you no longer have access to your cluster?
-
-No, the private keys are only stored in the Secret managed by the controller (unless you have some other backup of your k8s objects). There are no backdoors - without that private key used to encrypt a given SealedSecrets, you can't decrypt it. If you can't get to the Secrets with the encryption keys, and you also can't get to the decrypted versions of your Secrets live in the cluster, then you will need to regenerate new passwords for everything, seal them again with a new sealing key, etc.
-
-### How can I do a backup of my SealedSecrets?
-
-If you do want to make a backup of the encryption private keys, it's easy to do from an account with suitable access:
-
-```bash
-kubectl get secret -n kube-system -l sealedsecrets.bitnami.com/sealed-secrets-key -o yaml >main.key
-
-echo "---" >> main.key
-kubectl get secret -n kube-system sealed-secrets-key -o yaml >>main.key
-```
-
-> NOTE: You need the second statement only if you ever installed sealed-secrets older than version 0.9.x on your cluster.
-
-> NOTE: This file will contain the controller's public + private keys and should be kept omg-safe!
-
-> NOTE: After sealing key renewal you should recreate your backup. Otherwise, your backup won't be able to decrypt new sealed secrets.
-
-To restore from a backup after some disaster, just put that secrets back before starting the controller - or if the controller was already started, replace the newly-created secrets and restart the controller:
-
-* For Helm deployment:
-    ```bash
-    kubectl apply -f main.key
-    kubectl delete pod -n kube-system -l app.kubernetes.io/name=sealed-secrets
-    ```
-
-* For deployment via `controller.yaml` manifest
-    ```bash
-    kubectl apply -f main.key
-    kubectl delete pod -n kube-system -l name=sealed-secrets-controller
-    ```
-
-### Can I decrypt my secrets offline with a backup key?
-
-While treating sealed-secrets as long term storage system for secrets is not the recommended use case, some people
-do have a legitimate requirement for being able to recover secrets when the k8s cluster is down and restoring a backup into a new `SealedSecret` controller deployment is not practical.
-
-If you have backed up one or more of your private keys (see previous question), you can use the `kubeseal --recovery-unseal --recovery-private-key file1.key,file2.key,...` command to decrypt a sealed secrets file.
-
-### What flags are available for kubeseal?
-
-You can check the flags available using `kubeseal --help`.
-
-### How do I update parts of JSON/YAML/TOML/.. file encrypted with sealed secrets?
-
-A kubernetes `Secret` resource contains multiple items, basically a flat map of key/value pairs.
-SealedSecrets operate at that level, and does not care what you put in the values. In other words
-it cannot make sense of any structured configuration file you might have put in a secret and thus
-cannot help you update individual fields in it.
-
-Since this is a common problem, especially when dealing with legacy applications, we do offer an [example](docs/examples/config-template) of a possible workaround.
-
-### Can I bring my own (pre-generated) certificates?
-
-Yes, you can provide the controller with your own certificates, and it will consume them.
-Please check [here](docs/bring-your-own-certificates.md) for a workaround.
-
-### How to use kubeseal if the controller is not running within the `kube-system` namespace?
-
-If you installed the controller in a different namespace than the default `kube-system`, you need to provide this namespace
-to the `kubeseal` commandline tool. There are two options:
-
-1. You can specify the namespace via the command line option `--controller-namespace <namespace>`:
-
-  ```bash
-kubeseal --controller-namespace sealed-secrets <mysecret.json >mysealedsecret.json
-```
-
-2. Via the environment variable `SEALED_SECRETS_CONTROLLER_NAMESPACE`:
-
-  ```bash
-export SEALED_SECRETS_CONTROLLER_NAMESPACE=sealed-secrets
-kubeseal <mysecret.json >mysealedsecret.json
-```
-
-### How to verify the images?
-
-Our images are being signed using [cosign](https://github.com/sigstore/cosign). The signatures have been saved in our [GitHub Container Registry](https://ghcr.io/bitnami-labs/sealed-secrets-controller/signs).
-
-> Images up to and including v0.20.2 were signed using Cosign v1. Newer images are signed with Cosign v2.
-
-It is pretty simple to verify the images:
-
-```bash
-# export the COSIGN_VARIABLE setting up the GitHub container registry signs path
-export COSIGN_REPOSITORY=ghcr.io/bitnami-labs/sealed-secrets-controller/signs
-
-# verify the image uploaded in GHCR
-cosign verify --key .github/workflows/cosign.pub ghcr.io/bitnami-labs/sealed-secrets-controller:latest
-
-# verify the image uploaded in Dockerhub
-cosign verify --key .github/workflows/cosign.pub docker.io/bitnami/sealed-secrets-controller:latest
-```
-
-### How to use one controller for a subset of namespaces
-
-If you want to use one controller for more than one namespace, but not all namespaces, you can provide additional namespaces using the command line flag `--additional-namespaces=<namespace1>,<namespace2>,<...>`. Make sure you provide appropriate roles and rolebindings in the target namespaces, so the controller can manage the secrets in there.
-
-## Community
-
-- [#sealed-secrets on Kubernetes Slack](https://kubernetes.slack.com/messages/sealed-secrets)
-
-Click [here](http://slack.k8s.io) to sign up to the Kubernetes Slack org.
-
-### Related projects
-
-- `kubeseal-convert`: [https://github.com/EladLeev/kubeseal-convert](https://github.com/EladLeev/kubeseal-convert)
-- Visual Studio Code extension: [https://marketplace.visualstudio.com/items?itemName=codecontemplator.kubeseal](https://marketplace.visualstudio.com/items?itemName=codecontemplator.kubeseal)
-- WebSeal: generates secrets in the browser: [https://socialgouv.github.io/webseal](https://socialgouv.github.io/webseal)
-- HybridEncrypt TypeScript implementation: [https://github.com/SocialGouv/aes-gcm-rsa-oaep](https://github.com/SocialGouv/aes-gcm-rsa-oaep)
-- [DEPRACATED] Sealed Secrets Operator: [https://github.com/disposab1e/sealed-secrets-operator-helm](https://github.com/disposab1e/sealed-secrets-operator-helm)
+---
+
+## Getting Started
+
+You can run SubTrack using any of three verified workflows:
+
+### Option A: Local Development (Node.js + MongoDB)
+Best for rapid code editing and component development.
+
+**Prerequisites:** Node.js v18+, npm, and MongoDB running locally on port `27017`.
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Aditya-k-11/sub_tracker.git
+   cd sub_tracker
+   ```
+2. **Configure environment:**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your local MongoDB URI and development secrets
+   ```
+3. **Install dependencies and start backend:**
+   ```bash
+   cd server
+   npm install
+   npm run dev
+   ```
+4. **In a second terminal, start frontend:**
+   ```bash
+   cd client
+   npm install
+   npm run dev
+   ```
+5. **Seed demo data (in a third terminal):**
+   ```bash
+   npm run seed
+   ```
+6. **Open browser:** Visit `http://localhost:5173` (Login with `demo@subtrack.dev` / `Demo@1234`).
+
+---
+
+### Option B: Docker Compose
+Best for full-stack integration testing without installing Kubernetes.
+
+**Prerequisites:** Docker Engine v24+ and Docker Compose.
+
+1. **Configure environment:**
+   ```bash
+   cp .env.example .env
+   ```
+2. **Build and launch containers:**
+   ```bash
+   docker compose up --build -d
+   ```
+3. **Verify running services:**
+   ```bash
+   docker compose ps
+   ```
+4. **Seed demo data:**
+   ```bash
+   docker compose exec backend node ../scripts/seed/seed.js
+   ```
+5. **Access SubTrack:** Open `http://localhost:8080`.
+
+---
+
+### Option C: Kubernetes with kind + ArgoCD
+Best for testing GitOps, autoscaling, and zero-downtime rollouts in a production-like cluster.
+
+**Prerequisites:** Docker, `kubectl`, `kind` (v0.27+), `kubeseal`, and `argocd` CLI.
+
+1. **Create the kind cluster with port mappings:**
+   ```bash
+   kind create cluster --config k8s/kind-config.yaml --name subtrack
+   ```
+2. **Install Nginx Ingress Controller:**
+   ```bash
+   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+   kubectl wait --namespace ingress-nginx \
+     --for=condition=ready pod \
+     --selector=app.kubernetes.io/component=controller \
+     --timeout=120s
+   ```
+3. **Install Bitnami Sealed Secrets Controller:**
+   ```bash
+   kubectl apply -f https://github.com/bitnami-labs/sealed-secrets/releases/download/v0.24.5/sealed-secrets-controller.yaml
+   kubectl rollout status deployment sealed-secrets-controller -n kube-system
+   ```
+4. **Install ArgoCD:**
+   ```bash
+   kubectl create namespace argocd
+   kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+   kubectl rollout status deployment argocd-server -n argocd
+   ```
+5. **Deploy the SubTrack Application via ArgoCD:**
+   ```bash
+   kubectl apply -f k8s/subtrack-app.yaml
+   ```
+6. **Deploy the Observability Stack (Prometheus, Alertmanager, Grafana):**
+   ```bash
+   kubectl apply -k k8s/observability
+   ```
+7. **Access the Platform:**
+   - **SubTrack App:** Visit `http://localhost:8082` (or map `192.168.1.20.nip.io` in `/etc/hosts`).
+   - **ArgoCD UI:** Run `argocd admin dashboard -n argocd --port 8999` and navigate to `http://localhost:8999`.
+   - **Grafana:** Run `kubectl port-forward svc/grafana -n observability 3001:3000` and navigate to `http://localhost:3001` (Credentials: `admin` / `admin`).
+
+---
+
+## Environment Variables
+
+| Variable | Description | Required | Default / Example Value |
+| :--- | :--- | :---: | :--- |
+| `PORT` | HTTP port on which the Express server listens | No | `5000` |
+| `NODE_ENV` | Application runtime environment (`development` \| `production`) | **Yes** | `production` |
+| `MONGO_URI` | MongoDB connection connection string with authentication | **Yes** | `mongodb://subtrack_admin:password@mongo:27017/subtrack?authSource=admin` |
+| `MONGO_ROOT_USERNAME` | Root database administrator username | **Yes** | `subtrack_admin` |
+| `MONGO_ROOT_PASSWORD` | Root database administrator password | **Yes** | `your_secure_password` |
+| `MONGO_DB_NAME` | Default database schema name | **Yes** | `subtrack` |
+| `JWT_SECRET` | Secret key used to sign and verify JSON Web Tokens | **Yes** | `your_64_character_random_hex_string` |
+| `JWT_EXPIRES_IN` | Token expiration time window | No | `7d` |
+| `TOKEN_ENCRYPTION_KEY` | 32-byte hex key for AES-256 encryption of OAuth tokens at rest | **Yes** | `your_32_byte_hex_key` |
+| `GOOGLE_CLIENT_ID` | OAuth 2.0 client ID from Google Cloud Console | **Yes** | `xxxxxx.apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | OAuth 2.0 client secret from Google Cloud Console | **Yes** | `GOCSPX-xxxxxx` |
+| `GOOGLE_REDIRECT_URI` | Authorized OAuth 2.0 redirect callback URL | **Yes** | `http://localhost:5000/api/auth/google/callback` |
+| `FRONTEND_URL` | Public origin of the React frontend application | **Yes** | `http://localhost:8082` |
+| `ENABLE_LOCAL_CRON` | Enables in-process `node-cron` (set to `false` when using k8s CronJob) | No | `true` |
+| `VITE_API_BASE_URL` | Base API prefix baked into client bundle at build time | No | `/api` |
+
+---
+
+## REST API Overview
+
+### Health & Telemetry
+| Method | Path | Auth | Purpose |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/metrics` | No | Prometheus metrics scrape endpoint (prom-client) |
+| `GET` | `/api/health` | No | Basic server uptime and MongoDB connection state |
+| `GET` | `/api/health/live` | No | Kubernetes liveness probe (validates event loop responsiveness) |
+| `GET` | `/api/health/ready` | No | Kubernetes readiness probe (validates DB connectivity before routing) |
+| `GET` | `/api/health/slow` | No | Synthetic 1000ms delayed endpoint for latency SLI testing |
+
+### Authentication & Account
+| Method | Path | Auth | Purpose |
+| :--- | :--- | :---: | :--- |
+| `POST` | `/api/auth/register` | No | Register new user account with bcrypt password hashing |
+| `POST` | `/api/auth/login` | No | Authenticate user and issue signed JWT bearer token |
+| `GET` | `/api/users/me` | **JWT** | Fetch authenticated user profile & notification preferences |
+| `PATCH` | `/api/users/me` | **JWT** | Update profile information (name, preferred currency) |
+| `POST` | `/api/users/me/change-password` | **JWT** | Change user password |
+| `PATCH` | `/api/users/me/notification-preferences` | **JWT** | Update alert preferences (renewals, trials, wasted spend) |
+| `PATCH` | `/api/users/me/complete-onboarding` | **JWT** | Mark onboarding wizard as completed |
+| `PATCH` | `/api/users/me/budget` | **JWT** | Set or update monthly software spending budget |
+| `DELETE` | `/api/users/me` | **JWT** | Delete user account and cascade delete all user records |
+
+### Subscriptions & Usage
+| Method | Path | Auth | Purpose |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/api/subscriptions` | **JWT** | List user subscriptions (supports filtering by status, category, cycle) |
+| `POST` | `/api/subscriptions` | **JWT** | Create a new tracked subscription |
+| `PATCH` | `/api/subscriptions/bulk` | **JWT** | Bulk update status or category across multiple subscriptions |
+| `GET` | `/api/subscriptions/:id` | **JWT** | Retrieve single subscription record |
+| `PATCH` | `/api/subscriptions/:id` | **JWT** | Update subscription cost, billing interval, or metadata |
+| `DELETE` | `/api/subscriptions/:id` | **JWT** | Cancel or delete a subscription |
+| `GET` | `/api/subscriptions/:id/detail` | **JWT** | Fetch comprehensive subscription detail, usage stats, and price changes |
+| `PATCH` | `/api/subscriptions/:id/notes` | **JWT** | Update custom user notes for a subscription |
+| `POST` | `/api/subscriptions/:id/usage` | **JWT** | Log active usage event (clears wasted-spend flags) |
+| `GET` | `/api/subscriptions/:id/usage` | **JWT** | Fetch usage history for a subscription |
+| `GET` | `/api/subscriptions/:id/usage/summary` | **JWT** | Fetch aggregate usage statistics (days since last use, total count) |
+| `DELETE` | `/api/subscriptions/:id/usage/:usageId` | **JWT** | Delete a specific usage log entry |
+| `GET` | `/api/subscriptions/:id/savings-estimate` | **JWT** | Calculate estimated savings from switching to an annual billing cycle |
+
+### Analytics & Intelligence
+| Method | Path | Auth | Purpose |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/api/analytics/summary` | **JWT** | Total monthly spend, active subscriptions count, and budget pacing |
+| `GET` | `/api/analytics/categories` | **JWT** | Category breakdown with spend percentages and counts |
+| `GET` | `/api/analytics/trend` | **JWT** | Historical 4-month spend progression |
+| `GET` | `/api/analytics/wasted` | **JWT** | Flagged unused subscriptions with calculated cost-per-use |
+| `GET` | `/api/analytics/upcoming-timeline` | **JWT** | Chronological timeline of upcoming renewals over the next 30 days |
+| `GET` | `/api/analytics/velocity` | **JWT** | Current spend velocity compared to baseline monthly averages |
+| `GET` | `/api/analytics/insights` | **JWT** | Prioritized financial insights (trial endings, price hikes, overlaps) |
+| `GET` | `/api/analytics/category/:category` | **JWT** | Deep-dive metrics and subscription list for a specific category |
+
+### Gmail Ingestion & AI Suggestions
+| Method | Path | Auth | Purpose |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/api/auth/google/connect` | **JWT** | Generate Google OAuth 2.0 consent URL for Gmail read access |
+| `GET` | `/api/auth/google/callback` | No | Handle OAuth callback, exchange auth code, and store encrypted token |
+| `POST` | `/api/auth/google/disconnect` | **JWT** | Disconnect Gmail integration and delete encrypted tokens |
+| `GET` | `/api/auth/google/status` | **JWT** | Check connection status, connected email, and last scan timestamp |
+| `POST` | `/api/suggestions/scan` | **JWT** | Trigger Gmail inbox scan for subscription receipt candidates |
+| `GET` | `/api/suggestions` | **JWT** | Retrieve pending suggested subscriptions |
+| `PATCH` | `/api/suggestions/:id/confirm` | **JWT** | Convert suggestion into an active tracked subscription |
+| `PATCH` | `/api/suggestions/:id/dismiss` | **JWT** | Dismiss a false-positive suggestion |
+
+### Notifications & Audit
+| Method | Path | Auth | Purpose |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/api/notifications` | **JWT** | Fetch renewal and trial alerts ordered by priority |
+| `PATCH` | `/api/notifications/:id/read` | **JWT** | Mark a specific notification as read |
+| `PATCH` | `/api/notifications/read-all` | **JWT** | Mark all active notifications as read |
+| `GET` | `/api/activity/recent` | **JWT** | Get stream of recent user activity |
+| `GET` | `/api/activity/history` | **JWT** | Paginated audit log of all account operations |
+| `GET` | `/api/export/subscriptions` | **JWT** | Export subscription dataset in CSV or JSON format |
+| `POST` | `/api/admin/run-renewal-scan` | **JWT** | Manually trigger renewal check and notification generation |
+| `POST` | `/api/admin/run-email-scan` | **JWT** | Manually trigger email receipt scanner batch |
+
+---
+
+## Known Limitations
+
+- **Local Kubernetes Validation:** The GitOps and Kubernetes configurations were engineered and validated on a local multi-node `kind` cluster. Production deployment to managed cloud providers (AWS EKS, GCP GKE, Azure AKS) would require external Ingress controllers (e.g. AWS Load Balancer Controller) and managed volume provisioners (EBS CSI).
+- **Gemini AI API Binding:** The receipt extraction pipeline is architected for Google Gemini API structured extraction. The current codebase uses a catalog of known services (`knownServicesCatalog.js`) combined with regex amount extraction as an intermediate heuristic. Native Gemini API client SDK calls are planned on the roadmap.
+- **NetworkPolicy Enforcement:** The architectural security model documents pod-to-pod network restriction boundaries, but dedicated `NetworkPolicy` manifests (`networking.k8s.io/v1`) are not yet applied in `k8s/base/`.
+- **Prometheus TSDB Retention:** Default in-cluster Prometheus storage retention is set to 15 days. Full 30-day SLO compliance queries require either an active 30-day cluster runtime or a long-term storage adapter (e.g., Thanos).
+- **DNS Resolution:** Local ingress testing relies on wildcard DNS mapping via `192.168.1.20.nip.io` or manual `/etc/hosts` resolution.
+
+---
+
+## Roadmap
+
+- [ ] **Direct Google Gemini API Integration:** Replace regex heuristics with Gemini 1.5 Flash structured output for parsing multilingual invoice attachments and PDFs.
+- [ ] **Kubernetes NetworkPolicies:** Implement strict default-deny network policies restricting ingress to MongoDB exclusively from the backend pods.
+- [ ] **Managed Cloud Terraform Module:** Provide declarative Terraform modules for bootstrapping EKS/GKE clusters, cert-manager Let's Encrypt certificates, and external DNS.
+- [ ] **Thanos Long-Term Metrics:** Deploy Thanos Sidecar and Object Store for multi-month SLO trend visualization.
+- [ ] **Multi-Tenant Team Workspaces:** Enable team-level software budgeting, shared seat cost allocation, and department approval workflows.
+
+---
+
+## Author & Acknowledgments
+
+- **Author:** Aditya
+- **LinkedIn:** [Aditya's Profile](https://www.linkedin.com/in/)
+- **GitHub:** [Aditya-k-11/sub_tracker](https://github.com/Aditya-k-11/sub_tracker)
+- **Project Type:** Independent Cloud-Native DevOps Side Project
+
+---
+
+## License
+
+This project is licensed under the Apache License 2.0 — see the [LICENSE](LICENSE) file for details.

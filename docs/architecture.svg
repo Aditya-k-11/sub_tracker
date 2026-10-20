@@ -1,0 +1,745 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1680" height="1060" viewBox="0 0 1680 1060" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bg-glow" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#121324"/>
+      <stop offset="100%" stop-color="#0a0a12"/>
+    </radialGradient>
+
+    <!-- Flow Line Gradients -->
+    <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+
+    <linearGradient id="grad-obs" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="50%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#ef4444"/>
+    </linearGradient>
+
+    <!-- Arrow Markers -->
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#a855f7"/>
+    </marker>
+
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#f97316"/>
+    </marker>
+
+    <!-- Soft Glow Filter -->
+    <filter id="soft-glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <style>
+      @keyframes dashflow {
+        to {
+          stroke-dashoffset: -28;
+        }
+      }
+      .flow-line {
+        stroke-dasharray: 7 7;
+        animation: dashflow 1.5s linear infinite;
+      }
+      .flow-line-obs {
+        stroke-dasharray: 7 7;
+        animation: dashflow 1.5s linear infinite;
+      }
+      .zone-border {
+        stroke-dasharray: 4 4;
+      }
+      text {
+        user-select: none;
+      }
+    </style>
+  </defs>
+
+  <!-- 1. Canvas Background -->
+  <rect width="1680" height="1060" fill="url(#bg-glow)"/>
+
+  <!-- Blueprint Grid Pattern -->
+  <g opacity="0.04" stroke="#ffffff" stroke-width="1">
+    <line x1="0" y1="0" x2="0" y2="1060"/><line x1="50" y1="0" x2="50" y2="1060"/><line x1="100" y1="0" x2="100" y2="1060"/><line x1="150" y1="0" x2="150" y2="1060"/><line x1="200" y1="0" x2="200" y2="1060"/><line x1="250" y1="0" x2="250" y2="1060"/><line x1="300" y1="0" x2="300" y2="1060"/><line x1="350" y1="0" x2="350" y2="1060"/><line x1="400" y1="0" x2="400" y2="1060"/><line x1="450" y1="0" x2="450" y2="1060"/><line x1="500" y1="0" x2="500" y2="1060"/><line x1="550" y1="0" x2="550" y2="1060"/><line x1="600" y1="0" x2="600" y2="1060"/><line x1="650" y1="0" x2="650" y2="1060"/><line x1="700" y1="0" x2="700" y2="1060"/><line x1="750" y1="0" x2="750" y2="1060"/><line x1="800" y1="0" x2="800" y2="1060"/><line x1="850" y1="0" x2="850" y2="1060"/><line x1="900" y1="0" x2="900" y2="1060"/><line x1="950" y1="0" x2="950" y2="1060"/><line x1="1000" y1="0" x2="1000" y2="1060"/><line x1="1050" y1="0" x2="1050" y2="1060"/><line x1="1100" y1="0" x2="1100" y2="1060"/><line x1="1150" y1="0" x2="1150" y2="1060"/><line x1="1200" y1="0" x2="1200" y2="1060"/><line x1="1250" y1="0" x2="1250" y2="1060"/><line x1="1300" y1="0" x2="1300" y2="1060"/><line x1="1350" y1="0" x2="1350" y2="1060"/><line x1="1400" y1="0" x2="1400" y2="1060"/><line x1="1450" y1="0" x2="1450" y2="1060"/><line x1="1500" y1="0" x2="1500" y2="1060"/><line x1="1550" y1="0" x2="1550" y2="1060"/><line x1="1600" y1="0" x2="1600" y2="1060"/><line x1="1650" y1="0" x2="1650" y2="1060"/>
+    <line x1="0" y1="0" x2="1680" y2="0"/><line x1="0" y1="50" x2="1680" y2="50"/><line x1="0" y1="100" x2="1680" y2="100"/><line x1="0" y1="150" x2="1680" y2="150"/><line x1="0" y1="200" x2="1680" y2="200"/><line x1="0" y1="250" x2="1680" y2="250"/><line x1="0" y1="300" x2="1680" y2="300"/><line x1="0" y1="350" x2="1680" y2="350"/><line x1="0" y1="400" x2="1680" y2="400"/><line x1="0" y1="450" x2="1680" y2="450"/><line x1="0" y1="500" x2="1680" y2="500"/><line x1="0" y1="550" x2="1680" y2="550"/><line x1="0" y1="600" x2="1680" y2="600"/><line x1="0" y1="650" x2="1680" y2="650"/><line x1="0" y1="700" x2="1680" y2="700"/><line x1="0" y1="750" x2="1680" y2="750"/><line x1="0" y1="800" x2="1680" y2="800"/><line x1="0" y1="850" x2="1680" y2="850"/><line x1="0" y1="900" x2="1680" y2="900"/><line x1="0" y1="950" x2="1680" y2="950"/><line x1="0" y1="1000" x2="1680" y2="1000"/><line x1="0" y1="1050" x2="1680" y2="1050"/>
+  </g>
+
+  <!-- 2. Header & Title Section -->
+  <g id="header">
+    <rect x="40" y="25" width="1600" height="70" rx="14" fill="#0f111e" stroke="#1e2238" stroke-width="1.5"/>
+    
+    <!-- Title and Subtitle -->
+    <text x="70" y="58" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="800" fill="#f8fafc" letter-spacing="0.5">
+      SubTrack: <tspan fill="#38bdf8">System Architecture</tspan>
+    </text>
+    <text x="70" y="79" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="500" fill="#94a3b8">
+      GitOps Continuous Delivery, Multi-Tier Kubernetes Orchestration &amp; Google SRE Multiwindow Observability Pipeline
+    </text>
+
+    <!-- Legend -->
+    <g transform="translate(1080, 42)">
+      <!-- Pipeline Flow -->
+      <line x1="0" y1="12" x2="35" y2="12" stroke="url(#grad-blue)" stroke-width="3" stroke-dasharray="4 4"/>
+      <circle cx="35" cy="12" r="3" fill="#a855f7"/>
+      <text x="45" y="15" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#cbd5e1">GitOps / App Flow</text>
+
+      <!-- Observability Flow -->
+      <line x1="170" y1="12" x2="205" y2="12" stroke="url(#grad-obs)" stroke-width="3" stroke-dasharray="4 4"/>
+      <circle cx="205" cy="12" r="3" fill="#f97316"/>
+      <text x="215" y="15" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#cbd5e1">Telemetry / Alerting</text>
+
+      <!-- Step Badge Sample -->
+      <circle cx="355" cy="12" r="10" fill="#10b981"/>
+      <text x="355" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="800" fill="#fff" text-anchor="middle">1-7</text>
+      <text x="373" y="15" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#cbd5e1">Pipeline Stages</text>
+    </g>
+  </g>
+
+  <!-- 3. ZONES (Large labeled background boundaries) -->
+
+  <!-- Zone 1: Source & CI -->
+  <g id="zone-source-ci">
+    <rect x="40" y="115" width="310" height="525" rx="16" fill="#0d111d" stroke="#252b48" stroke-width="1.5" class="zone-border"/>
+    <rect x="55" y="125" width="105" height="22" rx="6" fill="#1e1b4b" stroke="#4338ca" stroke-width="1"/>
+    <text x="107" y="140" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#a5b4fc" text-anchor="middle">SOURCE &amp; CI</text>
+    <text x="330" y="140" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" font-weight="600" fill="#64748b" text-anchor="end">GitHub Workflows</text>
+  </g>
+
+  <!-- Zone 2: GitOps Deployment -->
+  <g id="zone-gitops">
+    <rect x="375" y="115" width="265" height="525" rx="16" fill="#0d111d" stroke="#252b48" stroke-width="1.5" class="zone-border"/>
+    <rect x="390" y="125" width="150" height="22" rx="6" fill="#2d1b4e" stroke="#7e22ce" stroke-width="1"/>
+    <text x="465" y="140" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#d8b4fe" text-anchor="middle">GITOPS DEPLOYMENT</text>
+    <text x="625" y="140" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" font-weight="600" fill="#64748b" text-anchor="end">Continuous Delivery</text>
+  </g>
+
+  <!-- Zone 3: Kubernetes Cluster -->
+  <g id="zone-k8s">
+    <rect x="665" y="115" width="615" height="525" rx="16" fill="#0c1322" stroke="#1d4ed8" stroke-width="1.5"/>
+    <rect x="680" y="125" width="165" height="22" rx="6" fill="#172554" stroke="#2563eb" stroke-width="1"/>
+    <text x="762" y="140" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#93c5fd" text-anchor="middle">KUBERNETES CLUSTER</text>
+    <text x="1260" y="140" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9.5" font-weight="600" fill="#38bdf8" text-anchor="end">kind v0.27 • Namespace: subtrack</text>
+  </g>
+
+  <!-- Zone 4: External APIs -->
+  <g id="zone-apis">
+    <rect x="1305" y="115" width="335" height="525" rx="16" fill="#0d111d" stroke="#252b48" stroke-width="1.5" class="zone-border"/>
+    <rect x="1320" y="125" width="125" height="22" rx="6" fill="#142e2b" stroke="#0d9488" stroke-width="1"/>
+    <text x="1382" y="140" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#5eead4" text-anchor="middle">EXTERNAL APIS</text>
+    <text x="1625" y="140" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="9" font-weight="600" fill="#64748b" text-anchor="end">Google Cloud Services</text>
+  </g>
+
+  <!-- Zone 5: Observability -->
+  <g id="zone-observability">
+    <rect x="40" y="665" width="1600" height="360" rx="16" fill="#10111a" stroke="#d97706" stroke-width="1.5"/>
+    <rect x="55" y="677" width="190" height="24" rx="6" fill="#451a03" stroke="#b45309" stroke-width="1"/>
+    <text x="150" y="693" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#fde68a" text-anchor="middle">OBSERVABILITY &amp; SRE</text>
+    <text x="1620" y="693" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#fbbf24" text-anchor="end">Namespace: observability • Multiwindow Multi-Burn-Rate Alerting</text>
+  </g>
+
+  <!-- 4. STEP 7: End User Node (Top of Ingress) -->
+  
+    <g class="node-card">
+      <rect x="885" y="155" width="175" height="65" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(56, 189, 248, 0.25))"/>
+      
+      
+    <svg x="954.5" y="169" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#60a5fa" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+    </svg>
+  
+      <text x="972.5" y="223" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">End User</text>
+      <text x="972.5" y="239" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">Browser Client / PWA</text>
+    </g>
+  
+  
+    <g class="step-badge">
+      <circle cx="885" cy="160" r="14" fill="#10b981" stroke="#064e3b" stroke-width="2" filter="drop-shadow(0 2px 5px rgba(16, 185, 129, 0.4))"/>
+      <text x="885" y="165" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">7</text>
+    </g>
+  
+
+  <!-- 5. ZONE 1 NODES: Source & CI -->
+  <!-- Developer Node -->
+  
+    <g class="node-card">
+      <rect x="60" y="170" width="120" height="80" rx="12" fill="#12121f" stroke="#3b82f6" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(59, 130, 246, 0.2))"/>
+      
+      
+    <svg x="102" y="184" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#60a5fa" d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+    </svg>
+  
+      <text x="120" y="238" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">Developer</text>
+      <text x="120" y="254" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">git push main</text>
+    </g>
+  
+  
+    <g class="step-badge">
+      <circle cx="60" cy="175" r="14" fill="#10b981" stroke="#064e3b" stroke-width="2" filter="drop-shadow(0 2px 5px rgba(16, 185, 129, 0.4))"/>
+      <text x="60" y="180" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">1</text>
+    </g>
+  
+
+  <!-- GitHub Repo Node -->
+  
+    <g class="node-card">
+      <rect x="215" y="170" width="120" height="80" rx="12" fill="#12121f" stroke="#475569" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(100, 116, 139, 0.2))"/>
+      
+      
+    <svg x="257" y="184" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#FFFFFF" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+    </svg>
+  
+      <text x="275" y="238" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">GitHub Repo</text>
+      <text x="275" y="254" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">sub_tracker.git</text>
+    </g>
+  
+
+  <!-- GitHub Actions CI Node -->
+  
+    <g class="node-card">
+      <rect x="100" y="310" width="200" height="90" rx="12" fill="#12121f" stroke="#2563eb" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(37, 99, 235, 0.25))"/>
+      
+    <rect x="218" y="318" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="255" y="330" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">CI Pipeline</text>
+  
+      
+    <svg x="182" y="324" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#2088FF" d="M10.984 13.836a.5.5 0 0 1-.353-.146l-.745-.743a.5.5 0 1 1 .706-.708l.392.391 1.181-1.18a.5.5 0 0 1 .708.707l-1.535 1.533a.504.504 0 0 1-.354.146zm9.353-.147l1.534-1.532a.5.5 0 0 0-.707-.707l-1.181 1.18-.392-.391a.5.5 0 1 0-.706.708l.746.743a.497.497 0 0 0 .706-.001zM4.527 7.452l2.557-1.585A1 1 0 0 0 7.09 4.17L4.533 2.56A1 1 0 0 0 3 3.406v3.196a1.001 1.001 0 0 0 1.527.85zm2.03-2.436L4 6.602V3.406l2.557 1.61zM24 12.5c0 1.93-1.57 3.5-3.5 3.5a3.503 3.503 0 0 1-3.46-3h-2.08a3.503 3.503 0 0 1-3.46 3 3.502 3.502 0 0 1-3.46-3h-.558c-.972 0-1.85-.399-2.482-1.042V17c0 1.654 1.346 3 3 3h.04c.244-1.693 1.7-3 3.46-3 1.93 0 3.5 1.57 3.5 3.5S13.43 24 11.5 24a3.502 3.502 0 0 1-3.46-3H8c-2.206 0-4-1.794-4-4V9.899A5.008 5.008 0 0 1 0 5c0-2.757 2.243-5 5-5s5 2.243 5 5a5.005 5.005 0 0 1-4.952 4.998A2.482 2.482 0 0 0 7.482 12h.558c.244-1.693 1.7-3 3.46-3a3.502 3.502 0 0 1 3.46 3h2.08a3.503 3.503 0 0 1 3.46-3c1.93 0 3.5 1.57 3.5 3.5zm-15 8c0 1.378 1.122 2.5 2.5 2.5s2.5-1.122 2.5-2.5-1.122-2.5-2.5-2.5S9 19.122 9 20.5zM5 9c2.206 0 4-1.794 4-4S7.206 1 5 1 1 2.794 1 5s1.794 4 4 4zm9 3.5c0-1.378-1.122-2.5-2.5-2.5S9 11.122 9 12.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5zm9 0c0-1.378-1.122-2.5-2.5-2.5S18 11.122 18 12.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5zm-13 8a.5.5 0 1 0 1 0 .5.5 0 0 0-1 0zm2 0a.5.5 0 1 0 1 0 .5.5 0 0 0-1 0zm12 0c0 1.93-1.57 3.5-3.5 3.5a3.503 3.503 0 0 1-3.46-3.002c-.007.001-.013.005-.021.005l-.506.017h-.017a.5.5 0 0 1-.016-.999l.506-.017c.018-.002.035.006.052.007A3.503 3.503 0 0 1 20.5 17c1.93 0 3.5 1.57 3.5 3.5zm-1 0c0-1.378-1.122-2.5-2.5-2.5S18 19.122 18 20.5s1.122 2.5 2.5 2.5 2.5-1.122 2.5-2.5z"/>
+    </svg>
+  
+      <text x="200" y="378" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">GitHub Actions</text>
+      <text x="200" y="394" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">CI Build &amp; Test Matrix</text>
+    </g>
+  
+
+  <!-- Docker Container Registry Node (Centered under GitHub Actions) -->
+  
+    <g class="node-card">
+      <rect x="135" y="460" width="140" height="90" rx="12" fill="#12121f" stroke="#0284c7" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(2, 132, 199, 0.25))"/>
+      
+      
+    <svg x="187" y="474" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#2496ED" d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.184-.186h-2.12a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288Z"/>
+    </svg>
+  
+      <text x="205" y="528" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">Docker Hub</text>
+      <text x="205" y="544" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">subtrack-*:sha</text>
+    </g>
+  
+
+  <!-- 6. ZONE 2 NODES: GitOps Deployment -->
+  <!-- ArgoCD Controller Node -->
+  
+    <g class="node-card">
+      <rect x="405" y="220" width="210" height="105" rx="12" fill="#12121f" stroke="#ea580c" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(234, 88, 12, 0.25))"/>
+      
+    <rect x="533" y="228" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="570" y="240" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">GitOps Controller</text>
+  
+      
+    <svg x="492" y="234" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#EF7B4D" d="M12.581 0c.436.037.871.1 1.299.186 1.679.383 3.121 1.213 4.382 2.365 1.161 1.06 1.917 2.372 2.335 3.881.089.321.216.56.586.624.205.035.238.245.239.43.003.646.002 1.294.002 1.94l-.002 1.21c-.001.356-.116.479-.466.474-.211-.003-.293.119-.344.291-.146.489-.33.966-.552 1.426-.818 1.682-2.084 2.938-3.688 3.87-.077.045-.155.088-.233.131-.252.137-.258.146-.155.415.114.299.358.529.664.625.269.096.553.134.827.21a.672.672 0 0 1 .236.094c-.066.082-.156.067-.231.082-.36.073-.713.184-1.086.17a1.275 1.275 0 0 1-.438-.064c-.114-.045-.152-.006-.176.109a5.354 5.354 0 0 0-.084.92c-.015.617-.071 1.23-.112 1.844-.042.598-.018.651.558.842.281.094.563.187.842.286.069.024.15.038.192.117-.04.057-.098.035-.146.035-.493.003-.985.005-1.478.001-.524-.005-.806-.282-.845-.803-.055-.762-.12-1.524-.182-2.286a.947.947 0 0 0-.026-.12c-.079.455-.065.879-.084 1.298-.023.528-.008 1.057-.007 1.584 0 .27.086.388.335.483.359.135.711.295 1.114.262.141-.012.276.062.402.129.032.017.073.033.069.073-.004.043-.049.047-.084.045-.657-.019-1.317.065-1.972-.028-.323-.046-.533-.236-.631-.552-.094-.303-.114-.617-.137-.93-.046-.626-.078-1.253-.116-1.88a.222.222 0 0 0-.061-.171.282.282 0 0 0-.031.193c-.002.956-.002 1.911-.001 2.866 0 .388.123.575.494.708.481.172.976.298 1.47.423.11.028.225.047.242.192h-1.852c-.051-.01-.103-.022-.155-.03-.701-.1-1.001-.372-1.143-1.042l-.067-.331-.226-1.103c-.069.12-.118.25-.144.386-.083.399-.151.802-.243 1.2-.113.493-.444.763-.932.857l-.33.063H8.558c.057-.171.216-.185.355-.221.476-.127.96-.223 1.417-.409a.603.603 0 0 0 .397-.521c.058-.435.002-.865-.013-1.296a1.528 1.528 0 0 0-.078-.315.405.405 0 0 0-.071.207c-.026.296-.049.591-.075.886-.038.432-.273.716-.679.81a1.702 1.702 0 0 1-.37.045c-.557.003-1.115-.001-1.673-.005-.048 0-.109.019-.148-.065.178-.103.377-.168.582-.187a5.67 5.67 0 0 0 .939-.193c.42-.114.522-.249.512-.687-.023-.931-.091-1.86-.069-2.791.004-.184.001-.368.001-.551a2.387 2.387 0 0 0-.05.385 40.299 40.299 0 0 1-.186 2.623c-.052.513-.296.748-.804.805-.446.051-.889.002-1.332-.02-.108-.006-.234.012-.339-.064.043-.066.106-.07.16-.087.362-.115.725-.224 1.086-.344.246-.081.35-.235.355-.492a2.241 2.241 0 0 0-.003-.232 45.315 45.315 0 0 1-.105-2.149 5.487 5.487 0 0 0-.035-.478c-.024-.188-.131-.287-.295-.258-.505.092-.99-.006-1.473-.139-.059-.016-.134-.007-.178-.088a.986.986 0 0 1 .285-.09c.255-.052.507-.121.753-.208.312-.112.564-.347.695-.651.089-.203.056-.317-.112-.398-1.418-.683-2.512-1.73-3.391-3.017a8.152 8.152 0 0 1-1.123-2.447c-.067-.246-.156-.3-.383-.26-.306.053-.401.006-.535-.273v-3.49c.144-.303.205-.341.534-.329.235.01.247-.004.309-.242.396-1.508 1.082-2.861 2.171-3.988C6.9 1.42 8.523.631 10.34.203c.456-.108.922-.15 1.387-.203h.854Zm7.974 8.948a7.34 7.34 0 0 0-.048-.938 8.353 8.353 0 0 0-.099-.65c-.598-2.964-2.344-5.02-5.051-6.268-1.553-.715-3.21-.835-4.878-.511-3.248.633-5.396 2.583-6.539 5.652-.436 1.173-.495 2.406-.37 3.65.087.935.339 1.846.745 2.694.585 1.213 1.444 2.207 2.477 3.058.343.286.719.528 1.121.719.235.111.247.105.245-.146.006-.16.003-.32-.009-.48-.125-1.02-.142-2.045-.169-3.069a.392.392 0 0 0-.184-.353c-.385-.268-.713-.592-.921-1.019-.474-.97-.372-2.361.813-3.215.136-.097.217-.19.198-.373a1.724 1.724 0 0 1 .031-.442c.177-1.187.748-2.138 1.722-2.84.68-.492 1.442-.772 2.286-.782.483-.007.953.11 1.414.244 1.609.467 2.846 2.07 2.845 3.697a.64.64 0 0 0 .268.565c.463.371.821.83.943 1.426.22 1.077-.083 1.982-.979 2.634-.266.194-.347.406-.333.698.002.047 0 .095-.002.142l-.062 1.439c-.025.586-.138 1.165-.117 1.754.008.223.006.226.201.128a7.46 7.46 0 0 0 2.393-1.903c1.32-1.577 2.074-3.372 2.059-5.511ZM9.117 12.102c1.489.021 2.443-1.578 1.716-2.879a1.937 1.937 0 0 0-1.699-.991c-1.094-.004-1.954.822-1.958 1.881-.005 1.148.813 1.985 1.941 1.989Zm5.794 0c1.101.002 1.935-.823 1.935-1.917 0-1.091-.846-1.949-1.92-1.947-1.064.003-1.94.866-1.943 1.915-.003 1.105.831 1.948 1.928 1.949Zm-1.472 1.937c-.208.128-.407.277-.63.384-.536.257-1.063.257-1.579-.048-.158-.094-.308-.201-.464-.298-.047-.028-.092-.103-.15-.062-.044.03-.01.1-.001.151.037.179.064.362.082.544.027.565.293.992.742 1.31a.984.984 0 0 0 .791.186c.565-.119 1.025-.614 1.124-1.218.043-.266.005-.544.109-.803a.133.133 0 0 0-.024-.146Zm-8.78-4.92c-.012-1.102.143-2.055.54-2.961.633-1.443 1.642-2.553 2.98-3.374a.378.378 0 0 1 .459.067c.06.06.036.118.01.178a1.09 1.09 0 0 1-.48.51c-1.079.639-1.829 1.571-2.357 2.688a6.325 6.325 0 0 0-.618 2.986c.055 1.309.439 2.516 1.213 3.588.088.104.148.23.173.365.01.08.059.168-.031.228a.312.312 0 0 1-.288.041.502.502 0 0 1-.234-.185c-.72-.979-1.193-2.056-1.331-3.273-.036-.326-.004-.653-.036-.858ZM8.94 2.34a.373.373 0 0 1 .378-.382c.211.001.409.226.416.473.004.138-.309.39-.476.386-.189-.005-.318-.2-.318-.477Zm-.465 7.48a.609.609 0 0 1 .586-.631c.38-.003.671.271.675.633.004.356-.27.622-.639.621-.38-.002-.621-.241-.622-.623Zm6.496.623c-.381-.002-.625-.255-.621-.646a.635.635 0 0 1 .596-.613.656.656 0 0 1 .669.643c.001.354-.275.618-.644.616Z"/>
+    </svg>
+  
+      <text x="510" y="288" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">ArgoCD</text>
+      <text x="510" y="304" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">Auto-Sync &amp; Self-Healing</text>
+    </g>
+  
+  
+    <g class="step-badge">
+      <circle cx="405" cy="225" r="14" fill="#10b981" stroke="#064e3b" stroke-width="2" filter="drop-shadow(0 2px 5px rgba(16, 185, 129, 0.4))"/>
+      <text x="405" y="230" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">2</text>
+    </g>
+  
+
+  <!-- Sealed Secrets Controller Node (Step 6 Lock) -->
+  
+    <g class="node-card">
+      <rect x="405" y="430" width="210" height="105" rx="12" fill="#062016" stroke="#10b981" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(16, 185, 129, 0.25))"/>
+      
+    <rect x="533" y="438" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="570" y="450" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">SecOps</text>
+  
+      
+    <svg x="492" y="444" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#60a5fa" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+    </svg>
+  
+      <text x="510" y="498" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">Sealed Secrets</text>
+      <text x="510" y="514" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">Bitnami Crypto Operator</text>
+    </g>
+  
+  
+    <g class="step-badge">
+      <circle cx="405" cy="435" r="14" fill="#10b981" stroke="#064e3b" stroke-width="2" filter="drop-shadow(0 2px 5px rgba(16, 185, 129, 0.4))"/>
+      <text x="405" y="440" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">6</text>
+    </g>
+  
+
+  <!-- 7. ZONE 3 NODES: Kubernetes Cluster (subtrack) -->
+
+  <!-- Ingress Controller Node -->
+  
+    <g class="node-card">
+      <rect x="885" y="260" width="175" height="70" rx="12" fill="#12121f" stroke="#059669" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(5, 150, 105, 0.2))"/>
+      
+    <rect x="978" y="268" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="1015" y="280" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">TLS Ingress</text>
+  
+      
+    <svg x="954.5" y="274" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#009639" d="M12 0L1.605 6v12L12 24l10.395-6V6L12 0zm6 16.59c0 .705-.646 1.29-1.529 1.29-.631 0-1.351-.255-1.801-.81l-6-7.141v6.66c0 .721-.57 1.29-1.274 1.29H7.32c-.721 0-1.29-.6-1.29-1.29V7.41c0-.705.63-1.29 1.5-1.29.646 0 1.38.255 1.83.81l5.97 7.141V7.41c0-.721.6-1.29 1.29-1.29h.075c.72 0 1.29.6 1.29 1.29v9.18H18z"/>
+    </svg>
+  
+      <text x="972.5" y="328" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">Nginx Ingress</text>
+      <text x="972.5" y="344" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">Host: 192.168.1.20.nip.io</text>
+    </g>
+  
+
+  <!-- Frontend Pods Node -->
+  
+    <g class="node-card">
+      <rect x="695" y="375" width="235" height="100" rx="12" fill="#12121f" stroke="#0284c7" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(2, 132, 199, 0.25))"/>
+      
+    <rect x="848" y="383" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="885" y="395" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">PDB: min 1</text>
+  
+      
+    <svg x="750.5" y="389" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#61DAFB" d="M14.23 12.004a2.236 2.236 0 0 1-2.235 2.236 2.236 2.236 0 0 1-2.236-2.236 2.236 2.236 0 0 1 2.235-2.236 2.236 2.236 0 0 1 2.236 2.236zm2.648-10.69c-1.346 0-3.107.96-4.888 2.622-1.78-1.653-3.542-2.602-4.887-2.602-.41 0-.783.093-1.106.278-1.375.793-1.683 3.264-.973 6.365C1.98 8.917 0 10.42 0 12.004c0 1.59 1.99 3.097 5.043 4.03-.704 3.113-.39 5.588.988 6.38.32.187.69.275 1.102.275 1.345 0 3.107-.96 4.888-2.624 1.78 1.654 3.542 2.603 4.887 2.603.41 0 .783-.09 1.106-.275 1.374-.792 1.683-3.263.973-6.365C22.02 15.096 24 13.59 24 12.004c0-1.59-1.99-3.097-5.043-4.032.704-3.11.39-5.587-.988-6.38-.318-.184-.688-.277-1.092-.278zm-.005 1.09v.006c.225 0 .406.044.558.127.666.382.955 1.835.73 3.704-.054.46-.142.945-.25 1.44-.96-.236-2.006-.417-3.107-.534-.66-.905-1.345-1.727-2.035-2.447 1.592-1.48 3.087-2.292 4.105-2.295zm-9.77.02c1.012 0 2.514.808 4.11 2.28-.686.72-1.37 1.537-2.02 2.442-1.107.117-2.154.298-3.113.538-.112-.49-.195-.964-.254-1.42-.23-1.868.054-3.32.714-3.707.19-.09.4-.127.563-.132zm4.882 3.05c.455.468.91.992 1.36 1.564-.44-.02-.89-.034-1.345-.034-.46 0-.915.01-1.36.034.44-.572.895-1.096 1.345-1.565zM12 8.1c.74 0 1.477.034 2.202.093.406.582.802 1.203 1.183 1.86.372.64.71 1.29 1.018 1.946-.308.655-.646 1.31-1.013 1.95-.38.66-.773 1.288-1.18 1.87-.728.063-1.466.098-2.21.098-.74 0-1.477-.035-2.202-.093-.406-.582-.802-1.204-1.183-1.86-.372-.64-.71-1.29-1.018-1.946.303-.657.646-1.313 1.013-1.954.38-.66.773-1.286 1.18-1.868.728-.064 1.466-.098 2.21-.098zm-3.635.254c-.24.377-.48.763-.704 1.16-.225.39-.435.782-.635 1.174-.265-.656-.49-1.31-.676-1.947.64-.15 1.315-.283 2.015-.386zm7.26 0c.695.103 1.365.23 2.006.387-.18.632-.405 1.282-.66 1.933-.2-.39-.41-.783-.64-1.174-.225-.392-.465-.774-.705-1.146zm3.063.675c.484.15.944.317 1.375.498 1.732.74 2.852 1.708 2.852 2.476-.005.768-1.125 1.74-2.857 2.475-.42.18-.88.342-1.355.493-.28-.958-.646-1.956-1.1-2.98.45-1.017.81-2.01 1.085-2.964zm-13.395.004c.278.96.645 1.957 1.1 2.98-.45 1.017-.812 2.01-1.086 2.964-.484-.15-.944-.318-1.37-.5-1.732-.737-2.852-1.706-2.852-2.474 0-.768 1.12-1.742 2.852-2.476.42-.18.88-.342 1.356-.494zm11.678 4.28c.265.657.49 1.312.676 1.948-.64.157-1.316.29-2.016.39.24-.375.48-.762.705-1.158.225-.39.435-.788.636-1.18zm-9.945.02c.2.392.41.783.64 1.175.23.39.465.772.705 1.143-.695-.102-1.365-.23-2.006-.386.18-.63.406-1.282.66-1.933zM17.92 16.32c.112.493.2.968.254 1.423.23 1.868-.054 3.32-.714 3.708-.147.09-.338.128-.563.128-1.012 0-2.514-.807-4.11-2.28.686-.72 1.37-1.536 2.02-2.44 1.107-.118 2.154-.3 3.113-.54zm-11.83.01c.96.234 2.006.415 3.107.532.66.905 1.345 1.727 2.035 2.446-1.595 1.483-3.092 2.295-4.11 2.295-.22-.005-.406-.05-.553-.132-.666-.38-.955-1.834-.73-3.703.054-.46.142-.944.25-1.438zm4.56.64c.44.02.89.034 1.345.034.46 0 .915-.01 1.36-.034-.44.572-.895 1.095-1.345 1.565-.455-.47-.91-.993-1.36-1.565z"/>
+    </svg>
+  
+    <svg x="794.5" y="389" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#06B6D4" d="M12.001,4.8c-3.2,0-5.2,1.6-6,4.8c1.2-1.6,2.6-2.2,4.2-1.8c0.913,0.228,1.565,0.89,2.288,1.624 C13.666,10.618,15.027,12,18.001,12c3.2,0,5.2-1.6,6-4.8c-1.2,1.6-2.6,2.2-4.2,1.8c-0.913-0.228-1.565-0.89-2.288-1.624 C16.337,6.182,14.976,4.8,12.001,4.8z M6.001,12c-3.2,0-5.2,1.6-6,4.8c1.2-1.6,2.6-2.2,4.2-1.8c0.913,0.228,1.565,0.89,2.288,1.624 c1.177,1.194,2.538,2.576,5.512,2.576c3.2,0,5.2-1.6,6-4.8c-1.2,1.6-2.6,2.2-4.2,1.8c-0.913-0.228-1.565-0.89-2.288-1.624 C10.337,13.382,8.976,12,6.001,12z"/>
+    </svg>
+  
+    <svg x="838.5" y="389" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#009639" d="M12 0L1.605 6v12L12 24l10.395-6V6L12 0zm6 16.59c0 .705-.646 1.29-1.529 1.29-.631 0-1.351-.255-1.801-.81l-6-7.141v6.66c0 .721-.57 1.29-1.274 1.29H7.32c-.721 0-1.29-.6-1.29-1.29V7.41c0-.705.63-1.29 1.5-1.29.646 0 1.38.255 1.83.81l5.97 7.141V7.41c0-.721.6-1.29 1.29-1.29h.075c.72 0 1.29.6 1.29 1.29v9.18H18z"/>
+    </svg>
+  
+      <text x="812.5" y="443" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">Frontend Pods (x2)</text>
+      <text x="812.5" y="459" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">React 19 + Tailwind + Nginx</text>
+    </g>
+  
+  
+    <g class="step-badge">
+      <circle cx="695" cy="380" r="14" fill="#10b981" stroke="#064e3b" stroke-width="2" filter="drop-shadow(0 2px 5px rgba(16, 185, 129, 0.4))"/>
+      <text x="695" y="385" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">3</text>
+    </g>
+  
+
+  <!-- Backend Pods Node (HPA scaled) -->
+  
+    <g class="node-card">
+      <rect x="1005" y="375" width="245" height="100" rx="12" fill="#12121f" stroke="#16a34a" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(22, 163, 74, 0.25))"/>
+      
+    <rect x="1168" y="383" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="1205" y="395" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">HPA @ 70% CPU</text>
+  
+      
+    <svg x="1087.5" y="389" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#5FA04E" d="M11.998,24c-0.321,0-0.641-0.084-0.922-0.247l-2.936-1.737c-0.438-0.245-0.224-0.332-0.08-0.383 c0.585-0.203,0.703-0.25,1.328-0.604c0.065-0.037,0.151-0.023,0.218,0.017l2.256,1.339c0.082,0.045,0.197,0.045,0.272,0l8.795-5.076 c0.082-0.047,0.134-0.141,0.134-0.238V6.921c0-0.099-0.053-0.192-0.137-0.242l-8.791-5.072c-0.081-0.047-0.189-0.047-0.271,0 L3.075,6.68C2.99,6.729,2.936,6.825,2.936,6.921v10.15c0,0.097,0.054,0.189,0.139,0.235l2.409,1.392 c1.307,0.654,2.108-0.116,2.108-0.89V7.787c0-0.142,0.114-0.253,0.256-0.253h1.115c0.139,0,0.255,0.112,0.255,0.253v10.021 c0,1.745-0.95,2.745-2.604,2.745c-0.508,0-0.909,0-2.026-0.551L2.28,18.675c-0.57-0.329-0.922-0.945-0.922-1.604V6.921 c0-0.659,0.353-1.275,0.922-1.603l8.795-5.082c0.557-0.315,1.296-0.315,1.848,0l8.794,5.082c0.57,0.329,0.924,0.944,0.924,1.603 v10.15c0,0.659-0.354,1.273-0.924,1.604l-8.794,5.078C12.643,23.916,12.324,24,11.998,24z M19.099,13.993 c0-1.9-1.284-2.406-3.987-2.763c-2.731-0.361-3.009-0.548-3.009-1.187c0-0.528,0.235-1.233,2.258-1.233 c1.807,0,2.473,0.389,2.747,1.607c0.024,0.115,0.129,0.199,0.247,0.199h1.141c0.071,0,0.138-0.031,0.186-0.081 c0.048-0.054,0.074-0.123,0.067-0.196c-0.177-2.098-1.571-3.076-4.388-3.076c-2.508,0-4.004,1.058-4.004,2.833 c0,1.925,1.488,2.457,3.895,2.695c2.88,0.282,3.103,0.703,3.103,1.269c0,0.983-0.789,1.402-2.642,1.402 c-2.327,0-2.839-0.584-3.011-1.742c-0.02-0.124-0.126-0.215-0.253-0.215h-1.137c-0.141,0-0.254,0.112-0.254,0.253 c0,1.482,0.806,3.248,4.655,3.248C17.501,17.007,19.099,15.91,19.099,13.993z"/>
+    </svg>
+  
+    <svg x="1131.5" y="389" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#FFFFFF" d="M12.262 16.666h1.146l6.975-9.325H19.22zm9.778 1.441v.004l-4.334-5.706-.557.74 4.873 6.682H.945V4.173h9.505l5.026 6.7.574-.772-4.374-5.928h.003l-.719-.945H0v17.544h24zM10.917 8.705a3.8 3.8 0 0 0-1.292-1.183q-.796-.45-1.916-.45c-.746 0-1.37.14-1.906.424a3.76 3.76 0 0 0-1.31 1.12 4.9 4.9 0 0 0-.75 1.581 7.17 7.17 0 0 0 0 3.696c.148.567.402 1.101.75 1.573a3.5 3.5 0 0 0 1.31 1.066q.803.39 1.906.389 1.77 0 2.739-.868.966-.867 1.328-2.457h-1.139q-.271 1.084-.977 1.734-.704.651-1.952.65-.812 0-1.392-.342a3.1 3.1 0 0 1-.957-.869 3.5 3.5 0 0 1-.551-1.182 5 5 0 0 1-.17-1.133 9 9 0 0 0-.015-.286 4.5 4.5 0 0 1 .015-.829c.047-.418.147-.83.296-1.223A3.7 3.7 0 0 1 5.54 9.05a2.9 2.9 0 0 1 .922-.742q.541-.28 1.246-.28c.47 0 .869.093 1.23.28q.541.281.922.742.379.461.587 1.057t.225 1.246H5.625l.004.957h6.182a7.3 7.3 0 0 0-.18-1.924 4.9 4.9 0 0 0-.715-1.68z"/>
+    </svg>
+  
+      <text x="1127.5" y="443" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">Backend Pods (x2–6 HPA)</text>
+      <text x="1127.5" y="459" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">Node.js 20 • Express 5 • /metrics</text>
+    </g>
+  
+
+  <!-- Renewal Scan CronJob Node -->
+  
+    <g class="node-card">
+      <rect x="695" y="520" width="235" height="95" rx="12" fill="#12121f" stroke="#8b5cf6" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(139, 92, 246, 0.2))"/>
+      
+    <rect x="848" y="528" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="885" y="540" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">Batch Job</text>
+  
+      
+    <svg x="794.5" y="534" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#60a5fa" d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z"/>
+    </svg>
+  
+      <text x="812.5" y="588" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">Renewal Scan CronJob</text>
+      <text x="812.5" y="604" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">Schedule: 0 9 * * * (Daily UTC)</text>
+    </g>
+  
+
+  <!-- MongoDB Pod Node -->
+  
+    <g class="node-card">
+      <rect x="1005" y="520" width="245" height="95" rx="12" fill="#12121f" stroke="#15803d" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(21, 128, 61, 0.25))"/>
+      
+    <rect x="1168" y="528" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="1205" y="540" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">Database</text>
+  
+      
+    <svg x="1109.5" y="534" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#47A248" d="M17.193 9.555c-1.264-5.58-4.252-7.414-4.573-8.115-.28-.394-.53-.954-.735-1.44-.036.495-.055.685-.523 1.184-.723.566-4.438 3.682-4.74 10.02-.282 5.912 4.27 9.435 4.888 9.884l.07.05A73.49 73.49 0 0111.91 24h.481c.114-1.032.284-2.056.51-3.07.417-.296.604-.463.85-.693a11.342 11.342 0 003.639-8.464c.01-.814-.103-1.662-.197-2.218zm-5.336 8.195s0-8.291.275-8.29c.213 0 .49 10.695.49 10.695-.381-.045-.765-1.76-.765-2.405z"/>
+    </svg>
+  
+      <text x="1127.5" y="588" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">MongoDB (v7)</text>
+      <text x="1127.5" y="604" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">PVC: mongo-data-pvc (Persistent)</text>
+    </g>
+  
+
+  <!-- 8. ZONE 4 NODES: External APIs -->
+  <!-- Google Gemini API Node -->
+  
+    <g class="node-card">
+      <rect x="1335" y="220" width="275" height="105" rx="12" fill="#12121f" stroke="#9333ea" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(147, 51, 234, 0.3))"/>
+      
+    <rect x="1528" y="228" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="1565" y="240" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">Generative AI</text>
+  
+      
+    <svg x="1454.5" y="234" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#8E75B2" d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81"/>
+    </svg>
+  
+      <text x="1472.5" y="288" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">Google Gemini API</text>
+      <text x="1472.5" y="304" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">LLM Email Parsing &amp; Categorization</text>
+    </g>
+  
+  
+    <g class="step-badge">
+      <circle cx="1335" cy="225" r="14" fill="#10b981" stroke="#064e3b" stroke-width="2" filter="drop-shadow(0 2px 5px rgba(16, 185, 129, 0.4))"/>
+      <text x="1335" y="230" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">4</text>
+    </g>
+  
+
+  <!-- Gmail API Node -->
+  
+    <g class="node-card">
+      <rect x="1335" y="430" width="275" height="105" rx="12" fill="#12121f" stroke="#dc2626" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(220, 38, 38, 0.3))"/>
+      
+    <rect x="1528" y="438" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="1565" y="450" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">OAuth Read-Only</text>
+  
+      
+    <svg x="1454.5" y="444" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#EA4335" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
+    </svg>
+  
+      <text x="1472.5" y="498" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">Gmail API (OAuth 2.0)</text>
+      <text x="1472.5" y="514" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">Read-Only Subscription Email Parsing</text>
+    </g>
+  
+
+  <!-- 9. ZONE 5 NODES: Observability Stack -->
+  <!-- Kube-State-Metrics Node -->
+  
+    <g class="node-card">
+      <rect x="70" y="770" width="220" height="105" rx="12" fill="#12121f" stroke="#2563eb" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(37, 99, 235, 0.25))"/>
+      
+    <rect x="208" y="778" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="245" y="790" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">Telemetry</text>
+  
+      
+    <svg x="162" y="784" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#326CE5" d="M10.204 14.35l.007.01-.999 2.413a5.171 5.171 0 0 1-2.075-2.597l2.578-.437.004.005a.44.44 0 0 1 .484.606zm-.833-2.129a.44.44 0 0 0 .173-.756l.002-.011L7.585 9.7a5.143 5.143 0 0 0-.73 3.255l2.514-.725.002-.009zm1.145-1.98a.44.44 0 0 0 .699-.337l.01-.005.15-2.62a5.144 5.144 0 0 0-3.01 1.442l2.147 1.523.004-.002zm.76 2.75l.723.349.722-.347.18-.78-.5-.623h-.804l-.5.623.179.779zm1.5-3.095a.44.44 0 0 0 .7.336l.008.003 2.134-1.513a5.188 5.188 0 0 0-2.992-1.442l.148 2.615.002.001zm10.876 5.97l-5.773 7.181a1.6 1.6 0 0 1-1.248.594l-9.261.003a1.6 1.6 0 0 1-1.247-.596l-5.776-7.18a1.583 1.583 0 0 1-.307-1.34L2.1 5.573c.108-.47.425-.864.863-1.073L11.305.513a1.606 1.606 0 0 1 1.385 0l8.345 3.985c.438.209.755.604.863 1.073l2.062 8.955c.108.47-.005.963-.308 1.34zm-3.289-2.057c-.042-.01-.103-.026-.145-.034-.174-.033-.315-.025-.479-.038-.35-.037-.638-.067-.895-.148-.105-.04-.18-.165-.216-.216l-.201-.059a6.45 6.45 0 0 0-.105-2.332 6.465 6.465 0 0 0-.936-2.163c.052-.047.15-.133.177-.159.008-.09.001-.183.094-.282.197-.185.444-.338.743-.522.142-.084.273-.137.415-.242.032-.024.076-.062.11-.089.24-.191.295-.52.123-.736-.172-.216-.506-.236-.745-.045-.034.027-.08.062-.111.088-.134.116-.217.23-.33.35-.246.25-.45.458-.673.609-.097.056-.239.037-.303.033l-.19.135a6.545 6.545 0 0 0-4.146-2.003l-.012-.223c-.065-.062-.143-.115-.163-.25-.022-.268.015-.557.057-.905.023-.163.061-.298.068-.475.001-.04-.001-.099-.001-.142 0-.306-.224-.555-.5-.555-.275 0-.499.249-.499.555l.001.014c0 .041-.002.092 0 .128.006.177.044.312.067.475.042.348.078.637.056.906a.545.545 0 0 1-.162.258l-.012.211a6.424 6.424 0 0 0-4.166 2.003 8.373 8.373 0 0 1-.18-.128c-.09.012-.18.04-.297-.029-.223-.15-.427-.358-.673-.608-.113-.12-.195-.234-.329-.349-.03-.026-.077-.062-.111-.088a.594.594 0 0 0-.348-.132.481.481 0 0 0-.398.176c-.172.216-.117.546.123.737l.007.005.104.083c.142.105.272.159.414.242.299.185.546.338.743.522.076.082.09.226.1.288l.16.143a6.462 6.462 0 0 0-1.02 4.506l-.208.06c-.055.072-.133.184-.215.217-.257.081-.546.11-.895.147-.164.014-.305.006-.48.039-.037.007-.09.02-.133.03l-.004.002-.007.002c-.295.071-.484.342-.423.608.061.267.349.429.645.365l.007-.001.01-.003.129-.029c.17-.046.294-.113.448-.172.33-.118.604-.217.87-.256.112-.009.23.069.288.101l.217-.037a6.5 6.5 0 0 0 2.88 3.596l-.09.218c.033.084.069.199.044.282-.097.252-.263.517-.452.813-.091.136-.185.242-.268.399-.02.037-.045.095-.064.134-.128.275-.034.591.213.71.248.12.556-.007.69-.282v-.002c.02-.039.046-.09.062-.127.07-.162.094-.301.144-.458.132-.332.205-.68.387-.897.05-.06.13-.082.215-.105l.113-.205a6.453 6.453 0 0 0 4.609.012l.106.192c.086.028.18.042.256.155.136.232.229.507.342.84.05.156.074.295.145.457.016.037.043.09.062.129.133.276.442.402.69.282.247-.118.341-.435.213-.71-.02-.039-.045-.096-.065-.134-.083-.156-.177-.261-.268-.398-.19-.296-.346-.541-.443-.793-.04-.13.007-.21.038-.294-.018-.022-.059-.144-.083-.202a6.499 6.499 0 0 0 2.88-3.622c.064.01.176.03.213.038.075-.05.144-.114.28-.104.266.039.54.138.87.256.154.06.277.128.448.173.036.01.088.019.13.028l.009.003.007.001c.297.064.584-.098.645-.365.06-.266-.128-.537-.423-.608zM16.4 9.701l-1.95 1.746v.005a.44.44 0 0 0 .173.757l.003.01 2.526.728a5.199 5.199 0 0 0-.108-1.674A5.208 5.208 0 0 0 16.4 9.7zm-4.013 5.325a.437.437 0 0 0-.404-.232.44.44 0 0 0-.372.233h-.002l-1.268 2.292a5.164 5.164 0 0 0 3.326.003l-1.27-2.296h-.01zm1.888-1.293a.44.44 0 0 0-.27.036.44.44 0 0 0-.214.572l-.003.004 1.01 2.438a5.15 5.15 0 0 0 2.081-2.615l-2.6-.44-.004.005z"/>
+    </svg>
+  
+      <text x="180" y="838" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">Kube-State-Metrics</text>
+      <text x="180" y="854" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">Cluster, HPA &amp; Pod Health Metrics</text>
+    </g>
+  
+
+  <!-- Prometheus Node -->
+  
+    <g class="node-card">
+      <rect x="360" y="750" width="290" height="140" rx="12" fill="#1a1012" stroke="#ea580c" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(234, 88, 12, 0.3))"/>
+      
+    <rect x="568" y="758" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="605" y="770" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">Metrics TSDB</text>
+  
+      
+    <svg x="487" y="764" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#E6522C" d="M12 0C5.373 0 0 5.372 0 12c0 6.627 5.373 12 12 12s12-5.373 12-12c0-6.628-5.373-12-12-12zm0 22.46c-1.885 0-3.414-1.26-3.414-2.814h6.828c0 1.553-1.528 2.813-3.414 2.813zm5.64-3.745H6.36v-2.046h11.28v2.046zm-.04-3.098H6.391c-.037-.043-.075-.086-.111-.13-1.155-1.401-1.427-2.133-1.69-2.879-.005-.025 1.4.287 2.395.511 0 0 .513.119 1.262.255-.72-.843-1.147-1.915-1.147-3.01 0-2.406 1.845-4.508 1.18-6.207.648.053 1.34 1.367 1.387 3.422.689-.951.977-2.69.977-3.755 0-1.103.727-2.385 1.454-2.429-.648 1.069.168 1.984.894 4.256.272.854.237 2.29.447 3.201.07-1.892.395-4.652 1.595-5.605-.529 1.2.079 2.702.494 3.424.671 1.164 1.078 2.047 1.078 3.716a4.642 4.642 0 01-1.11 2.996c.792-.149 1.34-.283 1.34-.283l2.573-.502s-.374 1.538-1.81 3.019z"/>
+    </svg>
+  
+      <text x="505" y="818" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">Prometheus Server</text>
+      <text x="505" y="834" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">Scrapes /metrics • Evaluates SLO Burn-Rate Rules</text>
+    </g>
+  
+  
+    <g class="step-badge">
+      <circle cx="360" cy="755" r="14" fill="#10b981" stroke="#064e3b" stroke-width="2" filter="drop-shadow(0 2px 5px rgba(16, 185, 129, 0.4))"/>
+      <text x="360" y="760" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="#ffffff" text-anchor="middle">5</text>
+    </g>
+  
+
+  <!-- Alertmanager Node -->
+  
+    <g class="node-card">
+      <rect x="720" y="750" width="290" height="140" rx="12" fill="#200e12" stroke="#dc2626" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(220, 38, 38, 0.3))"/>
+      
+    <rect x="928" y="758" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="965" y="770" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">Multi-Burn-Rate</text>
+  
+      
+    <svg x="847" y="764" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#60a5fa" d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+    </svg>
+  
+      <text x="865" y="818" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">Alertmanager</text>
+      <text x="865" y="834" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">Fast Burn (14.4x / 2m) • Slow Burn (3x / 15m)</text>
+    </g>
+  
+
+  <!-- Webhook Logger / Notifications Node -->
+  
+    <g class="node-card">
+      <rect x="1080" y="770" width="235" height="105" rx="12" fill="#12121f" stroke="#059669" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(5, 150, 105, 0.25))"/>
+      
+    <rect x="1233" y="778" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="1270" y="790" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">Receiver</text>
+  
+      
+    <svg x="1179.5" y="784" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#60a5fa" d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10zm-2-1h-6v-2h6v2zM7.5 17l-1.41-1.41L8.67 13l-2.58-2.59L7.5 9l4 4-4 4z"/>
+    </svg>
+  
+      <text x="1197.5" y="838" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">Alert Webhook Logger</text>
+      <text x="1197.5" y="854" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">Audit &amp; Alert Event Logger</text>
+    </g>
+  
+
+  <!-- Grafana Dashboards Node -->
+  
+    <g class="node-card">
+      <rect x="1380" y="750" width="235" height="140" rx="12" fill="#1c140d" stroke="#f97316" stroke-width="1.5" filter="drop-shadow(0 4px 12px rgba(249, 115, 22, 0.3))"/>
+      
+    <rect x="1533" y="758" width="74" height="18" rx="9" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="1570" y="770" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#38bdf8" text-anchor="middle">Visualization</text>
+  
+      
+    <svg x="1479.5" y="764" width="36" height="36" viewBox="0 0 24 24">
+      <path fill="#F46800" d="M23.02 10.59a8.578 8.578 0 0 0-.862-3.034 8.911 8.911 0 0 0-1.789-2.445c.337-1.342-.413-2.505-.413-2.505-1.292-.08-2.113.4-2.416.62-.052-.02-.102-.044-.154-.064-.22-.089-.446-.172-.677-.247-.231-.073-.47-.14-.711-.197a9.867 9.867 0 0 0-.875-.161C14.557.753 12.94 0 12.94 0c-1.804 1.145-2.147 2.744-2.147 2.744l-.018.093c-.098.029-.2.057-.298.088-.138.042-.275.094-.413.143-.138.055-.275.107-.41.166a8.869 8.869 0 0 0-1.557.87l-.063-.029c-2.497-.955-4.716.195-4.716.195-.203 2.658.996 4.33 1.235 4.636a11.608 11.608 0 0 0-.607 2.635C1.636 12.677.953 15.014.953 15.014c1.926 2.214 4.171 2.351 4.171 2.351.003-.002.006-.002.006-.005.285.509.615.994.986 1.446.156.19.32.371.488.548-.704 2.009.099 3.68.099 3.68 2.144.08 3.553-.937 3.849-1.173a9.784 9.784 0 0 0 3.164.501h.08l.055-.003.107-.002.103-.005.003.002c1.01 1.44 2.788 1.646 2.788 1.646 1.264-1.332 1.337-2.653 1.337-2.94v-.058c0-.02-.003-.039-.003-.06.265-.187.52-.387.758-.6a7.875 7.875 0 0 0 1.415-1.7c1.43.083 2.437-.885 2.437-.885-.236-1.49-1.085-2.216-1.264-2.354l-.018-.013-.016-.013a.217.217 0 0 1-.031-.02c.008-.092.016-.18.02-.27.011-.162.016-.323.016-.48v-.253l-.005-.098-.008-.135a1.891 1.891 0 0 0-.01-.13c-.003-.042-.008-.083-.013-.125l-.016-.124-.018-.122a6.215 6.215 0 0 0-2.032-3.73 6.015 6.015 0 0 0-3.222-1.46 6.292 6.292 0 0 0-.85-.048l-.107.002h-.063l-.044.003-.104.008a4.777 4.777 0 0 0-3.335 1.695c-.332.4-.592.84-.768 1.297a4.594 4.594 0 0 0-.312 1.817l.003.091c.005.055.007.11.013.164a3.615 3.615 0 0 0 .698 1.82 3.53 3.53 0 0 0 1.827 1.282c.33.098.66.14.971.137.039 0 .078 0 .114-.002l.063-.003c.02 0 .041-.003.062-.003.034-.002.065-.007.099-.01.007 0 .018-.003.028-.003l.031-.005.06-.008a1.18 1.18 0 0 0 .112-.02c.036-.008.072-.013.109-.024a2.634 2.634 0 0 0 .914-.415c.028-.02.056-.041.085-.065a.248.248 0 0 0 .039-.35.244.244 0 0 0-.309-.06l-.078.042c-.09.044-.184.083-.283.116a2.476 2.476 0 0 1-.475.096c-.028.003-.054.006-.083.006l-.083.002c-.026 0-.054 0-.08-.002l-.102-.006h-.012l-.024.006c-.016-.003-.031-.003-.044-.006-.031-.002-.06-.007-.091-.01a2.59 2.59 0 0 1-.724-.213 2.557 2.557 0 0 1-.667-.438 2.52 2.52 0 0 1-.805-1.475 2.306 2.306 0 0 1-.029-.444l.006-.122v-.023l.002-.031c.003-.021.003-.04.005-.06a3.163 3.163 0 0 1 1.352-2.29 3.12 3.12 0 0 1 .937-.43 2.946 2.946 0 0 1 .776-.101h.06l.07.002.045.003h.026l.07.005a4.041 4.041 0 0 1 1.635.49 3.94 3.94 0 0 1 1.602 1.662 3.77 3.77 0 0 1 .397 1.414l.005.076.003.075c.002.026.002.05.002.075 0 .024.003.052 0 .07v.065l-.002.073-.008.174a6.195 6.195 0 0 1-.08.639 5.1 5.1 0 0 1-.267.927 5.31 5.31 0 0 1-.624 1.13 5.052 5.052 0 0 1-3.237 2.014 4.82 4.82 0 0 1-.649.066l-.039.003h-.287a6.607 6.607 0 0 1-1.716-.265 6.776 6.776 0 0 1-3.4-2.274 6.75 6.75 0 0 1-.746-1.15 6.616 6.616 0 0 1-.714-2.596l-.005-.083-.002-.02v-.056l-.003-.073v-.096l-.003-.104v-.07l.003-.163c.008-.22.026-.45.054-.678a8.707 8.707 0 0 1 .28-1.355c.128-.444.286-.872.473-1.277a7.04 7.04 0 0 1 1.456-2.1 5.925 5.925 0 0 1 .953-.763c.169-.111.343-.213.524-.306.089-.05.182-.091.273-.135.047-.02.093-.042.138-.062a7.177 7.177 0 0 1 .714-.267l.145-.045c.049-.015.098-.026.148-.041.098-.029.197-.052.296-.076.049-.013.1-.02.15-.033l.15-.032.151-.028.076-.013.075-.01.153-.024c.057-.01.114-.013.171-.023l.169-.021c.036-.003.073-.008.106-.01l.073-.008.036-.003.042-.002c.057-.003.114-.008.171-.01l.086-.006h.023l.037-.003.145-.007a7.999 7.999 0 0 1 1.708.125 7.917 7.917 0 0 1 2.048.68 8.253 8.253 0 0 1 1.672 1.09l.09.077.089.078c.06.052.114.107.171.159.057.052.112.106.166.16.052.055.107.107.159.164a8.671 8.671 0 0 1 1.41 1.978c.012.026.028.052.04.078l.04.078.075.156c.023.051.05.1.07.153l.065.15a8.848 8.848 0 0 1 .45 1.34.19.19 0 0 0 .201.142.186.186 0 0 0 .172-.184c.01-.246.002-.532-.024-.856z"/>
+    </svg>
+  
+      <text x="1497.5" y="818" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#f8fafc" text-anchor="middle">Grafana Dashboards</text>
+      <text x="1497.5" y="834" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8" text-anchor="middle">SRE Golden Signals, SLO Error Budgets &amp; HPA</text>
+    </g>
+  
+
+  <!-- 10. CONNECTORS (Flow Lines with Animated Flowing Dashes) -->
+
+  <!-- STEP 7: End User -> Ingress -->
+  
+    <g id="conn-user-ingress">
+      <path d="M 972 220 L 972 260" fill="none" stroke="url(#grad-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)" class="flow-line"/>
+      
+    <rect x="890.5" y="230" width="163" height="19" rx="5" fill="#090d16" stroke="#4338ca" stroke-width="1" opacity="0.95"/>
+    <text x="972" y="243.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#c7d2fe" text-anchor="middle">HTTPS (nip.io / :8082)</text>
+  
+    </g>
+  
+
+  <!-- STEP 1: Developer -> GitHub -->
+  
+    <g id="conn-dev-github">
+      <path d="M 180 210 L 215 210" fill="none" stroke="url(#grad-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)" class="flow-line"/>
+      
+    <rect x="175" y="190" width="46" height="19" rx="5" fill="#090d16" stroke="#4338ca" stroke-width="1" opacity="0.95"/>
+    <text x="198" y="203.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#c7d2fe" text-anchor="middle">push</text>
+  
+    </g>
+  
+
+  <!-- GitHub -> GitHub Actions -->
+  
+    <g id="conn-github-actions">
+      <path d="M 275 250 L 275 285 L 200 285 L 200 310" fill="none" stroke="url(#grad-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)" class="flow-line"/>
+      
+    <rect x="171.75" y="275" width="130.5" height="19" rx="5" fill="#090d16" stroke="#4338ca" stroke-width="1" opacity="0.95"/>
+    <text x="237" y="288.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#c7d2fe" text-anchor="middle">triggers workflow</text>
+  
+    </g>
+  
+
+  <!-- GitHub Actions -> Docker Registry -->
+  
+    <g id="conn-actions-docker">
+      <path d="M 200 400 L 200 460" fill="none" stroke="url(#grad-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)" class="flow-line"/>
+      
+    <rect x="118.5" y="420" width="163" height="19" rx="5" fill="#090d16" stroke="#4338ca" stroke-width="1" opacity="0.95"/>
+    <text x="200" y="433.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#c7d2fe" text-anchor="middle">build &amp; push image</text>
+  
+    </g>
+  
+
+  <!-- STEP 2: Registry / Manifests -> ArgoCD -->
+  
+    <g id="conn-docker-argocd">
+      <path d="M 275 505 L 365 505 L 365 240 L 405 240" fill="none" stroke="url(#grad-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)" class="flow-line"/>
+      
+    <rect x="254.25" y="330" width="221.5" height="19" rx="5" fill="#090d16" stroke="#4338ca" stroke-width="1" opacity="0.95"/>
+    <text x="365" y="343.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#c7d2fe" text-anchor="middle">pull image tags &amp; manifests</text>
+  
+    </g>
+  
+
+  <!-- STEP 6: Sealed Secrets -> ArgoCD / Cluster (Adjusted path) -->
+  
+    <g id="conn-sealedsecrets-cluster">
+      <path d="M 615 505 L 655 505 L 655 450 L 695 450" fill="none" stroke="url(#grad-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)" class="flow-line"/>
+      
+    <rect x="567" y="470" width="176" height="19" rx="5" fill="#090d16" stroke="#4338ca" stroke-width="1" opacity="0.95"/>
+    <text x="655" y="483.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#c7d2fe" text-anchor="middle">decrypts subtrack-secret</text>
+  
+    </g>
+  
+
+  <!-- ArgoCD -> Kubernetes Cluster (GitOps Reconcile) -->
+  
+    <g id="conn-argocd-cluster">
+      <path d="M 615 272 L 655 272 L 655 295 L 885 295" fill="none" stroke="url(#grad-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)" class="flow-line"/>
+      
+    <rect x="639.25" y="275" width="221.5" height="19" rx="5" fill="#090d16" stroke="#4338ca" stroke-width="1" opacity="0.95"/>
+    <text x="750" y="288.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#c7d2fe" text-anchor="middle">auto-sync &amp; reconcile state</text>
+  
+    </g>
+  
+
+  <!-- Ingress -> Frontend Pods -->
+  
+    <g id="conn-ingress-frontend">
+      <path d="M 910 330 L 910 350 L 812 350 L 812 375" fill="none" stroke="url(#grad-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)" class="flow-line"/>
+      
+    <rect x="825" y="340" width="72" height="19" rx="5" fill="#090d16" stroke="#4338ca" stroke-width="1" opacity="0.95"/>
+    <text x="861" y="353.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#c7d2fe" text-anchor="middle">routes /</text>
+  
+    </g>
+  
+
+  <!-- Ingress -> Backend Pods -->
+  
+    <g id="conn-ingress-backend">
+      <path d="M 1030 330 L 1030 350 L 1127 350 L 1127 375" fill="none" stroke="url(#grad-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)" class="flow-line"/>
+      
+    <rect x="1032.25" y="340" width="91.5" height="19" rx="5" fill="#090d16" stroke="#4338ca" stroke-width="1" opacity="0.95"/>
+    <text x="1078" y="353.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#c7d2fe" text-anchor="middle">routes /api</text>
+  
+    </g>
+  
+
+  <!-- Frontend -> Backend Pods -->
+  
+    <g id="conn-frontend-backend">
+      <path d="M 930 425 L 1005 425" fill="none" stroke="url(#grad-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)" class="flow-line"/>
+      
+    <rect x="918" y="405" width="98" height="19" rx="5" fill="#090d16" stroke="#4338ca" stroke-width="1" opacity="0.95"/>
+    <text x="967" y="418.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#c7d2fe" text-anchor="middle">API requests</text>
+  
+    </g>
+  
+
+  <!-- Backend -> MongoDB -->
+  
+    <g id="conn-backend-mongo">
+      <path d="M 1127 475 L 1127 520" fill="none" stroke="url(#grad-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)" class="flow-line"/>
+      
+    <rect x="1068.25" y="487" width="117.5" height="19" rx="5" fill="#090d16" stroke="#4338ca" stroke-width="1" opacity="0.95"/>
+    <text x="1127" y="500.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#c7d2fe" text-anchor="middle">CRUD read/write</text>
+  
+    </g>
+  
+
+  <!-- Renewal Scan CronJob -> Backend / DB -->
+  
+    <g id="conn-cron-backend">
+      <path d="M 930 567 L 1005 567" fill="none" stroke="url(#grad-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)" class="flow-line"/>
+      
+    <rect x="895.25" y="547" width="143.5" height="19" rx="5" fill="#090d16" stroke="#4338ca" stroke-width="1" opacity="0.95"/>
+    <text x="967" y="560.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#c7d2fe" text-anchor="middle">triggers daily scan</text>
+  
+    </g>
+  
+
+  <!-- STEP 4: Backend -> Gemini API -->
+  
+    <g id="conn-backend-gemini">
+      <path d="M 1250 405 L 1290 405 L 1290 272 L 1335 272" fill="none" stroke="url(#grad-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)" class="flow-line"/>
+      
+    <rect x="1215" y="328" width="150" height="19" rx="5" fill="#090d16" stroke="#4338ca" stroke-width="1" opacity="0.95"/>
+    <text x="1290" y="341.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#c7d2fe" text-anchor="middle">prompt email payload</text>
+  
+    </g>
+  
+
+  <!-- STEP 4: Backend -> Gmail API -->
+  
+    <g id="conn-backend-gmail">
+      <path d="M 1250 445 L 1290 445 L 1290 482 L 1335 482" fill="none" stroke="url(#grad-blue)" stroke-width="2.5" marker-end="url(#arrow-blue)" class="flow-line"/>
+      
+    <rect x="1231.25" y="453" width="117.5" height="19" rx="5" fill="#090d16" stroke="#4338ca" stroke-width="1" opacity="0.95"/>
+    <text x="1290" y="466.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#c7d2fe" text-anchor="middle">OAuth 2.0 query</text>
+  
+    </g>
+  
+
+  <!-- STEP 5 (OBSERVABILITY CONNECTORS - AMBER / ORANGE) -->
+  <!-- Backend Pods -> Prometheus (Scrape) -->
+  
+    <g id="conn-backend-prom">
+      <path d="M 1060 475 L 1060 710 L 505 710 L 505 750" fill="none" stroke="url(#grad-obs)" stroke-width="2.5" marker-end="url(#arrow-amber)" class="flow-line-obs"/>
+      
+    <rect x="674.5" y="700" width="215" height="19" rx="5" fill="#090d16" stroke="#d97706" stroke-width="1" opacity="0.95"/>
+    <text x="782" y="713.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#fde68a" text-anchor="middle">scrapes /metrics (prom-client)</text>
+  
+    </g>
+  
+
+  <!-- Kube-State-Metrics -> Prometheus -->
+  
+    <g id="conn-ksm-prom">
+      <path d="M 290 822 L 360 822" fill="none" stroke="url(#grad-obs)" stroke-width="2.5" marker-end="url(#arrow-amber)" class="flow-line-obs"/>
+      
+    <rect x="272.75" y="802" width="104.5" height="19" rx="5" fill="#090d16" stroke="#d97706" stroke-width="1" opacity="0.95"/>
+    <text x="325" y="815.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#fde68a" text-anchor="middle">k8s telemetry</text>
+  
+    </g>
+  
+
+  <!-- Prometheus -> Alertmanager (Fire Alerts) -->
+  
+    <g id="conn-prom-alertmgr">
+      <path d="M 650 820 L 720 820" fill="none" stroke="url(#grad-obs)" stroke-width="2.5" marker-end="url(#arrow-amber)" class="flow-line-obs"/>
+      
+    <rect x="603.5" y="800" width="163" height="19" rx="5" fill="#090d16" stroke="#d97706" stroke-width="1" opacity="0.95"/>
+    <text x="685" y="813.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#fde68a" text-anchor="middle">fires burn-rate alerts</text>
+  
+    </g>
+  
+
+  <!-- Alertmanager -> Webhook Logger -->
+  
+    <g id="conn-alertmgr-webhook">
+      <path d="M 1010 822 L 1080 822" fill="none" stroke="url(#grad-obs)" stroke-width="2.5" marker-end="url(#arrow-amber)" class="flow-line-obs"/>
+      
+    <rect x="966.75" y="802" width="156.5" height="19" rx="5" fill="#090d16" stroke="#d97706" stroke-width="1" opacity="0.95"/>
+    <text x="1045" y="815.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#fde68a" text-anchor="middle">HTTP webhook dispatch</text>
+  
+    </g>
+  
+
+  <!-- Prometheus -> Grafana (PromQL Queries) -->
+  
+    <g id="conn-prom-grafana">
+      <path d="M 505 890 L 505 925 L 1497 925 L 1497 890" fill="none" stroke="url(#grad-obs)" stroke-width="2.5" marker-end="url(#arrow-amber)" class="flow-line-obs"/>
+      
+    <rect x="791.75" y="915" width="416.5" height="19" rx="5" fill="#090d16" stroke="#d97706" stroke-width="1" opacity="0.95"/>
+    <text x="1000" y="928.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#fde68a" text-anchor="middle">PromQL Datasource Queries (Golden Signals &amp; Error Budget)</text>
+  
+    </g>
+  
+
+</svg>

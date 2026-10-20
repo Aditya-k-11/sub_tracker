@@ -1,0 +1,20 @@
+Most side projects die in a basic container on a single VM.
+I wanted to see what happens when you operate one like a resilient production system.
+
+Meet SubTrack — a full-stack subscription tracker built and tested on a local Kubernetes (kind) cluster:
+
+Here is what was verified and measured under real load:
+
+⚡ Zero-Downtime Rollouts: 0 failed requests across 3,989 HTTP requests during a live rolling update test (17 of 3,989 took over 500 ms during the pod swap, none failed; tail latency p95: 6.71 ms).
+⚡ Elastic Autoscaling: Horizontal Pod Autoscaler dynamically scaled backend pods from 3 to 6 replicas when CPU hit 258% of requested CPU (target 70%).
+⚡ GitOps Single Source of Truth: 15/15 Kubernetes resources reconciled via ArgoCD; manual cluster changes are reverted automatically.
+⚡ SRE Observability: Grafana RED metrics with a 95% under 500 ms latency SLO and 1-day error budget consumption gauges including deliberate failure tests.
+⚡ Security Controls: Backend container runs as unprivileged UID 1000 (node), Bitnami Sealed Secrets CRD active in cluster, and plaintext credentials excluded from Git.
+
+The biggest takeaway? Zero downtime rollouts aren't magic — they are math, driven by readiness probes, disruption budgets, and declarative reconciliation.
+
+All Kubernetes manifests, Prometheus alert rules, and k6 test suites are public on GitHub.
+
+(Link to the repository is in the first comment 👇)
+
+#DevOps #Kubernetes #GitOps #CloudEngineering #SiteReliabilityEngineering

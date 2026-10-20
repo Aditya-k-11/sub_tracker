@@ -136,12 +136,8 @@ export const getWastedSpend = catchAsync(async (req, res, next) => {
   const targetCurrency = await getTargetCurrency(req.user.id);
   
   let potentialMonthlySavings = 0;
-  const costPromises = flaggedSubscriptions.map(sub => getEffectiveMonthlyCostInCurrency(sub, targetCurrency));
-  const convertedCosts = await Promise.all(costPromises);
-
-  flaggedSubscriptions.forEach((sub, index) => {
-    sub.monthlyCost = convertedCosts[index];
-    potentialMonthlySavings += sub.monthlyCost;
+  flaggedSubscriptions.forEach(sub => {
+    potentialMonthlySavings += (sub.monthlyCost || 0);
   });
   
   potentialMonthlySavings = Math.round(potentialMonthlySavings * 100) / 100;

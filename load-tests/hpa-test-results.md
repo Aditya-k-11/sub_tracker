@@ -23,7 +23,7 @@ The test was designed to run for 12 minutes to observe HPA scaling and stabiliza
    As the load ramped up, CPU usage crossed the 70% threshold. The HPA evaluated the usage against its stabilization window and began spinning up new backend pods within ~60-90 seconds.
 
 2. **Peak Replica Count Reached:**
-   - **Baseline Replicas:** 2
+   - **Baseline Active Replicas:** 3 (configured HPA `minReplicas`: 2)
    - **Peak Replicas:** 6 (the maximum configured limit in `backend-hpa`)
    - **Peak CPU Observed:** 258% / 70% 
 

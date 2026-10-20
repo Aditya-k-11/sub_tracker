@@ -8,6 +8,8 @@ metadata:
     component: mongo
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: subtrack
@@ -20,7 +22,11 @@ spec:
     spec:
       containers:
         - name: mongo
-          image: mongo:4.4
+          image: mongo:7
+          command:
+            - sh
+            - -c
+            - "rm -f /data/db/mongod.lock && exec docker-entrypoint.sh mongod"
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
               valueFrom:
@@ -47,11 +53,12 @@ spec:
           readinessProbe:
             exec:
               command:
-                - mongo
+                - mongosh
                 - --eval
                 - "db.adminCommand('ping')"
             initialDelaySeconds: 5
             periodSeconds: 10
+            timeoutSeconds: 5
       volumes:
         - name: mongo-data
           persistentVolumeClaim:

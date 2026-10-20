@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080, height=1350, initial-scale=1.0">
+<title>SubTrack - DevOps Side Project LinkedIn Carousel</title>
+<link rel="stylesheet" href="fonts/local-fonts.css">
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    background-color: #05050a;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    padding: 40px 0;
+  }
+  @media print {
+    body {
+      background: none;
+      padding: 0;
+      gap: 0;
+    }
+    .slide {
+      page-break-after: always;
+      break-after: page;
+      box-shadow: none !important;
+      margin: 0 !important;
+    }
+  }
+  @page {
+    size: 1080px 1350px;
+    margin: 0;
+  }
+
+  /* Slide Base - Exactly 1080x1350 */
+  .slide {
+    width: 1080px;
+    height: 1350px;
+    min-width: 1080px;
+    min-height: 1350px;
+    max-width: 1080px;
+    max-height: 1350px;
+    background: #0a0a12;
+    position: relative;
+    overflow: hidden;
+    padding: 40px 60px 35px 60px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 30px 100px rgba(0, 0, 0, 0.8);
+    background-image: 
+      radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.5) 0%, transparent 100%);
+  }
+
+  /* Decorative Grid Overlay */
+  .slide::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .slide-inner {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Header Bar */
+  .top-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .brand-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 10px 22px;
+    border-radius: 999px;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #94a3b8;
+  }
+  .brand-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #38bdf8;
+    box-shadow: 0 0 12px #38bdf8;
+  }
+  .slide-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    color: #64748b;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  /* Typography - Solid Accent Colors */
+  .slide-title {
+    font-size: 64px;
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    color: #ffffff;
+    margin-bottom: 12px;
+  }
+  .slide-title.multi-line {
+    font-size: 56px;
+    line-height: 1.12;
+  }
+  .slide-title .accent-blue {
+    color: #38bdf8;
+  }
+  .slide-title .accent-green {
+    color: #34d399;
+  }
+  .slide-title .accent-purple {
+    color: #c084fc;
+  }
+  .slide-title .accent-amber {
+    color: #fbbf24;
+  }
+
+  /* Hero Metric Pill (One Hero Stat Per Slide) */
+  .hero-stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 8px 22px;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 26px;
+    font-weight: 700;
+    color: #38bdf8;
+    margin-bottom: 12px;
+  }
+  .hero-stat-pill.green {
+    background: rgba(52, 211, 153, 0.1);
+    border-color: rgba(52, 211, 153, 0.35);
+    color: #34d399;
+  }
+  .hero-stat-pill.purple {
+    background: rgba(192, 132, 252, 0.1);
+    border-color: rgba(192, 132, 252, 0.35);
+    color: #c084fc;
+  }
+  .hero-stat-pill.amber {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.35);
+    color: #fbbf24;
+  }
+
+  /* Media Frame - Height >= 60% of Slide (810px) */
+  .media-card {
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    height: 810px;
+    min-height: 810px;
+    max-height: 810px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .media-img-container {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #070a14;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .media-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* Captions (>= 28px) */
+  .caption-bar {
+    margin-top: 10px;
+    padding: 12px 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border-left: 4px solid #38bdf8;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+  .caption-bar.green { border-left-color: #34d399; }
+  .caption-bar.purple { border-left-color: #c084fc; }
+  .caption-bar.amber { border-left-color: #fbbf24; }
+  
+  .caption-text {
+    font-size: 26px;
+    font-weight: 600;
+    color: #cbd5e1;
+    line-height: 1.35;
+  }
+  .caption-text strong {
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  /* Bullets for Slide 8 (>= 30px) */
+  .bullet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 14px;
+    margin-bottom: 8px;
+  }
+  .bullet-item {
+    font-size: 30px;
+    font-weight: 600;
+    color: #cbd5e1;
+    line-height: 1.35;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  /* Bottom Bar (>= 24px) */
+  .bottom-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 14px;
+  }
+  .author-tag {
+    font-size: 24px;
+    font-weight: 700;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .swipe-hint {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 24px;
+    font-weight: 800;
+    color: #38bdf8;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    padding: 8px 22px;
+    border-radius: 999px;
+  }
+
+  /* Inline SVG Icon Helpers */
+  .tool-icon {
+    width: 26px;
+    height: 26px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: COVER -->
+<section class="slide" id="slide-1">
+  <div class="slide-inner">
+    <div class="top-meta">
+      <div class="brand-badge"><span class="brand-dot"></span> DevOps Engineering Case Study</div>
+      <div class="slide-number">01 / 09</div>
+    </div>
+
+    <div>
+      <h1 class="slide-title multi-line">
+        I built a subscription tracker.<br>
+        <span class="accent-blue">The real project was how it runs.</span>
+      </h1>
+      <div style="font-size: 26px; font-weight: 600; color: #94a3b8; margin-bottom: 14px;">SubTrack: Building a Production-Style DevOps Workflow by Aditya</div>
+      <div class="hero-stat-pill green">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        0 failed requests during a live rollout test
+      </div>
+
+      <div class="media-card">
+        <div class="media-img-container">
+          <img class="media-img" src="images/1-app-dashboard.png" alt="SubTrack Live Dashboard">
+        </div>
+        <div class="caption-bar green">
+          <div class="caption-text">
+            <strong>SubTrack Live Dashboard:</strong> Active spend tracking and automated renewal monitoring.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="author-tag">Aditya • DevOps Case Study</div>
+      <div class="swipe-hint">Swipe →</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 2: ARCHITECTURE (Simplified 6-Box Diagram) -->
+<section class="slide" id="slide-2">
+  <div class="slide-inner">
+    <div class="top-meta">
+      <div class="brand-badge">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="#326ce5"><path d="M12 2.125a1.25 1.25 0 0 0-.608.16l-8.5 5A1.25 1.25 0 0 0 2.25 8.36v9.28a1.25 1.25 0 0 0 .642 1.077l8.5 5a1.25 1.25 0 0 0 1.216 0l8.5-5a1.25 1.25 0 0 0 .642-1.077V8.36a1.25 1.25 0 0 0-.642-1.075l-8.5-5A1.25 1.25 0 0 0 12 2.125zm0 2.42l6.57 3.865-2.298 1.352-4.272-2.513v-2.704zm-1.5 2.704v2.704L6.228 12.46 3.93 11.11 10.5 7.25zm3 3.527l3.655 2.15-2.155 3.733-3.655-2.15 2.155-3.733zm-4.31 2.535l2.155 3.733-3.655 2.15-2.155-3.733 3.655-2.15zm2.81 4.87l4.272-2.513 2.298 1.352L12 21.328v-2.704zm-1.5 0v2.704L3.93 17.152l2.298-1.352 4.272 2.513z"/></svg>
+        System Topology
+      </div>
+      <div class="slide-number">02 / 09</div>
+    </div>
+
+    <div>
+      <h2 class="slide-title">
+        The Big Picture: <span class="accent-blue">Cloud-Native Architecture</span>
+      </h2>
+      <div class="hero-stat-pill">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></polyline></svg>
+        Zero-downtime rollouts • Declarative GitOps
+      </div>
+
+      <div class="media-card">
+        <div class="media-img-container" style="background: #090d16;">
+          <img class="media-img" src="images/2-architecture-6box.png" alt="SubTrack 6-Box Architecture Flow">
+        </div>
+        <div class="caption-bar">
+          <div class="caption-text">
+            <strong>6-Box Flow:</strong> Ingress routing, GitOps reconciliation, auto-scaled backend runtime (3-6 pods), and MongoDB persistence.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="author-tag">Built and tested on a local Kubernetes (kind) cluster</div>
+      <div class="swipe-hint">Swipe →</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3: CI/CD PIPELINE (Latest Run #48 Proof) -->
+<section class="slide" id="slide-3">
+  <div class="slide-inner">
+    <div class="top-meta">
+      <div class="brand-badge">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="#f0f6fc"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        CI / CD Automation
+      </div>
+      <div class="slide-number">03 / 09</div>
+    </div>
+
+    <div>
+      <h2 class="slide-title">
+        Every push is <span class="accent-green">built and published automatically</span>
+      </h2>
+      <div class="hero-stat-pill green">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        1m 6s Clean Pipeline Run (Run #48)
+      </div>
+
+      <div class="media-card">
+        <div class="media-img-container" style="background: #0d1117;">
+          <img class="media-img" src="images/7-github-actions.png" alt="GitHub Actions Pipeline Run #48">
+        </div>
+        <div class="caption-bar green">
+          <div class="caption-text">
+            <strong>Workflow Run #48:</strong> Triggered on push to main (commit 3bb978d). Builds and pushes Docker images to Docker Hub in 1m 6s.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="author-tag">GitHub Actions • Docker Buildx</div>
+      <div class="swipe-hint">Swipe →</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4: GITOPS & ARGOCD (Genuine Screenshot & Drift Detection) -->
+<section class="slide" id="slide-4">
+  <div class="slide-inner">
+    <div class="top-meta">
+      <div class="brand-badge">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="#ef7b4d"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 3.6a8.4 8.4 0 1 1 0 16.8 8.4 8.4 0 0 1 0-16.8zm-2.4 4.8v7.2l6-3.6-6-3.6z"/></svg>
+        Continuous Delivery
+      </div>
+      <div class="slide-number">04 / 09</div>
+    </div>
+
+    <div>
+      <h2 class="slide-title">
+        Git is the <span class="accent-green">single source of truth</span>
+      </h2>
+      <div class="hero-stat-pill green">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        ArgoCD Drift Detection: App Healthy, 15 Resources
+      </div>
+
+      <div class="media-card">
+        <div class="media-img-container" style="background: #141e28;">
+          <img class="media-img" src="images/2-argocd-original-clean.png" alt="Genuine ArgoCD Resource Tree">
+        </div>
+        <div class="caption-bar green">
+          <div class="caption-text">
+            <strong>Declarative GitOps:</strong> ArgoCD continuously reconciles cluster state against Git manifests. OutOfSync status flags local manifest divergence on 2 of 15 resources, ensuring automated drift detection.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="author-tag">ArgoCD • Declarative K8s Manifests</div>
+      <div class="swipe-hint">Swipe →</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5: ZERO DOWNTIME ROLLING DEPLOYS -->
+<section class="slide" id="slide-5">
+  <div class="slide-inner">
+    <div class="top-meta">
+      <div class="brand-badge">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="#7D64FF"><path d="M12 2L2 7.5v9L12 22l10-5.5v-9L12 2zm0 2.2l7.5 4.125v6.75L12 19.2l-7.5-4.125V8.325L12 4.2zm-2.5 4.8v6h2v-2.2l2.2 2.2h2.8l-3.2-3.2 3-2.8h-2.7l-2.1 2V9h-2z"/></svg>
+        Zero-downtime rollouts
+      </div>
+      <div class="slide-number">05 / 09</div>
+    </div>
+
+    <div>
+      <h2 class="slide-title">
+        Making Deployments <span class="accent-green">More Reliable</span>
+      </h2>
+      <div class="hero-stat-pill green">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        3,989 requests during rollout • 0 failed requests
+      </div>
+
+      <div class="media-card">
+        <div class="media-img-container" style="background: #0d1117;">
+          <img class="media-img" src="images/5-k6-summary.png" alt="k6 Zero Downtime Benchmark">
+        </div>
+        <div class="caption-bar green">
+          <div class="caption-text">
+            <strong>Zero Failed Requests:</strong> 0 HTTP failures out of 3,989 requests during rollout. 17 requests (0.43%) exceeded 500 ms during pod termination and readiness swap. p95 latency: 6.71 ms.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="author-tag">k6 Load Testing • Readiness Probes</div>
+      <div class="swipe-hint">Swipe →</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6: AUTOSCALING (HPA 3 TO 6 PODS) -->
+<section class="slide" id="slide-6">
+  <div class="slide-inner">
+    <div class="top-meta">
+      <div class="brand-badge">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="#c084fc"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Elastic Infrastructure
+      </div>
+      <div class="slide-number">06 / 09</div>
+    </div>
+
+    <div>
+      <h2 class="slide-title">
+        Scaling with <span class="accent-purple">Kubernetes</span>
+      </h2>
+      <div class="hero-stat-pill purple">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="#c084fc"><path d="M12 2L2 7.5v9L12 22l10-5.5v-9L12 2zm0 2.2l7.5 4.125v6.75L12 19.2l-7.5-4.125V8.325L12 4.2z"/></svg>
+        HPA Autoscale: 3 to 6 Pods (258% Peak CPU)
+      </div>
+
+      <div class="media-card">
+        <div class="media-img-container" style="background: #0d1117;">
+          <img class="media-img" src="images/6-hpa-scaling.png" alt="HPA Scaling Output">
+        </div>
+        <div class="caption-bar purple">
+          <div class="caption-text">
+            <strong>Autoscaling in Action:</strong> Configured HPA (min: 2, max: 6, target: 70% CPU). Under k6 load surge, active replicas scaled from 3 to 6 as CPU utilization reached 258%.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="author-tag">Kubernetes HPA v2 • Metrics Server</div>
+      <div class="swipe-hint">Swipe →</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7: OBSERVABILITY & ERROR BUDGETS -->
+<section class="slide" id="slide-7">
+  <div class="slide-inner">
+    <div class="top-meta">
+      <div class="brand-badge">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm7.685 14.54a5.15 5.15 0 0 1-3.642 1.488 5.148 5.148 0 0 1-5.148-5.148c0-.98.275-1.9.757-2.682l2.308 2.308a1.884 1.884 0 0 0 2.664 0 1.884 1.884 0 0 0 0-2.664l-2.308-2.308a5.15 5.15 0 0 1 1.727-.3c2.843 0 5.148 2.305 5.148 5.148 0 1.583-.715 3-1.506 4.158z"/></svg>
+        SRE Observability
+      </div>
+      <div class="slide-number">07 / 09</div>
+    </div>
+
+    <div>
+      <h2 class="slide-title">
+        Know what is happening <span class="accent-amber">inside the system</span>
+      </h2>
+      <div class="hero-stat-pill amber">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Latency SLO: 95% &lt; 500 ms • Error Budget: 1-Day Window
+      </div>
+
+      <div class="media-card">
+        <div class="media-img-container" style="background: #0b0f19;">
+          <img class="media-img" src="images/3-grafana-dashboard.png" alt="Grafana RED Dashboard">
+        </div>
+        <div class="caption-bar amber">
+          <div class="caption-text">
+            <strong>Error Budget Monitoring:</strong> Grafana RED dashboard tracking Availability (98.4% consumed in 1d rolling window via chaos testing) and Latency (0% budget consumed).
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="author-tag">Prometheus • Grafana • Alertmanager</div>
+      <div class="swipe-hint">Swipe →</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 8: SECURITY & DEFENSE IN DEPTH -->
+<section class="slide" id="slide-8">
+  <div class="slide-inner">
+    <div class="top-meta">
+      <div class="brand-badge">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="#38bdf8"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.12v4.7c0 4.67-3.13 8.97-7 10.08-3.87-1.11-7-5.41-7-10.08V6.3l7-3.12zm-1 5v6h2V8.18h-2zm0 8v2h2v-2h-2z"/></svg>
+        Cloud Native Security
+      </div>
+      <div class="slide-number">08 / 09</div>
+    </div>
+
+    <div>
+      <h2 class="slide-title multi-line">
+        Security Controls <span class="accent-blue">&amp; Verification</span>
+      </h2>
+      <div class="hero-stat-pill">
+        <svg class="tool-icon" viewBox="0 0 24 24" fill="#38bdf8"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        UID 1000 Non-Root • Bitnami CRD In Cluster • Git Secret Hygiene
+      </div>
+
+      <div class="media-card" style="height: 640px; min-height: 640px; max-height: 640px; margin-bottom: 8px;">
+        <div class="media-img-container" style="background: #0d1117;">
+          <img class="media-img" src="images/8-security-proof.png" alt="Security Controls Terminal Verification">
+        </div>
+      </div>
+
+      <div class="bullet-list">
+        <div class="bullet-item">
+          <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          Backend process verified running as unprivileged UID 1000 (node).
+        </div>
+        <div class="bullet-item">
+          <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          Bitnami Sealed Secrets controller and CRD active in cluster.
+        </div>
+        <div class="bullet-item">
+          <svg class="tool-icon" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          Sensitive environment files excluded from active Git tracking.
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="author-tag">Kubernetes Security Controls</div>
+      <div class="swipe-hint">Swipe →</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 9: CLOSING & LESSONS LEARNED -->
+<section class="slide" id="slide-9">
+  <div class="slide-inner">
+    <div class="top-meta">
+      <div class="brand-badge"><span class="brand-dot"></span> Key Takeaways</div>
+      <div class="slide-number">09 / 09</div>
+    </div>
+
+    <div style="margin: auto 0;">
+      <h2 class="slide-title" style="font-size: 68px; line-height: 1.15; margin-bottom: 32px;">
+        What I <span class="accent-blue">learned</span>
+      </h2>
+
+      <div style="display: flex; flex-direction: column; gap: 24px; margin-bottom: 32px;">
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 26px 30px; border-left: 8px solid #38bdf8;">
+          <div style="font-size: 32px; font-weight: 700; color: #ffffff; line-height: 1.35;">
+            1. Reliability must be measured, not assumed.
+          </div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 26px 30px; border-left: 8px solid #fbbf24;">
+          <div style="font-size: 32px; font-weight: 700; color: #ffffff; line-height: 1.35;">
+            2. Automation makes repeatable operations possible.
+          </div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 26px 30px; border-left: 8px solid #34d399;">
+          <div style="font-size: 32px; font-weight: 700; color: #ffffff; line-height: 1.35;">
+            3. Evidence matters more than claims.
+          </div>
+        </div>
+      </div>
+
+      <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 18px; padding: 22px 28px; display: flex; align-items: center; justify-content: space-between; gap: 24px;">
+        <div style="display: flex; align-items: center; gap: 18px;">
+          <svg style="width: 44px; height: 44px; fill: #ffffff; flex-shrink: 0;" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          <div>
+            <div style="font-size: 30px; font-weight: 800; color: #ffffff;">Repository link in the comments</div>
+            <div style="font-size: 20px; color: #94a3b8; font-weight: 600;">Full manifests, load tests, and observability setup</div>
+          </div>
+        </div>
+        <div style="width: 140px; height: 85px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.15); flex-shrink: 0;">
+          <img src="images/1-app-dashboard.png" style="width: 100%; height: 100%; object-fit: cover;" alt="SubTrack Preview">
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="author-tag">Aditya • SubTrack Case Study</div>
+      <div style="font-size: 24px; font-weight: 700; color: #94a3b8;">End of Carousel • Thank you!</div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

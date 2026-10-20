@@ -4,27 +4,20 @@ const loginAndGetUrl = async () => {
   try {
     console.log("1. Logging in as seed user...");
     
+    const email = process.env.TEST_EMAIL || 'demo@subtrack.dev';
+    const password = process.env.TEST_PASSWORD || 'Demo@1234';
     const loginRes = await fetch('http://localhost:5000/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'adityakanojia.ad@gmail.com', password: 'aditya' })
+      body: JSON.stringify({ email, password })
     });
 
     let loginData = await loginRes.json();
 
     if (!loginRes.ok) {
-        const loginRes2 = await fetch('http://localhost:5000/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: 'adityakanojia.ad@gmail.com', password: 'Demo@1234' }) 
-          });
-        loginData = await loginRes2.json();
-        
-        if (!loginRes2.ok) {
-            console.error("Login failed. Ensure the server is running and the user exists.");
-            console.error(loginData);
-            return;
-        }
+        console.error("Login failed. Ensure the server is running and the user exists.");
+        console.error(loginData);
+        return;
     }
 
     const token = loginData.token;

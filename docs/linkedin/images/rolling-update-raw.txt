@@ -1,0 +1,104 @@
+﻿# --- 14:16:31 ---
+backend-5766f5b9b7-qx24r      0/1   ContainerCreating   0              1s
+backend-6664f7754b-5pw8z      1/1   Running             0              23m
+backend-6664f7754b-69kcn      1/1   Running             0              35m
+backend-6664f7754b-mrt7k      1/1   Running             0              8m10s
+backend-6664f7754b-p68cc      1/1   Running             0              11m
+backend-6664f7754b-wht7x      1/1   Running             8 (36m ago)    34d
+backend-6664f7754b-xbqqb      1/1   Running             0              8m10s
+frontend-5d9f5fd5b6-gcgs5     1/1   Running             24 (36m ago)   62d
+frontend-5d9f5fd5b6-wjbqc     1/1   Running             24 (36m ago)   62d
+mongo-58c59bfd-gbw4d          1/1   Running             0              15m
+renewal-scan-29778300-wb6gk   0/1   ErrImageNeverPull   0              64d
+
+# --- 14:16:34 ---
+backend-5766f5b9b7-qx24r      0/1   Running             0              4s
+backend-6664f7754b-5pw8z      1/1   Running             0              23m
+backend-6664f7754b-69kcn      1/1   Running             0              36m
+backend-6664f7754b-mrt7k      1/1   Running             0              8m13s
+backend-6664f7754b-p68cc      1/1   Running             0              11m
+backend-6664f7754b-wht7x      1/1   Running             8 (36m ago)    34d
+backend-6664f7754b-xbqqb      1/1   Running             0              8m13s
+frontend-5d9f5fd5b6-gcgs5     1/1   Running             24 (36m ago)   62d
+frontend-5d9f5fd5b6-wjbqc     1/1   Running             24 (36m ago)   62d
+mongo-58c59bfd-gbw4d          1/1   Running             0              15m
+renewal-scan-29778300-wb6gk   0/1   ErrImageNeverPull   0              64d
+
+# --- 14:16:37 ---
+backend-5766f5b9b7-qx24r      0/1   Running             0              7s
+backend-6664f7754b-5pw8z      1/1   Running             0              23m
+backend-6664f7754b-69kcn      1/1   Running             0              36m
+backend-6664f7754b-mrt7k      1/1   Running             0              8m16s
+backend-6664f7754b-p68cc      1/1   Running             0              11m
+backend-6664f7754b-wht7x      1/1   Running             8 (36m ago)    34d
+backend-6664f7754b-xbqqb      1/1   Running             0              8m16s
+frontend-5d9f5fd5b6-gcgs5     1/1   Running             24 (36m ago)   62d
+frontend-5d9f5fd5b6-wjbqc     1/1   Running             24 (36m ago)   62d
+mongo-58c59bfd-gbw4d          1/1   Running             0              15m
+renewal-scan-29778300-wb6gk   0/1   ErrImageNeverPull   0              64d
+
+# --- 14:16:40 ---
+backend-5766f5b9b7-qx24r      0/1   Running             0              10s
+backend-6664f7754b-5pw8z      1/1   Running             0              23m
+backend-6664f7754b-69kcn      1/1   Running             0              36m
+backend-6664f7754b-mrt7k      1/1   Running             0              8m19s
+backend-6664f7754b-p68cc      1/1   Running             0              11m
+backend-6664f7754b-wht7x      1/1   Running             8 (36m ago)    34d
+backend-6664f7754b-xbqqb      1/1   Running             0              8m19s
+frontend-5d9f5fd5b6-gcgs5     1/1   Running             24 (36m ago)   62d
+frontend-5d9f5fd5b6-wjbqc     1/1   Running             24 (36m ago)   62d
+mongo-58c59bfd-gbw4d          1/1   Running             0              15m
+renewal-scan-29778300-wb6gk   0/1   ErrImageNeverPull   0              64d
+
+# --- 14:16:43 ---
+backend-5766f5b9b7-qx24r      0/1   Running             0              13s
+backend-6664f7754b-5pw8z      1/1   Running             0              23m
+backend-6664f7754b-69kcn      1/1   Running             0              36m
+backend-6664f7754b-mrt7k      1/1   Running             0              8m22s
+backend-6664f7754b-p68cc      1/1   Running             0              11m
+backend-6664f7754b-wht7x      1/1   Running             8 (36m ago)    34d
+backend-6664f7754b-xbqqb      1/1   Running             0              8m22s
+frontend-5d9f5fd5b6-gcgs5     1/1   Running             24 (36m ago)   62d
+frontend-5d9f5fd5b6-wjbqc     1/1   Running             24 (36m ago)   62d
+mongo-58c59bfd-gbw4d          1/1   Running             0              15m
+renewal-scan-29778300-wb6gk   0/1   ErrImageNeverPull   0              64d
+
+# --- 14:16:46 ---
+backend-5766f5b9b7-qx24r      0/1   Running             0              16s
+backend-6664f7754b-5pw8z      1/1   Running             0              23m
+backend-6664f7754b-69kcn      1/1   Running             0              36m
+backend-6664f7754b-mrt7k      1/1   Running             0              8m25s
+backend-6664f7754b-p68cc      1/1   Running             0              11m
+backend-6664f7754b-wht7x      1/1   Running             8 (36m ago)    34d
+backend-6664f7754b-xbqqb      1/1   Running             0              8m25s
+frontend-5d9f5fd5b6-gcgs5     1/1   Running             24 (36m ago)   62d
+frontend-5d9f5fd5b6-wjbqc     1/1   Running             24 (36m ago)   62d
+mongo-58c59bfd-gbw4d          1/1   Running             0              15m
+renewal-scan-29778300-wb6gk   0/1   ErrImageNeverPull   0              64d
+
+# --- 14:16:49 ---
+backend-5766f5b9b7-qx24r      0/1   Running             0              19s
+backend-6664f7754b-5pw8z      1/1   Running             0              23m
+backend-6664f7754b-69kcn      1/1   Running             0              36m
+backend-6664f7754b-mrt7k      1/1   Running             0              8m28s
+backend-6664f7754b-p68cc      1/1   Running             0              11m
+backend-6664f7754b-wht7x      1/1   Running             8 (36m ago)    34d
+backend-6664f7754b-xbqqb      1/1   Running             0              8m28s
+frontend-5d9f5fd5b6-gcgs5     1/1   Running             24 (36m ago)   62d
+frontend-5d9f5fd5b6-wjbqc     1/1   Running             24 (36m ago)   62d
+mongo-58c59bfd-gbw4d          1/1   Running             0              15m
+renewal-scan-29778300-wb6gk   0/1   ErrImageNeverPull   0              64d
+
+# --- 14:16:52 ---
+backend-5766f5b9b7-qx24r      0/1   Running             0              23s
+backend-6664f7754b-5pw8z      1/1   Running             0              24m
+backend-6664f7754b-69kcn      1/1   Running             0              36m
+backend-6664f7754b-mrt7k      1/1   Running             0              8m32s
+backend-6664f7754b-p68cc      1/1   Running             0              11m
+backend-6664f7754b-wht7x      1/1   Running             8 (36m ago)    34d
+backend-6664f7754b-xbqqb      1/1   Running             0              8m32s
+frontend-5d9f5fd5b6-gcgs5     1/1   Running             24 (36m ago)   62d
+frontend-5d9f5fd5b6-wjbqc     1/1   Running             24 (36m ago)   62d
+mongo-58c59bfd-gbw4d          1/1   Running             0              15m
+renewal-scan-29778300-wb6gk   0/1   ErrImageNeverPull   0              64d
+

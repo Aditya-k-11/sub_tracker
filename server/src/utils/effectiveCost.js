@@ -7,7 +7,9 @@ import { exchangeRateService } from '../services/exchangeRateService.js';
  */
 export const getEffectiveCost = (subscription, overrideCost = null) => {
   if (!subscription) return 0;
-  const baseCost = overrideCost !== null ? overrideCost : (subscription.cost || 0);
+  const baseCost = overrideCost !== null 
+    ? overrideCost 
+    : (subscription.cost !== undefined ? subscription.cost : (subscription.monthlyCost || 0));
   const shareCount = subscription.sharedWithCount || 1;
   return baseCost / shareCount;
 };

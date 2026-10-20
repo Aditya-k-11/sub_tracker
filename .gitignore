@@ -1,49 +1,85 @@
-# Node
-node_modules/
+# ==========================================
+# SubTrack GitIgnore Configuration
+# ==========================================
 
-# Build output
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production & Build Artifacts
 dist/
 build/
-
-# OS
-.DS_Store
-
-# Logs
-*.log
-server/logs/
-
-# Coverage
 coverage/
 
-# IDEs
-.vscode/
-.idea/
-
-# Environment Variables (DO NOT COMMIT SECRETS)
+# Environment Variables & Plaintext Secrets (DO NOT COMMIT SECRETS)
 .env
 .env.*
 !.env.example
-
-# Kubernetes Local Plaintext Secrets (DO NOT COMMIT SECRETS)
+*.local.yaml
 *.secret.local.yaml
 *secret.local.yaml
-*.local.yaml
 *secret.yaml
 !*sealed-secret.yaml
-
-# Local/Temp files
 k8s/base/secret.plaintext.local.yaml
 k8s/observability/grafana-secret.local.yaml
+
+# Local Binaries & Downloads
 kubeseal.exe
 kubeseal.tar.gz
 
-# Data / DB
-data/
+# Compressed Archives & Backups
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+docs/archive/
 
-# Data
-data/
-summaryData/
+# Heavy Presentation & Export Files (Avoid Repo Bloat)
+*.pptx
+carousel_editable.pptx
+/carousel_final.pdf
+/carousel_editable.pptx
+docs/linkedin/carousel.pdf
+
+# Root-level loose diagram exports & other-project images
+/*.png
+!docs/**/*.png
+!client/**/*.png
+!server/**/*.png
+
+# Temporary HTML & Cache Artifacts
+temp_*.html
 *.tmp
 
+# Logs & Runtime Dumps
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+server/logs/
+
+# IDE & Operating System Files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Scratch Docs & Local Notes
+README1.md
+README_TODO.md
+auto_ingestion_context_doc.md
 data
 summaryData
+data/
+summaryData/
+
+# Root-level scratch test scripts
+/test-*.cjs
+/test-*.js

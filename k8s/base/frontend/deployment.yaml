@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: adityakanojia11/subtrack-frontend:3bb978d
+          image: adityakanojia11/subtrack-frontend:2e6b0fa
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
